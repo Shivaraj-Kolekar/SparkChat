@@ -13,7 +13,7 @@ export default function SignInForm({
 }: {
   onSwitchToSignUp: () => void;
 }) {
-  const router = useRouter()
+  const router = useRouter();
   const { isPending } = authClient.useSession();
 
   const form = useForm({
@@ -29,13 +29,13 @@ export default function SignInForm({
         },
         {
           onSuccess: () => {
-            router.push("/dashboard")
+            router.push("/");
             toast.success("Sign in successful");
           },
           onError: (error) => {
             toast.error(error.error.message);
           },
-        },
+        }
       );
     },
     validators: {

@@ -31,13 +31,13 @@ export default function SignUpForm({
         },
         {
           onSuccess: () => {
-            router.push("/dashboard");
+            router.push("/");
             toast.success("Sign up successful");
           },
           onError: (error) => {
             toast.error(error.error.message);
           },
-        },
+        }
       );
     },
     validators: {

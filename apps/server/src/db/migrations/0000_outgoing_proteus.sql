@@ -14,6 +14,20 @@ CREATE TABLE "account" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "chat" (
+	"id" text PRIMARY KEY NOT NULL,
+	"title" text NOT NULL,
+	"created_at" timestamp NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "messages" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"chat_id" text NOT NULL,
+	"role" text NOT NULL,
+	"content" text NOT NULL,
+	"created_at" timestamp NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp NOT NULL,
