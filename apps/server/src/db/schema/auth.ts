@@ -79,6 +79,12 @@ export const chats = pgTable('chat', {
     .references(() => user.id, { onDelete: 'cascade' })
 })
 
+export const userInfo = pgTable('userInfo', {
+  name: text('name'),
+  profession: text('profession'),
+  traits: text('traits'),
+  user_description: text('user_description')
+})
 export const chatsRelations = relations(chats, ({ many }) => ({
   messages: many(messages)
 }))

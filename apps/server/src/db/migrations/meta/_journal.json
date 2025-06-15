@@ -15,6 +15,13 @@
       "when": 1749723550010,
       "tag": "0001_tidy_christian_walker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749822694114,
+      "tag": "0002_cute_thor_girl",
+      "breakpoints": true
     }
   ]
 }

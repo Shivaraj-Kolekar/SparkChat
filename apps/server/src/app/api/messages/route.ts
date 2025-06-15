@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { db } from '../../../db'
-import { chats, messages as messagesTable } from '../../../db/schema/auth'
+import {
+  chats as chatTable,
+  messages as messagesTable
+} from '../../../db/schema/auth'
 import { v4 as uuidv4 } from 'uuid'
 import { eq } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
@@ -22,17 +25,25 @@ export async function POST (req: Request) {
       )
     }
 
-    const chatcheck = await db.select().from(chats).where(eq(chats.id, chatId))
+    const chatcheck = await db
+      .select()
+      .from(chatTable)
+      .where(eq(chatTable.id, chatId))
+
+    const id = uuidv4()
+
     if (!chatcheck || chatcheck.length === 0) {
-      return NextResponse.json(
-        { error: 'No chat exists with this id in db' },
-        { status: 400 }
-      )
+      await db.insert(chatTable).values({
+        id: id,
+        title: message.content,
+        created_at: new Date(),
+        userId: session.session.userId
+      })
     }
 
     await db.insert(messagesTable).values({
       id: uuidv4(),
-      chatId: chatId,
+      chatId: !chatId ? id : chatId,
       role: message.role,
       content: message.content,
       userId: session.session.userId,

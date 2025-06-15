@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/db'
 import { messages as messagesTable } from '@/db/schema/auth'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, desc, asc } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 
 export async function GET (
@@ -25,7 +25,7 @@ export async function GET (
           eq(messagesTable.userId, session.session.userId)
         )
       )
-      .orderBy(messagesTable.created_at)
+      .orderBy(asc(messagesTable.created_at))
 
     return NextResponse.json({
       success: true,

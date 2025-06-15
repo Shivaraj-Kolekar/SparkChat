@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, VariantProps } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react";
+import { PanelLeftIcon, Plus, PlusIcon, Search } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -259,21 +259,41 @@ function SidebarTrigger({
   const { toggleSidebar } = useSidebar();
 
   return (
-    <Button
-      data-sidebar="trigger"
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon"
-      className={cn("size-7", className)}
-      onClick={(event) => {
-        onClick?.(event);
-        toggleSidebar();
-      }}
-      {...props}
-    >
-      <PanelLeftIcon />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
+    <div className="bg-sidebar pr-1 pl-2 py-1 rounded-sm">
+      <Button
+        data-sidebar="trigger"
+        data-slot="sidebar-trigger"
+        variant="ghost"
+        size="icon"
+        className={cn("size-7", className)}
+        onClick={(event) => {
+          onClick?.(event);
+          toggleSidebar();
+        }}
+        {...props}
+      >
+        <PanelLeftIcon />
+        <span className="sr-only">Toggle Sidebar</span>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn("size-7 rounded-md", className)}
+        {...props}
+      >
+        <Search />
+        <span className="sr-only">Search Sidebar Chats</span>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn("size-7 rounded-md", className)}
+        {...props}
+      >
+        <Plus />
+        <span className="sr-only">Search Sidebar Chats</span>
+      </Button>
+    </div>
   );
 }
 
@@ -372,7 +392,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto  group-data-[collapsible=icon]:overflow-hidden",
         className
       )}
       {...props}
@@ -385,7 +405,10 @@ function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="sidebar-group"
       data-sidebar="group"
-      className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
+      className={cn(
+        "relative flex overflow-y-auto w-full min-w-0 flex-col p-2",
+        className
+      )}
       {...props}
     />
   );

@@ -20,15 +20,67 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Check, Save } from "lucide-react";
 import Header from "@/components/header";
+import { Textarea } from "@/components/ui/textarea";
+import { register } from "module";
+import { z } from "zod";
+import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
+// Create form schema
 
 export default function Settings() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [isSaving, setIsSaving] = useState(false);
+  const userFormSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters").max(30),
+    profession: z.string().min(2).max(100),
+    traits: z.string().max(50),
+    description: z.string().max(3000),
+  });
+  const { fieldContext, formContext } = createFormHookContexts();
+  const { useAppForm } = createFormHook({
+    fieldComponents: {
+      Input,
+      Textarea,
+    },
+    formComponents: {
+      Button,
+    },
+    fieldContext,
+    formContext,
+  });
+  // Create form using schema
+  const form = useAppForm({
+    defaultValues: {
+      name: "",
+      profession: "",
+      traits: "",
+      description: "",
+    },
+    validators: {
+      // Pass a schema or function to validate
+      onChange: userFormSchema,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/preferences`,
+          { value },
+          {
+            withCredentials: true,
+          }
+        );
+        toast.success("Profile updated successfully");
+      } catch (error) {
+        console.error(error);
+        toast.error("An error occurred while updating preferences");
+      }
+    },
+  });
 
   // Model Settings
   const [defaultModel, setDefaultModel] = useState("gemini");
@@ -44,6 +96,10 @@ export default function Settings() {
   const [fontSize, setFontSize] = useState("16");
   const [enableMarkdown, setEnableMarkdown] = useState(true);
   const [bubbleStyle, setBubbleStyle] = useState("modern");
+  const [name, setname] = useState("");
+  const [description, setdescription] = useState("");
+  const [traits, settraits] = useState("");
+  const [profession, setprofession] = useState("");
 
   useEffect(() => {
     if (!session && !isPending) {
@@ -69,9 +125,8 @@ export default function Settings() {
   if (isPending) {
     return <div>Loading...</div>;
   }
-
   return (
-    <div className="container  flex flex-col px-40 py-10">
+    <div className="container flex flex-col px-40 py-10">
       <Header></Header>
       <div className="flex   justify-between items-center mb-8">
         <div>
@@ -111,6 +166,95 @@ export default function Settings() {
             Logout
           </Button>
         </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Customize O chat</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit();
+              }}
+              className="space-y-5"
+            >
+              <div className="space-y-2">
+                <Label>Name</Label>
+
+                <>
+                  <form.AppField
+                    name="name"
+                    children={(field) => (
+                      <Input
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="What should we call you?"
+                      />
+                    )}
+                  />
+                </>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Profession</Label>
+                <form.AppField
+                  name="profession"
+                  children={(field) => (
+                    <>
+                      <Input
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="What do you do?"
+                      />
+                    </>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Traits</Label>
+                <form.AppField
+                  name="traits"
+                  children={(field) => (
+                    <>
+                      <Input
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="Funny, concise, curious, etc"
+                      />
+                    </>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>User description</Label>
+                <form.AppField
+                  name="description"
+                  children={(field) => (
+                    <>
+                      <Textarea
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className="h-32"
+                        placeholder="Tell us more about yourself..."
+                      />
+                    </>
+                  )}
+                />
+              </div>
+              <form.AppForm>
+                <form.Button disabled={form.state.isSubmitting}>
+                  {form.state.isSubmitting ? "Submitting..." : "Submit"}
+                </form.Button>
+              </form.AppForm>
+            </form>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle>Model Settings</CardTitle>

@@ -1,16 +1,26 @@
 "use client";
 import { useChat, type Message } from "@ai-sdk/react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
+  ArrowRight,
   BrainIcon,
+  Calculator,
+  Calendar,
   Check,
   ChevronsUpDown,
   Copy,
+  CreditCard,
   Globe,
   ListRestart,
+  LogInIcon,
   PlusIcon,
   Search,
   Send,
+  Settings,
+  Settings2,
+  Smile,
+  User,
 } from "lucide-react";
 import { useRef, useEffect } from "react";
 import {
@@ -26,6 +36,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandShortcut,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -59,6 +70,7 @@ import {
   SidebarMenuButton,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useState } from "react";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
@@ -84,6 +96,62 @@ import { toast } from "sonner";
 import type { ChatType, MessageType } from "@/types/chat-types";
 import UserMenu from "@/components/user-menu";
 import Link from "next/link";
+import { useChatContext } from "@/contexts/ChatContext";
+import Sparkchat from "@/components/sparkchat";
+import { ModeToggle } from "@/components/mode-toggle";
+import Image from "next/image";
+import HotkeyDemo from "@/components/HotkeyDemo";
+import { useHotkeys } from "react-hotkeys-hook";
+import { CommandSeparator } from "cmdk";
+
+// Define the props type
+interface CommandboxProps {
+  onClose: () => void; // Specify the type for onClose
+}
+
+const Commandbox: React.FC<CommandboxProps> = ({ onClose }) => {
+  return (
+    <Command className="rounded-lg border shadow-md md:min-w-[450px]">
+      <CommandInput placeholder="Type a command or search..." />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandGroup heading="Suggestions">
+          <CommandItem>
+            <Calendar />
+            <span>Calendar</span>
+          </CommandItem>
+          <CommandItem>
+            <Smile />
+            <span>Search Emoji</span>
+          </CommandItem>
+          <CommandItem disabled>
+            <Calculator />
+            <span>Calculator</span>
+          </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Settings">
+          <CommandItem>
+            <User />
+            <span>Profile</span>
+            <CommandShortcut>⌘P</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
+            <CreditCard />
+            <span>Billing</span>
+            <CommandShortcut>⌘B</CommandShortcut>
+          </CommandItem>
+          <CommandItem>
+            <Settings />
+            <span>Settings</span>
+            <CommandShortcut>⌘S</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  );
+};
+
 function ChatSidebar({
   onSelectChat,
   chats,
@@ -92,7 +160,6 @@ function ChatSidebar({
   selectedChatId,
 }: {
   onSelectChat: (chatId: string) => void;
-
   onDeleteChat: (title: string) => void;
   chats: ChatType[];
   loadingChats: boolean;
@@ -129,7 +196,7 @@ function ChatSidebar({
 
   useEffect(() => {
     fetchChats();
-  }, []);
+  }, [chatList]);
 
   const { data: session } = authClient.useSession();
 
@@ -161,22 +228,31 @@ function ChatSidebar({
   return (
     <Sidebar>
       <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-4">
-        <div className="flex flex-row items-center gap-2 px-2">
-          <div className="bg-primary/10 size-8 rounded-md"></div>
-          <div className="text-md font-base text-primary tracking-tight">
-            zola.chat
+        <div className="flex flex-row items-center  px-2">
+          <Image
+            className="rounded-sm "
+            src="/sparkchat.png"
+            alt="SparkChat"
+            height={48}
+            width={48}
+          />{" "}
+          <div className="text-lg font-base text-primary tracking-tight">
+            <Sparkchat />
           </div>
         </div>
         <Button variant="ghost" className="size-8">
           <Search className="size-4" />
         </Button>
       </SidebarHeader>
+
       <SidebarContent className="pt-4">
         <div className="px-4">
-          <Dialog>
+          {/* <Dialog>
             <DialogTrigger className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2">
-              <PlusIcon className="size-4" />
-              <span>New Chat</span>
+              <Link href="/">
+                <PlusIcon className="size-4" />
+                <span>New Chat</span>
+              </Link>
             </DialogTrigger>
             <DialogContent>
               <DialogTitle>Name the chat</DialogTitle>
@@ -196,27 +272,43 @@ function ChatSidebar({
                 <Button onClick={() => submit(title)}>Submit</Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+          </Dialog> */}{" "}
+          <Link
+            className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
+            href="/"
+          >
+            <PlusIcon className="size-4" />
+            <span>New Chat</span>
+          </Link>
         </div>
         <SidebarGroup className="h-full">
-          <SidebarMenu>
+          <SidebarMenu className="px-2 ">
             {Array.isArray(chatList) &&
               chatList.map((chat) => (
                 <SidebarMenuButton
                   key={chat.id}
-                  className="text-base  my-0.5 px-2 py-0.5 "
+                  className="text-base whitespace-nowrap  my-0.5 px-2 py-3 "
                   onClick={() => onSelectChat(chat.id)}
                   isActive={chat.id === selectedChatId}
                 >
-                  <span>{chat.title}</span>
+                  <Link href={`/chat/${chat.id}`}>
+                    <span className="">{chat.title}</span>
+                  </Link>
                 </SidebarMenuButton>
               ))}{" "}
           </SidebarMenu>
         </SidebarGroup>
         <SidebarFooter className="justify-end">
-          <Link href="/settings">
-            <div className="text-center bg-accent px-3 py-2 rounded-md">
-              <h1>{session?.user.name}</h1>
+          <Link href={session ? "/settings" : "/login"}>
+            <div className="text-center bg-accent px-4 py-3 rounded-md">
+              {session ? (
+                <h1>{session?.user.name}</h1>
+              ) : (
+                <span className="flex items-center space-x-2">
+                  <LogInIcon size={20} />
+                  <h1 className="font-medium">Login</h1>
+                </span>
+              )}
             </div>
           </Link>
         </SidebarFooter>
@@ -227,27 +319,32 @@ function ChatSidebar({
 
 function AIPage({
   currentChatId,
+  setCurrentChatId,
   currentMessages,
   setCurrentMessages,
   modelValue,
   chats,
+  router,
 }: {
   currentChatId: string | null;
+  setCurrentChatId: React.Dispatch<React.SetStateAction<string | null>>;
   currentMessages: MessageType[];
   setCurrentMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
   modelValue: string;
   chats: ChatType[];
+  router: any; // Use the router type from useRouter
 }) {
-  const [selectedModel, setSelectedModel] = useState("ollama"); // default model
+  const [selectedModel, setSelectedModel] = useState(""); // default model
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
   const streamIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const streamContentRef = useRef("");
   const [isLoading, setIsLoading] = useState(false); // For streaming indicator
-
+  const [chatTitle, setChatTitle] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
   const [open, setOpen] = useState(false);
+  const [chatList, setChatList] = useState([]);
   const [value, setValue] = useState("");
   const handleSend = () => {
     if (inputValue.trim()) {
@@ -298,8 +395,7 @@ function AIPage({
   ) => {
     try {
       if (!currentChatId) {
-        toast.error("Please select or create a chat first.");
-        return;
+        toast.error("No chat id found");
       }
 
       if (!session) {
@@ -373,7 +469,7 @@ function AIPage({
     },
     onFinish: async (message) => {
       // Store the AI's response
-      const stored = await storeMessage(message, currentChatId as string);
+      const stored = await storeMessage(message, chatId as string);
       if (!stored) {
         toast.error(
           "AI response was not saved. The chat history may be incomplete."
@@ -383,34 +479,76 @@ function AIPage({
   });
 
   // Wrap the handleSubmit to store user messages
+
+  let chatId = currentChatId;
   const handleSubmit = async (e?: React.FormEvent) => {
-    if (!currentChatId) {
-      toast.error("Please select or create a chat first.");
+    if (!session) {
+      toast.error("Please login first");
       return;
     }
+    const chatTitle = input.slice(0, 30) + (input.length > 30 ? "..." : "");
+    setChatTitle(chatTitle);
+    try {
+      // If no chat is selected, create a new one with the message as title
+      if (!chatId) {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
+          { title: chatTitle },
+          { withCredentials: true }
+        );
 
-    // Store the user message before sending to AI
-    const userMessage = {
-      content: input,
-      role: "user" as const,
-      id: Date.now().toString(),
-    };
+        if (!response.data.success) {
+          throw new Error("Failed to create new chat");
+        }
 
-    const stored = await storeMessage(userMessage, currentChatId);
-    if (!stored) {
-      toast.error(
-        "Failed to save your message. The chat history may be incomplete."
-      );
-      return; // Don't proceed if we couldn't store the user message
+        // Get the new chat ID from the response
+        const chatsResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
+          { withCredentials: true }
+        );
+
+        if (
+          chatsResponse.data.success &&
+          Array.isArray(chatsResponse.data.result)
+        ) {
+          // Find the newly created chat (it will be the most recent one)
+          const newChat =
+            chatsResponse.data.result[chatsResponse.data.result.length - 1];
+          chatId = newChat.id;
+          setCurrentChatId(chatId);
+          router.push(`/chat/${chatId}`);
+        } else {
+          throw new Error("Failed to get new chat ID");
+        }
+      }
+
+      // Store the user message with the new or existing chat ID
+      const userMessage = {
+        content: input,
+        role: "user" as const,
+        id: Date.now().toString(),
+      };
+
+      const stored = await storeMessage(userMessage, chatId as string);
+      if (!stored) {
+        toast.error("Failed to save your message");
+        return;
+      }
+      originalHandleSubmit(e);
+      // Now proceed with the original submit
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      toast.error("Failed to process your message");
     }
-
-    // Now proceed with the original submit
-    originalHandleSubmit(e);
   };
   const models = [
     {
       value: "gemini",
       label: "gemini 2.0 flash",
+    },
+    {
+      value: "mistral-saba-24b",
+      label: "Mistral saba",
     },
     {
       value: "ollama",
@@ -419,9 +557,17 @@ function AIPage({
   ];
   return (
     <main className="flex h-screen flex-col overflow-hidden">
-      <header className="bg-background z-10 flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger className="-ml-1" />
-        <div className="text-foreground">{currentChatId}</div>
+      <header className="bg-background z-10 justify-between flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
+        <SidebarTrigger className="-ml-1"></SidebarTrigger>
+        <div className="flex flex-row gap-2 items-center">
+          <Link href="/settings">
+            <Button variant={"outline"}>
+              <Settings2></Settings2>
+            </Button>
+          </Link>
+          <ModeToggle></ModeToggle>
+        </div>
+        {/* <div className="text-foreground">{currentChatId}</div> */}
       </header>
       <div className="grid  max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto p-4">
         <div className=" overflow-y-auto  space-y-4 pb-4">
@@ -520,7 +666,7 @@ function AIPage({
           )}
         </div>
       </div> */}
-        <div className="p-2 max-w-(--breakpoint-md) rounded-xl bg-accent">
+        <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
           <PromptInput
             value={input}
             onSubmit={handleSubmit}
@@ -629,6 +775,115 @@ function AIPage({
   );
 }
 
+function NewChatPage() {
+  const [input, setInput] = useState("");
+  const [isCommandBoxOpen, setIsCommandBoxOpen] = useState(true);
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+  const { refreshChats } = useChatContext();
+
+  useHotkeys("ctrl+o", (event) => {
+    event.preventDefault(); // Prevent default browser behavior
+    router.replace("/");
+    toast.success("CTRL+O pressed");
+  });
+
+  useHotkeys("ctrl+b", (event) => {
+    const { toggleSidebar } = useSidebar();
+    event.preventDefault(); // Prevent default browser behavior
+    toggleSidebar();
+    toast.success("CTRL+B pressed");
+  });
+
+  useHotkeys("ctrl+q", (event) => {
+    event.preventDefault(); // Prevent default browser behavior
+    setIsCommandBoxOpen(true); // Open the Commandbox
+    toast.success("CTRL+K pressed! Opening command box...");
+    toast.success(isCommandBoxOpen);
+  });
+
+  const closeCommandBox = () => {
+    setIsCommandBoxOpen(false); // Close the Commandbox
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    if (!session) {
+      toast.error("Please login first");
+      return;
+    }
+
+    try {
+      // Create new chat with initial message
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
+        {
+          title: input.slice(0, 30) + (input.length > 30 ? "..." : ""),
+          initialMessage: input,
+        },
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        const newChatId = response.data.chatId;
+        // Store both the initial prompt and chatId
+        sessionStorage.setItem("initialPrompt", input);
+        sessionStorage.setItem("newChatId", newChatId);
+        // Refresh the chat list
+        await refreshChats();
+        // Redirect to the new chat
+        router.push(`/chat/${newChatId}`);
+      }
+    } catch (error) {
+      console.error("Error creating new chat:", error);
+      toast.error("Failed to create new chat");
+    }
+  };
+
+  return (
+    <main className="flex h-screen flex-col overflow-hidden">
+      {!isCommandBoxOpen && <Commandbox onClose={closeCommandBox} />}
+      <div className="grid max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto p-4">
+        <div className="overflow-y-auto space-y-4 pb-4">
+          <ChatContainerRoot className="flex-1">
+            <ChatContainerContent className="space-y-4 p-4">
+              <div className="text-center text-muted-foreground mt-8">
+                Start a new chat by typing your message below
+              </div>
+            </ChatContainerContent>
+          </ChatContainerRoot>
+        </div>
+        <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
+          <PromptInput
+            value={input}
+            onSubmit={handleSubmit}
+            className="w-full max-w-(--breakpoint-md)"
+          >
+            <PromptInputTextarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message to start a new chat..."
+            />
+            <PromptInputActions className="justify-end pt-2">
+              <PromptInputAction tooltip="Send message">
+                <Button
+                  variant="default"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
+                  onClick={handleSubmit}
+                >
+                  <ArrowUp className="size-5" />
+                </Button>
+              </PromptInputAction>
+            </PromptInputActions>
+          </PromptInput>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 function FullChatApp() {
   const [chats, setChats] = useState<ChatType[]>([]);
   const [loadingChats, setLoadingChats] = useState(true);
@@ -636,6 +891,7 @@ function FullChatApp() {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [currentMessages, setCurrentMessages] = useState<MessageType[]>([]);
   const [modelValue, setModelValue] = useState<string>("llama3.2"); // Default model
+  const router = useRouter();
 
   // Fetch all chats when component mounts
   const fetchChats = async () => {
@@ -684,6 +940,7 @@ function FullChatApp() {
         }));
         setCurrentMessages(transformedMessages);
         console.log("Loaded messages:", transformedMessages);
+        router.push(`/chat/${id}`);
       } else {
         toast.error("Failed to load chat messages");
         setCurrentMessages([]);
@@ -708,10 +965,12 @@ function FullChatApp() {
       <SidebarInset>
         <AIPage
           currentChatId={currentChatId}
+          setCurrentChatId={setCurrentChatId}
           currentMessages={currentMessages}
           setCurrentMessages={setCurrentMessages}
           modelValue={modelValue}
           chats={chats}
+          router={router}
         />
       </SidebarInset>
     </SidebarProvider>
