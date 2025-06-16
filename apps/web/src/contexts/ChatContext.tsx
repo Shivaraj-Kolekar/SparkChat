@@ -38,11 +38,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Refresh chats every 2 seconds if there's a new chat
+  // useEffect(() => {
+  //   const interval = setInterval(refreshChats, 2000);
+  //   return () => clearInterval(interval);
+  // }, []);
   useEffect(() => {
-    const interval = setInterval(refreshChats, 2000);
-    return () => clearInterval(interval);
+    refreshChats();
   }, []);
-
   return (
     <ChatContext.Provider
       value={{ chats, loadingChats, errorChats, refreshChats }}

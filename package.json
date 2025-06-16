@@ -1,5 +1,5 @@
 {
-  "name": "o-chat",
+  "name": "SparkChat",
   "private": true,
   "workspaces": [
     "apps/*",

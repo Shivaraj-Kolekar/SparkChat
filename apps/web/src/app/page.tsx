@@ -11,7 +11,9 @@ import {
   ChevronsUpDown,
   Copy,
   CreditCard,
+  Eye,
   Globe,
+  Languages,
   ListRestart,
   LogInIcon,
   PlusIcon,
@@ -20,7 +22,9 @@ import {
   Settings,
   Settings2,
   Smile,
+  Text,
   User,
+  X,
 } from "lucide-react";
 import { useRef, useEffect } from "react";
 import {
@@ -63,6 +67,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
@@ -103,6 +108,7 @@ import Image from "next/image";
 import HotkeyDemo from "@/components/HotkeyDemo";
 import { useHotkeys } from "react-hotkeys-hook";
 import { CommandSeparator } from "cmdk";
+import { Badge } from "@/components/ui/badge";
 
 // Define the props type
 interface CommandboxProps {
@@ -154,6 +160,7 @@ const Commandbox: React.FC<CommandboxProps> = ({ onClose }) => {
 
 function ChatSidebar({
   onSelectChat,
+  onDeleteChat,
   chats,
   loadingChats,
   errorChats,
@@ -196,7 +203,7 @@ function ChatSidebar({
 
   useEffect(() => {
     fetchChats();
-  }, [chatList]);
+  }, []);
 
   const { data: session } = authClient.useSession();
 
@@ -282,20 +289,72 @@ function ChatSidebar({
           </Link>
         </div>
         <SidebarGroup className="h-full">
-          <SidebarMenu className="px-2 ">
+          <SidebarMenu className="px-2">
             {Array.isArray(chatList) &&
               chatList.map((chat) => (
                 <SidebarMenuButton
                   key={chat.id}
-                  className="text-base whitespace-nowrap  my-0.5 px-2 py-3 "
+                  className="text-base my-0.5 px-2 py-3 relative group" // Add 'group' class here
                   onClick={() => onSelectChat(chat.id)}
                   isActive={chat.id === selectedChatId}
                 >
-                  <Link href={`/chat/${chat.id}`}>
-                    <span className="">{chat.title}</span>
+                  {/* Title Container with Blur Effect */}
+                  <Link
+                    href={`/chat/${chat.id}`}
+                    // Prevent Link's default behavior from interfering with button click
+                    onClick={(e) => {
+                      e.stopPropagation(); // Stop propagation for the button click
+                      onSelectChat(chat.id); // Ensure chat selection happens
+                    }}
+                    className="absolute inset-0 flex items-center pr-10" // pr-10 to make space for the delete button
+                    // This div wraps the span to apply the gradient and ensure overflow properties work
+                  >
+                    <div
+                      className="relative flex-grow min-w-0" // min-w-0 to allow flex item to shrink
+                    >
+                      {/* <span
+                        className="block whitespace-nowrap overflow-hidden pr-8" // pr-8 for gradient space
+                        style={{
+                          // Apply linear-gradient for the blur effect
+                          // Make sure the background of the parent (Link) is set, e.g., white or matching your theme
+                          maskImage:
+                            "linear-gradient(to right, black 85%, transparent 100%)",
+                          WebkitMaskImage:
+                            "linear-gradient(to right, black 85%, transparent 100%)",
+                        }}
+                      >
+                        {chat.title}
+                      </span>
+                      Optional: if you want a classic ellipsis, use this instead of maskImage */}
+                      <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
+                        {chat.title}
+                      </span>
+                    </div>
                   </Link>
+
+                  {/* Delete Button */}
+                  <div
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
+                      chat.id === selectedChatId ? "block" : "" // Keep delete button visible if active (optional)
+                    }`}
+                  >
+                    <Button
+                      variant="outline" // Use a ghost variant for a subtle look
+                      size="icon" // Make it a small, icon-only button
+                      className="h-8 w-8 text-gray-500 hover:text-red-500" // Adjust size and color
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent onSelectChat from firing
+                        onDeleteChat(chat.id); // Call the actual delete function
+                        toast.success("Chat deleted");
+                      }}
+                    >
+                      <X className="h-4 w-4" /> {/* Adjust icon size */}
+                      <span className="sr-only">Delete Chat</span>{" "}
+                      {/* Accessibility text */}
+                    </Button>
+                  </div>
                 </SidebarMenuButton>
-              ))}{" "}
+              ))}
           </SidebarMenu>
         </SidebarGroup>
         <SidebarFooter className="justify-end">
@@ -334,7 +393,15 @@ function AIPage({
   chats: ChatType[];
   router: any; // Use the router type from useRouter
 }) {
-  const [selectedModel, setSelectedModel] = useState(""); // default model
+  const { refreshChats } = useChatContext();
+  const [selectedModel, setSelectedModel] = useState(() => {
+    const savedModel = localStorage.getItem("selectedModel");
+    return savedModel || "gemini-2.0-flash"; // default model if none saved
+  });
+
+  useEffect(() => {
+    localStorage.setItem("selectedModel", selectedModel);
+  }, [selectedModel]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
   const streamIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -466,6 +533,7 @@ function AIPage({
     })),
     body: {
       model: selectedModel,
+      searchEnabled: searchEnabled,
     },
     onFinish: async (message) => {
       // Store the AI's response
@@ -496,7 +564,7 @@ function AIPage({
           { title: chatTitle },
           { withCredentials: true }
         );
-
+        await refreshChats();
         if (!response.data.success) {
           throw new Error("Failed to create new chat");
         }
@@ -543,16 +611,163 @@ function AIPage({
   };
   const models = [
     {
-      value: "gemini",
-      label: "gemini 2.0 flash",
+      label: "Llama 4 Scout",
+      value: "meta-llama/llama-4-scout-17b-16e-instruct",
+      svg: {
+        path: "M27.651 112.136c0 9.775 2.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808-1.79 26.52-19.372 10.185-14.092 22.186-33.874 30.26-46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651.988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.99 3.597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.49 6.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.775 2.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
+        title: "Meta",
+        viewbox: "0 0 256 171 ",
+      },
+      description:
+        "Llama 4 Scout is a versatile multimodal model from Meta, capable of understanding and generating content from text and images. It excels in tasks requiring both visual and textual comprehension, and supports a wide range of languages, making it ideal for diverse global applications.",
+      usecase: {
+        Text: {
+          icon: <Text size={16} />,
+          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
+        },
+        Vision: {
+          icon: <Eye size={16}></Eye>,
+          color: "bg-green-100 text-green-800",
+        },
+        Multilingual: {
+          icon: <Languages size={16} />,
+          color: "bg-purple-100 text-purple-800",
+        },
+      },
     },
     {
-      value: "mistral-saba-24b",
-      label: "Mistral saba",
+      value: "llama3-8b-8192",
+      label: "Llama 3",
+      svg: {
+        path: "M27.651 112.136c0 9.775 2.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808-1.79 26.52-19.372 10.185-14.092 22.186-33.874 30.26-46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651.988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.99 3.597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.49 6.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.775 2.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
+        title: "Meta",
+        viewbox: "0 0 256 171 ",
+      },
+
+      usecase: {
+        Text: {
+          icon: <Text size={16} />,
+          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
+        },
+
+        Multilingual: {
+          icon: <Languages size={16} />,
+          color: "bg-purple-100 text-purple-800",
+        },
+      },
     },
     {
-      value: "ollama",
-      label: "ollama llama3.2",
+      value: "llama-3.1-8b-instant",
+      label: "Llama 3.1",
+      svg: {
+        path: "M27.651 112.136c0 9.775 2.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808-1.79 26.52-19.372 10.185-14.092 22.186-33.874 30.26-46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651.988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.99 3.597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.49 6.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.775 2.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
+        title: "Meta",
+        viewbox: "0 0 256 171 ",
+      },
+      usecase: {
+        Text: {
+          icon: <Text size={16} />,
+          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
+        },
+
+        Multilingual: {
+          icon: <Languages size={16} />,
+          color: "bg-purple-100 text-purple-800",
+        },
+      },
+    },
+    {
+      value: "gemini-2.0-flash",
+      label: "Gemini 2.0 Flash",
+      svg: {
+        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+        title: "Gemini",
+        viewbox: "0 0 16 16",
+      },
+      usecase: {
+        Text: {
+          icon: <Text size={16} />,
+          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
+        },
+        Vision: {
+          icon: <Eye size={16}></Eye>,
+          color: "bg-green-100 text-green-800",
+        },
+        Multilingual: {
+          icon: <Languages size={16} />,
+          color: "bg-purple-100 text-purple-800",
+        },
+      },
+    },
+
+    {
+      value: "gemini-2.0-flash-lite",
+      label: "Gemini 2.0 Flash Lite",
+      svg: {
+        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+        title: "Gemini",
+        viewbox: "0 0 16 16",
+      },
+      usecase: {
+        Text: {
+          icon: <Text size={16} />,
+          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
+        },
+        Vision: {
+          icon: <Eye size={16}></Eye>,
+          color: "bg-green-100 text-green-800",
+        },
+        Multilingual: {
+          icon: <Languages size={16} />,
+          color: "bg-purple-100 text-purple-800",
+        },
+      },
+    },
+    {
+      value: "gemini-2.5-flash-preview-04-17",
+      label: "Gemini 2.5 Flash",
+      svg: {
+        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+        title: "Gemini",
+        viewbox: "0 0 16 16",
+      },
+      usecase: {
+        Text: {
+          icon: <Text size={16} />,
+          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
+        },
+        Vision: {
+          icon: <Eye size={16}></Eye>,
+          color: "bg-green-100 text-green-800",
+        },
+        Multilingual: {
+          icon: <Languages size={16} />,
+          color: "bg-purple-100 text-purple-800",
+        },
+      },
+    },
+    {
+      value: "qwen-qwq-32b",
+      label: "Qwen QwQ",
+      svg: {
+        path: "M12.604 1.34c.393.69.784 1.382 1.174 2.075a.18.18 0 00.157.091h5.552c.174 0 .322.11.446.327l1.454 2.57c.19.337.24.478.024.837-.26.43-.513.864-.76 1.3l-.367.658c-.106.196-.223.28-.04.512l2.652 4.637c.172.301.111.494-.043.77-.437.785-.882 1.564-1.335 2.34-.159.272-.352.375-.68.37-.777-.016-1.552-.01-2.327.016a.099.099 0 00-.081.05 575.097 575.097 0 01-2.705 4.74c-.169.293-.38.363-.725.364-.997.003-2.002.004-3.017.002a.537.537 0 01-.465-.271l-1.335-2.323a.09.09 0 00-.083-.049H4.982c-.285.03-.553-.001-.805-.092l-1.603-2.77a.543.543 0 01-.002-.54l1.207-2.12a.198.198 0 000-.197 550.951 550.951 0 01-1.875-3.272l-.79-1.395c-.16-.31-.173-.496.095-.965.465-.813.927-1.625 1.387-2.436.132-.234.304-.334.584-.335a338.3 338.3 0 012.589-.001.124.124 0 00.107-.063l2.806-4.895a.488.488 0 01.422-.246c.524-.001 1.053 0 1.583-.006L11.704 1c.341-.003.724.032.9.34zm-3.432.403a.06.06 0 00-.052.03L6.254 6.788a.157.157 0 01-.135.078H3.253c-.056 0-.07.025-.041.074l5.81 10.156c.025.042.013.062-.034.063l-2.795.015a.218.218 0 00-.2.116l-1.32 2.31c-.044.078-.021.118.068.118l5.716.008c.046 0 .08.02.104.061l1.403 2.454c.046.081.092.082.139 0l5.006-8.76.783-1.382a.055.055 0 01.096 0l1.424 2.53a.122.122 0 00.107.062l2.763-.02a.04.04 0 00.035-.02.041.041 0 000-.04l-2.9-5.086a.108.108 0 010-.113l.293-.507 1.12-1.977c.024-.041.012-.062-.035-.062H9.2c-.059 0-.073-.026-.043-.077l1.434-2.505a.107.107 0 000-.114L9.225 1.774a.06.06 0 00-.053-.031zm6.29 8.02c.046 0 .058.02.034.06l-.832 1.465-2.613 4.585a.056.056 0 01-.05.029.058.058 0 01-.05-.029L8.498 9.841c-.02-.034-.01-.052.028-.054l.216-.012 6.722-.012z",
+        title: "Qwen",
+        viewbox: "0 0 24 24 ",
+      },
+      usecase: {
+        Text: {
+          icon: <Text size={16} />,
+          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
+        },
+        Vision: {
+          icon: <Eye size={16}></Eye>,
+          color: "bg-green-100 text-green-800",
+        },
+        Multilingual: {
+          icon: <Languages size={16} />,
+          color: "bg-purple-100 text-purple-800",
+        },
+      },
     },
   ];
   return (
@@ -617,7 +832,10 @@ function AIPage({
                           </MessageActions>
                         </div>
                       ) : (
-                        <MessageContent className="bg-primary text-primary-foreground">
+                        <MessageContent
+                          markdown
+                          className="bg-primary text-primary-foreground"
+                        >
                           {message.content}
                         </MessageContent>
                       )}
@@ -688,14 +906,12 @@ function AIPage({
                         className="w-[200px] justify-between"
                       >
                         {value
-                          ? models.find(
-                              (framework) => framework.value === value
-                            )?.label
-                          : "Select framework..."}
+                          ? models.find((model) => model.value === value)?.label
+                          : "Select Model"}
                         <ChevronsUpDown className="opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0">
+                    <PopoverContent className="w-[360px]  p-0">
                       <Command>
                         <CommandInput
                           placeholder="Search framework..."
@@ -716,7 +932,20 @@ function AIPage({
                                   setSelectedModel(currentValue);
                                 }}
                               >
+                                {" "}
+                                <svg
+                                  className="size-4 text-color-heading"
+                                  viewBox={model.svg.viewbox}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="currentColor"
+                                >
+                                  <title>{model.svg?.title}</title>
+                                  <path d={model.svg?.path}></path>
+                                </svg>
                                 {model.label}
+                                {/* <Badge className={model.usecase.Text.color}>
+                                  {model.usecase.Multilingual.icon}
+                                </Badge> */}
                                 <Check
                                   className={cn(
                                     "ml-auto",
@@ -740,9 +969,19 @@ function AIPage({
                 >
                   <Button
                     onClick={() => {
-                      setSearchEnabled(true);
+                      setSearchEnabled((prevSearchEnabled) => {
+                        const newState = !prevSearchEnabled;
+                        if (newState) {
+                          toast.success("Web search enabled");
+                        } else {
+                          toast.info("Web search disabled");
+                        }
+                        return newState;
+                      });
                     }}
-                    variant={"outline"}
+                    variant={
+                      searchEnabled === true ? "destructive" : "secondary"
+                    }
                   >
                     <Globe></Globe>Search
                   </Button>
@@ -775,114 +1014,114 @@ function AIPage({
   );
 }
 
-function NewChatPage() {
-  const [input, setInput] = useState("");
-  const [isCommandBoxOpen, setIsCommandBoxOpen] = useState(true);
-  const router = useRouter();
-  const { data: session } = authClient.useSession();
-  const { refreshChats } = useChatContext();
+// function NewChatPage() {
+//   const [input, setInput] = useState("");
+//   const [isCommandBoxOpen, setIsCommandBoxOpen] = useState(true);
+//   const router = useRouter();
+//   const { data: session } = authClient.useSession();
+//   const { refreshChats } = useChatContext();
 
-  useHotkeys("ctrl+o", (event) => {
-    event.preventDefault(); // Prevent default browser behavior
-    router.replace("/");
-    toast.success("CTRL+O pressed");
-  });
+//   useHotkeys("ctrl+o", (event) => {
+//     event.preventDefault(); // Prevent default browser behavior
+//     router.replace("/");
+//     toast.success("CTRL+O pressed");
+//   });
 
-  useHotkeys("ctrl+b", (event) => {
-    const { toggleSidebar } = useSidebar();
-    event.preventDefault(); // Prevent default browser behavior
-    toggleSidebar();
-    toast.success("CTRL+B pressed");
-  });
+//   useHotkeys("ctrl+b", (event) => {
+//     const { toggleSidebar } = useSidebar();
+//     event.preventDefault(); // Prevent default browser behavior
+//     toggleSidebar();
+//     toast.success("CTRL+B pressed");
+//   });
 
-  useHotkeys("ctrl+q", (event) => {
-    event.preventDefault(); // Prevent default browser behavior
-    setIsCommandBoxOpen(true); // Open the Commandbox
-    toast.success("CTRL+K pressed! Opening command box...");
-    toast.success(isCommandBoxOpen);
-  });
+//   useHotkeys("ctrl+q", (event) => {
+//     event.preventDefault(); // Prevent default browser behavior
+//     setIsCommandBoxOpen(true); // Open the Commandbox
+//     toast.success("CTRL+K pressed! Opening command box...");
+//     toast.success(isCommandBoxOpen);
+//   });
 
-  const closeCommandBox = () => {
-    setIsCommandBoxOpen(false); // Close the Commandbox
-  };
+//   const closeCommandBox = () => {
+//     setIsCommandBoxOpen(false); // Close the Commandbox
+//   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+//   const handleSubmit = async (e?: React.FormEvent) => {
+//     e?.preventDefault();
 
-    if (!session) {
-      toast.error("Please login first");
-      return;
-    }
+//     if (!session) {
+//       toast.error("Please login first");
+//       return;
+//     }
 
-    try {
-      // Create new chat with initial message
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
-        {
-          title: input.slice(0, 30) + (input.length > 30 ? "..." : ""),
-          initialMessage: input,
-        },
-        { withCredentials: true }
-      );
+//     try {
+//       // Create new chat with initial message
+//       const response = await axios.post(
+//         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
+//         {
+//           title: input.slice(0, 30) + (input.length > 30 ? "..." : ""),
+//           initialMessage: input,
+//         },
+//         { withCredentials: true }
+//       );
 
-      if (response.data.success) {
-        const newChatId = response.data.chatId;
-        // Store both the initial prompt and chatId
-        sessionStorage.setItem("initialPrompt", input);
-        sessionStorage.setItem("newChatId", newChatId);
-        // Refresh the chat list
-        await refreshChats();
-        // Redirect to the new chat
-        router.push(`/chat/${newChatId}`);
-      }
-    } catch (error) {
-      console.error("Error creating new chat:", error);
-      toast.error("Failed to create new chat");
-    }
-  };
+//       if (response.data.success) {
+//         const newChatId = response.data.chatId;
+//         // Store both the initial prompt and chatId
+//         sessionStorage.setItem("initialPrompt", input);
+//         sessionStorage.setItem("newChatId", newChatId);
+//         // Refresh the chat list
+//         await refreshChats();
+//         // Redirect to the new chat
+//         router.push(`/chat/${newChatId}`);
+//       }
+//     } catch (error) {
+//       console.error("Error creating new chat:", error);
+//       toast.error("Failed to create new chat");
+//     }
+//   };
 
-  return (
-    <main className="flex h-screen flex-col overflow-hidden">
-      {!isCommandBoxOpen && <Commandbox onClose={closeCommandBox} />}
-      <div className="grid max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto p-4">
-        <div className="overflow-y-auto space-y-4 pb-4">
-          <ChatContainerRoot className="flex-1">
-            <ChatContainerContent className="space-y-4 p-4">
-              <div className="text-center text-muted-foreground mt-8">
-                Start a new chat by typing your message below
-              </div>
-            </ChatContainerContent>
-          </ChatContainerRoot>
-        </div>
-        <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
-          <PromptInput
-            value={input}
-            onSubmit={handleSubmit}
-            className="w-full max-w-(--breakpoint-md)"
-          >
-            <PromptInputTextarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your message to start a new chat..."
-            />
-            <PromptInputActions className="justify-end pt-2">
-              <PromptInputAction tooltip="Send message">
-                <Button
-                  variant="default"
-                  size="icon"
-                  className="h-8 w-8 rounded-full"
-                  onClick={handleSubmit}
-                >
-                  <ArrowUp className="size-5" />
-                </Button>
-              </PromptInputAction>
-            </PromptInputActions>
-          </PromptInput>
-        </div>
-      </div>
-    </main>
-  );
-}
+//   return (
+//     <main className="flex h-screen flex-col overflow-hidden">
+//       {!isCommandBoxOpen && <Commandbox onClose={closeCommandBox} />}
+//       <div className="grid max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto p-4">
+//         <div className="overflow-y-auto space-y-4 pb-4">
+//           <ChatContainerRoot className="flex-1">
+//             <ChatContainerContent className="space-y-4 p-4">
+//               <div className="text-center text-muted-foreground mt-8">
+//                 Start a new chat by typing your message below
+//               </div>
+//             </ChatContainerContent>
+//           </ChatContainerRoot>
+//         </div>
+//         <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
+//           <PromptInput
+//             value={input}
+//             onSubmit={handleSubmit}
+//             className="w-full max-w-(--breakpoint-md)"
+//           >
+//             <PromptInputTextarea
+//               value={input}
+//               onChange={(e) => setInput(e.target.value)}
+//               placeholder="Type your message to start a new chat..."
+//             />
+//             <PromptInputActions className="justify-end pt-2">
+//               <PromptInputAction tooltip="Send message">
+//                 <Button
+//                   variant="default"
+//                   size="icon"
+//                   className="h-8 w-8 rounded-full"
+//                   onClick={handleSubmit}
+//                 >
+//                   <ArrowUp className="size-5" />
+//                 </Button>
+//               </PromptInputAction>
+//             </PromptInputActions>
+//           </PromptInput>
+//         </div>
+//       </div>
+//     </main>
+//   );
+// }
 
 function FullChatApp() {
   const [chats, setChats] = useState<ChatType[]>([]);
@@ -893,30 +1132,9 @@ function FullChatApp() {
   const [modelValue, setModelValue] = useState<string>("llama3.2"); // Default model
   const router = useRouter();
 
-  // Fetch all chats when component mounts
-  const fetchChats = async () => {
-    try {
-      setLoadingChats(true);
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
-        {
-          withCredentials: true,
-        }
-      );
-      if (response.data.success && Array.isArray(response.data.result)) {
-        setChats(response.data.result);
-        console.log("Fetched chats:", response.data.result);
-      }
-    } catch (error) {
-      console.error("Error fetching chats:", error);
-      setErrorChats("Failed to load chats");
-    } finally {
-      setLoadingChats(false);
-    }
-  };
-
+  // Rely on useChatContext for chat data instead of fetching directly
   useEffect(() => {
-    fetchChats();
+    // No need to fetch chats directly; useChatContext provides the data
   }, []);
 
   // Handle chat selection

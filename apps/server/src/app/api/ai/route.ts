@@ -1,28 +1,24 @@
 import { db } from '@/db'
-import { google } from '@ai-sdk/google'
 import { streamText } from 'ai'
-import { ollama } from 'ollama-ai-provider'
+import { groq } from '@ai-sdk/groq'
 import { messages } from '@/db/schema/auth'
-
+import { google } from '@ai-sdk/google'
 export const maxDuration = 30
 
 export async function POST (req: Request) {
-  const { messages, model = 'gemini' } = await req.json()
-
+  const { messages, model, searchEnabled } = await req.json()
   let aiModel
-  if (model === 'gemini') {
-    aiModel = google('gemini-2.0-flash', {
-      useSearchGrounding: false
+  if (
+    model === 'gemini-2.0-flash' ||
+    model === 'gemini-2.5-flash-preview-04-17' ||
+    model === 'gemini-2.0-flash-lite'
+  ) {
+    aiModel = google(model, {
+      useSearchGrounding: searchEnabled
     })
-  } else if (model === 'ollama') {
-    aiModel = ollama('llama3.2') // or any other Ollama model you prefer
   } else {
-    // Default to Gemini
-    aiModel = google('gemini-2.0-flash', {
-      useSearchGrounding: false
-    })
+    aiModel = groq(model) // Using Qwen model from Groq
   }
-
   const result = streamText({
     model: aiModel,
     system:

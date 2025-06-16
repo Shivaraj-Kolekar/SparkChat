@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "o-chat",
-  description: "o-chat",
+  title: "SparkChat",
+  description: "SparkChat",
 };
 
 export default function RootLayout({
