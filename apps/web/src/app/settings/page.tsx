@@ -119,6 +119,9 @@ export default function Settings() {
   const [description, setdescription] = useState("");
   const [traits, settraits] = useState("");
   const [profession, setprofession] = useState("");
+  const [remaining, setRemaining] = useState<number>(10);
+  const [resetAt, setResetAt] = useState<string>("");
+  const [loadingUsage, setLoadingUsage] = useState<boolean>(true);
   const models = [
     {
       label: "Llama 4 Scout",
@@ -235,7 +238,7 @@ export default function Settings() {
     },
     Reasoning: {
       icon: <Brain size={16} />,
-      color: "bg-teal-100 text-teal-800",
+      color: "bg-fuchsia-100  text-fuchsia-800 ",
     },
   };
 
@@ -246,6 +249,31 @@ export default function Settings() {
     // Load saved settings here
     // loadSettings();
   }, [session, isPending]);
+
+  useEffect(() => {
+    async function fetchUsage() {
+      try {
+        setLoadingUsage(true);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/ai`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setRemaining(data.remaining);
+          setResetAt(data.resetAt);
+        }
+      } catch (e) {
+        // Optionally handle error
+      } finally {
+        setLoadingUsage(false);
+      }
+    }
+    fetchUsage();
+  }, []);
 
   const saveSettings = async () => {
     setIsSaving(true);
@@ -264,7 +292,7 @@ export default function Settings() {
     return <div>Loading...</div>;
   }
   return (
-    <div className=" justify-center flex flex-col px-40 py-10">
+    <div className=" justify-center flex flex-col px-4 py-8 md:px-12 md:py-10 lg:px-40 p-auto lg:py-10">
       <Header></Header>
       <div className="flex   justify-between items-center mb-8">
         <div>
@@ -287,7 +315,7 @@ export default function Settings() {
 
       <div className="flex flex-col md:flex-row gap-3 space-y-6">
         {/* Model Settings */}
-        <div className="flex justify-start items-start space-y-1 flex-col">
+        <div className="flex md:justify-start items-start space-y-1 flex-col">
           <Image
             className="rounded-full "
             src={session?.user.image ? session?.user.image : "/sparkchat.png"}
@@ -316,6 +344,39 @@ export default function Settings() {
           >
             Sign Out
           </Button>
+          <Card className=" mt-6 shadow-lg rounded-xl">
+            <CardHeader>
+              <CardTitle>
+                <h2 className="text-lg font-semibold">Keyboard Shortcuts</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span>Search</span>
+                  <span>
+                    <kbd className="kbd-box">Ctrl</kbd>
+                    <kbd className="kbd-box ml-1">K</kbd>
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>New Chat</span>
+                  <span>
+                    <kbd className="kbd-box">Ctrl</kbd>
+                    <kbd className="kbd-box ml-1">Shift</kbd>
+                    <kbd className="kbd-box ml-1">O</kbd>
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Toggle Sidebar</span>
+                  <span>
+                    <kbd className="kbd-box">Ctrl</kbd>
+                    <kbd className="kbd-box ml-1">B</kbd>
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
         <Tabs defaultValue="account" className="w-full">
           <TabsList>
@@ -325,10 +386,57 @@ export default function Settings() {
             <TabsTrigger value="contact-us">Contact us</TabsTrigger>
           </TabsList>
           <TabsContent value="account">
-            Make changes to your account here.
+            <div className="mt-8 border bg-secondary rounded-lg p-6">
+              <h2 className="text-lg font-semibold  mb-2">Danger Zone</h2>
+              <p className="text-destructive mb-4">
+                Deleting your account is irreversible. All your data will be
+                lost.
+              </p>
+              <Button
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => {}}
+              >
+                Delete Account
+              </Button>
+            </div>
+            {/* Message Usage Section */}
+            <Card className="mt-6 shadow-lg rounded-xl">
+              <CardHeader>
+                <CardTitle>
+                  <h2 className="text-lg font-semibold">Message Usage</h2>
+                </CardTitle>
+                <CardDescription>
+                  {loadingUsage
+                    ? "Loading..."
+                    : resetAt
+                    ? `Resets at: ${new Date(resetAt).toLocaleString()}`
+                    : null}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loadingUsage ? (
+                  <div>Loading usage...</div>
+                ) : (
+                  <>
+                    <div className="mb-2 flex justify-between">
+                      <span>Standard</span>
+                      <span>{10 - remaining}/10</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-300 rounded-full mb-2">
+                      <div
+                        className="h-2 bg-pink-600 rounded-full"
+                        style={{ width: `${((10 - remaining) / 10) * 100}%` }}
+                      />
+                    </div>
+                    <div>{remaining} messages remaining</div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
           <TabsContent value="customization">
-            <Card>
+            <Card className="mt-8">
               <CardHeader>
                 <CardTitle>Customize O chat</CardTitle>
               </CardHeader>
@@ -417,186 +525,73 @@ export default function Settings() {
                 </form>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Model Settings</CardTitle>
-                <CardDescription>
-                  Configure your AI model preferences
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Default Model</Label>
-                  <Select value={defaultModel} onValueChange={setDefaultModel}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gemini">Gemini</SelectItem>
-                      <SelectItem value="ollama">Ollama</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Temperature ({temperature})</Label>
-                  <Input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={temperature}
-                    onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Max Tokens</Label>
-                  <Input
-                    type="number"
-                    value={maxTokens}
-                    onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-                  />
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Chat Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Chat Settings</CardTitle>
-                <CardDescription>
-                  Customize your chat experience
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Auto-save Conversations</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Automatically save chat history
-                    </p>
-                  </div>
-                  <Switch checked={autoSave} onCheckedChange={setAutoSave} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Stream Messages</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Show messages as they are being generated
-                    </p>
-                  </div>
-                  <Switch
-                    checked={streamMessages}
-                    onCheckedChange={setStreamMessages}
-                  />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Enable Web Search</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Allow AI to search the web for current information
-                    </p>
-                  </div>
-                  <Switch
-                    checked={enableSearch}
-                    onCheckedChange={setEnableSearch}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Appearance Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Appearance</CardTitle>
-                <CardDescription>Customize the look and feel</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Font Size</Label>
-                  <Select value={fontSize} onValueChange={setFontSize}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="14">Small</SelectItem>
-                      <SelectItem value="16">Medium</SelectItem>
-                      <SelectItem value="18">Large</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Markdown Support</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Enable markdown formatting in messages
-                    </p>
-                  </div>
-                  <Switch
-                    checked={enableMarkdown}
-                    onCheckedChange={setEnableMarkdown}
-                  />
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Label>Chat Bubble Style</Label>
-                  <Select value={bubbleStyle} onValueChange={setBubbleStyle}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="modern">Modern</SelectItem>
-                      <SelectItem value="classic">Classic</SelectItem>
-                      <SelectItem value="minimal">Minimal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>{" "}
-          <TabsContent className="space-y-2" value="models">
-            {models.map((model) => (
-              <Card className="drop-shadow-sm">
-                <CardHeader className="inline-flex gap-3 items-center">
-                  <svg
-                    className="size-12 text-color-heading"
-                    viewBox={model.svg.viewbox}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                  >
-                    <title>{model.svg?.title}</title>
-                    <path d={model.svg?.path}></path>
-                  </svg>
-                  <CardTitle>{model.label}</CardTitle>
-                </CardHeader>
+          <TabsContent className="" value="models">
+            <div className="mt-8 space-y-3">
+              {models.map((model) => (
+                <Card className="drop-shadow-sm">
+                  <CardHeader className="inline-flex gap-3 items-center">
+                    <svg
+                      className="size-12 text-color-heading"
+                      viewBox={model.svg.viewbox}
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                    >
+                      <title>{model.svg?.title}</title>
+                      <path d={model.svg?.path}></path>
+                    </svg>
+                    <CardTitle>{model.label}</CardTitle>
+                  </CardHeader>
 
-                <CardContent>
-                  <p>{model.description}</p>
-                  <div className="space-x-2 my-3 inline-flex">
-                    {model.usecase.map((usecase) => {
-                      const config = useCaseConfig[usecase];
-                      if (!config) return null; // Handle cases where a use case might not have a config
+                  <CardContent>
+                    <p>{model.description}</p>
+                    <div className="space-x-2 my-3 inline-flex">
+                      {model.usecase.map((usecase) => {
+                        const config = useCaseConfig[usecase];
+                        if (!config) return null; // Handle cases where a use case might not have a config
 
-                      return (
-                        <Badge
-                          key={usecase}
-                          className={`flex items-center gap-1 ${config.color}`}
-                        >
-                          {config.icon && (
-                            <span className="h-4 w-4">{config.icon}</span>
-                          )}
-                          {usecase}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                        return (
+                          <Badge
+                            key={usecase}
+                            className={`flex items-center gap-1 ${config.color}`}
+                          >
+                            {config.icon && (
+                              <span className="h-4 w-4">{config.icon}</span>
+                            )}
+                            {usecase}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="contact-us">
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>
+                  {" "}
+                  <h2 className="text-lg font-semibold mb-2">Contact Us</h2>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="">
+                  <p>
+                    Email:{" "}
+                    <a
+                      href="mailto:shivkolekar01@gmail.com"
+                      className="text-blue-600 underline"
+                    >
+                      shivkolekar01@gmail.com
+                    </a>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

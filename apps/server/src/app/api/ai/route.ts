@@ -1,30 +1,146 @@
-import { db } from '@/db'
-import { streamText } from 'ai'
-import { groq } from '@ai-sdk/groq'
-import { messages } from '@/db/schema/auth'
-import { google } from '@ai-sdk/google'
-export const maxDuration = 30
+import { db } from "@/db";
+import { streamText } from "ai";
+import { groq } from "@ai-sdk/groq";
+import { messages } from "@/db/schema/auth";
+import { google } from "@ai-sdk/google";
+import { rateLimit } from "@/db/schema/auth";
+import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 
-export async function POST (req: Request) {
-  const { messages, model, searchEnabled } = await req.json()
-  let aiModel
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  // Get user session
+  const session = await auth.api.getSession(req);
+  if (!session || !session.session?.userId) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const userId = session.session.userId;
+
+  // Check rate limit
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  // Try to find an existing rate limit record for today
+  let [limit] = await db
+    .select()
+    .from(rateLimit)
+    .where(eq(rateLimit.userId, userId))
+    .orderBy(rateLimit.windowStart)
+    .limit(1);
+
+  // If the record exists and is for today, check the count
+  if (limit && limit.windowStart && limit.windowEnd) {
+    const windowStart = new Date(limit.windowStart);
+    const windowEnd = new Date(limit.windowEnd);
+    if (now >= windowStart && now < windowEnd) {
+      if (limit.requestCount >= 10) {
+        // User exceeded limit
+        return new Response(
+          JSON.stringify({
+            error:
+              "Rate limit exceeded. You can send more messages after: " +
+              windowEnd.toLocaleString(),
+          }),
+          { status: 429, headers: { "Content-Type": "application/json" } }
+        );
+      } else {
+        // Increment request count
+        await db
+          .update(rateLimit)
+          .set({ requestCount: limit.requestCount + 1, updatedAt: now })
+          .where(eq(rateLimit.id, limit.id));
+      }
+    } else {
+      // Window expired, reset
+      await db
+        .update(rateLimit)
+        .set({
+          requestCount: 1,
+          windowStart: today,
+          windowEnd: tomorrow,
+          updatedAt: now,
+        })
+        .where(eq(rateLimit.id, limit.id));
+    }
+  } else {
+    // No record, create one
+    await db.insert(rateLimit).values({
+      userId,
+      requestCount: 1,
+      windowStart: today,
+      windowEnd: tomorrow,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  const { messages, model, searchEnabled } = await req.json();
+  let aiModel;
   if (
-    model === 'gemini-2.0-flash' ||
-    model === 'gemini-2.5-flash-preview-04-17' ||
-    model === 'gemini-2.0-flash-lite'
+    model === "gemini-2.0-flash" ||
+    model === "gemini-2.5-flash-preview-04-17" ||
+    model === "gemini-2.0-flash-lite"
   ) {
     aiModel = google(model, {
-      useSearchGrounding: searchEnabled
-    })
+      useSearchGrounding: searchEnabled,
+    });
   } else {
-    aiModel = groq(model) // Using Qwen model from Groq
+    aiModel = groq(model); // Using Qwen model from Groq
   }
   const result = streamText({
     model: aiModel,
     system:
-      'You are a helpful agent. My name is Shivraj and im a web developer and i want the chats to be funny, concise and creative ',
-    messages
-  })
+      "You are a helpful agent. My name is Shivraj and im a web developer and i want the chats to be funny, concise and creative ",
+    messages,
+  });
 
-  return result.toDataStreamResponse()
+  return result.toDataStreamResponse();
+}
+
+export async function GET(req: Request) {
+  // Get user session
+  const session = await auth.api.getSession(req);
+  if (!session || !session.session?.userId) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const userId = session.session.userId;
+  const now = new Date();
+
+  // Try to find an existing rate limit record for today
+  let [limit] = await db
+    .select()
+    .from(rateLimit)
+    .where(eq(rateLimit.userId, userId))
+    .orderBy(rateLimit.windowStart)
+    .limit(1);
+
+  let remaining = 10;
+  let resetAt = null;
+  if (limit && limit.windowStart && limit.windowEnd) {
+    const windowStart = new Date(limit.windowStart);
+    const windowEnd = new Date(limit.windowEnd);
+    if (now >= windowStart && now < windowEnd) {
+      remaining = Math.max(0, 10 - limit.requestCount);
+      resetAt = windowEnd.toISOString();
+    } else {
+      remaining = 10;
+      resetAt = windowEnd.toISOString();
+    }
+  } else {
+    // No record, so full quota
+    remaining = 10;
+    // Set resetAt to next midnight
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    resetAt = tomorrow.toISOString();
+  }
+
+  return new Response(JSON.stringify({ remaining, resetAt }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }

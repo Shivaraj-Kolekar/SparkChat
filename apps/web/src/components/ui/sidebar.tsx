@@ -275,7 +275,7 @@ function SidebarTrigger({
         <PanelLeftIcon />
         <span className="sr-only">Toggle Sidebar</span>
       </Button>
-      <Button
+      {/* <Button
         variant="ghost"
         size="icon"
         className={cn("size-7 rounded-md", className)}
@@ -292,7 +292,7 @@ function SidebarTrigger({
       >
         <Plus />
         <span className="sr-only">Search Sidebar Chats</span>
-      </Button>
+      </Button> */}
     </div>
   );
 }

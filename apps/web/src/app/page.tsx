@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
   ArrowRight,
+  Brain,
   BrainIcon,
   Calculator,
   Calendar,
@@ -12,10 +13,13 @@ import {
   Copy,
   CreditCard,
   Eye,
+  FileText,
   Globe,
   Languages,
   ListRestart,
   LogInIcon,
+  PanelLeftIcon,
+  Plus,
   PlusIcon,
   Search,
   Send,
@@ -25,8 +29,9 @@ import {
   Text,
   User,
   X,
+  Zap,
 } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, type JSX } from "react";
 import {
   PromptInput,
   PromptInputAction,
@@ -35,6 +40,7 @@ import {
 } from "@/components/ui/prompt-input";
 import {
   Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
@@ -93,6 +99,7 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
+  DialogOverlay,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -109,54 +116,11 @@ import HotkeyDemo from "@/components/HotkeyDemo";
 import { useHotkeys } from "react-hotkeys-hook";
 import { CommandSeparator } from "cmdk";
 import { Badge } from "@/components/ui/badge";
-
-// Define the props type
-interface CommandboxProps {
-  onClose: () => void; // Specify the type for onClose
-}
-
-const Commandbox: React.FC<CommandboxProps> = ({ onClose }) => {
-  return (
-    <Command className="rounded-lg border shadow-md md:min-w-[450px]">
-      <CommandInput placeholder="Type a command or search..." />
-      <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Suggestions">
-          <CommandItem>
-            <Calendar />
-            <span>Calendar</span>
-          </CommandItem>
-          <CommandItem>
-            <Smile />
-            <span>Search Emoji</span>
-          </CommandItem>
-          <CommandItem disabled>
-            <Calculator />
-            <span>Calculator</span>
-          </CommandItem>
-        </CommandGroup>
-        <CommandSeparator />
-        <CommandGroup heading="Settings">
-          <CommandItem>
-            <User />
-            <span>Profile</span>
-            <CommandShortcut>⌘P</CommandShortcut>
-          </CommandItem>
-          <CommandItem>
-            <CreditCard />
-            <span>Billing</span>
-            <CommandShortcut>⌘B</CommandShortcut>
-          </CommandItem>
-          <CommandItem>
-            <Settings />
-            <span>Settings</span>
-            <CommandShortcut>⌘S</CommandShortcut>
-          </CommandItem>
-        </CommandGroup>
-      </CommandList>
-    </Command>
-  );
-};
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function ChatSidebar({
   onSelectChat,
@@ -181,7 +145,10 @@ function ChatSidebar({
 
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [title, setTitle] = useState("");
-
+  const [showAdditionalButtons, setShowAdditionalButtons] = useState(false);
+  const [animateSearch, setAnimateSearch] = useState(false);
+  const [animatePlus, setAnimatePlus] = useState(false);
+  const [isCmndDialogOpen, setIsCmndDialogOpen] = useState(false);
   const fetchChats = async () => {
     try {
       const response = await axios.get(
@@ -231,88 +198,246 @@ function ChatSidebar({
       toast.error("Error occurred in chat creation");
     }
   };
+  const { toggleSidebar, state } = useSidebar();
+  useEffect(() => {
+    if (state === "collapsed") {
+      // When closing the sidebar, prepare to show and animate buttons
+      setShowAdditionalButtons(true); // Make them visible (opacity 0 initially)
 
+      // Animate search button after a small delay
+      const searchTimeout = setTimeout(() => {
+        setAnimateSearch(true);
+      }, 50); // Small delay for the search button to start animating
+
+      // Animate plus button after another delay
+      const plusTimeout = setTimeout(() => {
+        setAnimatePlus(true);
+      }, 200); // Delay for plus button to follow search
+
+      return () => {
+        clearTimeout(searchTimeout);
+        clearTimeout(plusTimeout);
+        // Reset states if sidebar opens before animation completes
+        setAnimateSearch(false);
+        setAnimatePlus(false);
+      };
+    } else {
+      // When opening the sidebar, immediately hide and reset animation states
+      setAnimateSearch(false);
+      setAnimatePlus(false);
+      // Give a tiny moment for the opacity/transform to reset before hiding the container
+      const hideTimeout = setTimeout(() => {
+        setShowAdditionalButtons(false);
+        setIsCmndDialogOpen(false);
+      }, 300); // Match this with your longest transition duration
+
+      return () => clearTimeout(hideTimeout);
+    }
+  }, [state]);
+  useHotkeys("ctrl+k", (event) => {
+    event.preventDefault(); //
+    setIsCmndDialogOpen(true);
+    toast.success("CTRL+K pressed");
+  });
+
+  const buttonContainerWidthClass = state === "collapsed" ? "w-28" : "w-7"; // Adjust w-28 as needed for 3 buttons
   return (
-    <Sidebar>
-      <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-4">
-        <div className="flex flex-row items-center  px-2">
-          <Image
-            className="rounded-sm "
-            src="/sparkchat.png"
-            alt="SparkChat"
-            height={48}
-            width={48}
-          />{" "}
-          <div className="text-lg font-base text-primary tracking-tight">
-            <Sparkchat />
-          </div>
-        </div>
-        <Button variant="ghost" className="size-8">
-          <Search className="size-4" />
-        </Button>
-      </SidebarHeader>
-
-      <SidebarContent className="pt-4">
-        <div className="px-4">
-          {/* <Dialog>
-            <DialogTrigger className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2">
-              <Link href="/">
-                <PlusIcon className="size-4" />
-                <span>New Chat</span>
-              </Link>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogTitle>Name the chat</DialogTitle>
-              <Label>Chat title</Label>
-              <Input
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                }}
-                placeholder="Enter chat title"
-                type="text"
-              ></Input>
-              <DialogFooter>
-                <DialogClose className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 has-[>svg]:px-3 dark:bg-input/30 dark:border-input dark:hover:bg-input/50 aria-invalid:border-destructive">
-                  Close
-                </DialogClose>
-                <Button onClick={() => submit(title)}>Submit</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog> */}{" "}
-          <Link
-            className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
-            href="/"
-          >
-            <PlusIcon className="size-4" />
-            <span>New Chat</span>
-          </Link>
-        </div>
-        <SidebarGroup className="h-full">
-          <SidebarMenu className="px-2">
-            {Array.isArray(chatList) &&
-              chatList.map((chat) => (
-                <SidebarMenuButton
-                  key={chat.id}
-                  className="text-base my-0.5 px-2 py-3 relative group" // Add 'group' class here
-                  onClick={() => onSelectChat(chat.id)}
-                  isActive={chat.id === selectedChatId}
-                >
-                  {/* Title Container with Blur Effect */}
-                  <Link
-                    href={`/chat/${chat.id}`}
-                    // Prevent Link's default behavior from interfering with button click
-                    onClick={(e) => {
-                      e.stopPropagation(); // Stop propagation for the button click
-                      onSelectChat(chat.id); // Ensure chat selection happens
-                    }}
-                    className="absolute inset-0 flex items-center pr-10" // pr-10 to make space for the delete button
-                    // This div wraps the span to apply the gradient and ensure overflow properties work
-                  >
-                    <div
-                      className="relative flex-grow min-w-0" // min-w-0 to allow flex item to shrink
+    <div>
+      <div>
+        {" "}
+        <CommandDialog
+          open={isCmndDialogOpen}
+          onOpenChange={setIsCmndDialogOpen}
+        >
+          {/* CommandDialog automatically includes a way to close itself usually */}
+          <Command className="rounded-lg border shadow-md md:min-w-[450px]">
+            <CommandInput placeholder="Search your chats" />
+            <CommandList>
+              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandGroup heading="Recent Chats">
+                {Array.isArray(chatList) &&
+                  chatList.map((chat) => (
+                    <Link
+                      key={chat.id}
+                      href={`/chat/${chat.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Stop propagation for the button click
+                        onSelectChat(chat.id); // Ensure chat selection happens
+                      }}
                     >
-                      {/* <span
+                      <CommandItem
+                        key={chat.id} // Use a unique ID for the key prop
+                        onSelect={() => {
+                          // Handle selection, e.g., navigate to chat or select it
+                          console.log("Selected chat:", chat.title);
+                          setIsCmndDialogOpen(false); // Close dialog on select
+                        }}
+                      >
+                        {chat.title}
+                      </CommandItem>
+                    </Link>
+                  ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </CommandDialog>
+        {state === "collapsed" ? (
+          // When sidebar is closed, show all three buttons with animation
+          <div
+            className={cn(
+              "bg-sidebar mt-4 mb-1 py-1 mx-2 px-1 rounded-sm flex items-center",
+              "overflow-hidden", // Crucial for hiding content as it shrinks
+              "transition-all duration-300 ease-out", // Animation for width
+              buttonContainerWidthClass
+            )}
+          >
+            {showAdditionalButtons && (
+              <Button
+                data-sidebar="trigger"
+                data-slot="sidebar-trigger"
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "size-7 rounded-md",
+                  "transition-all duration-300 ease-out", // Base transition
+                  animateSearch
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 -translate-x-full" // Animation classes
+                )}
+                onClick={toggleSidebar}
+              >
+                <PanelLeftIcon />
+                <span className="sr-only">Toggle Sidebar</span>
+              </Button>
+            )}
+
+            {showAdditionalButtons && (
+              <>
+                {/* Search Button (now directly opens CommandDialog) */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "size-7 rounded-md",
+                    "transition-all duration-300 ease-out", // Base transition
+                    animatePlus
+                      ? "opacity-100 translate-x-0"
+                      : "opacity-0 -translate-x-full", // Animation classes
+                    // Apply a margin-left to create space after the search button
+                    "ml-2"
+                  )}
+                  onClick={() => setIsCmndDialogOpen(true)} // Toggle CommandDialog open state
+                >
+                  <Search />
+                  <span className="sr-only">Search Sidebar Chats</span>
+                </Button>
+              </>
+            )}
+
+            {/* Plus Button */}
+            {showAdditionalButtons && (
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "size-7 rounded-md",
+                    "transition-all duration-300 ease-out", // Base transition
+                    animatePlus
+                      ? "opacity-100 translate-x-0"
+                      : "opacity-0 -translate-x-full", // Animation classes
+                    // Apply a margin-left to create space after the search button
+                    "ml-2"
+                  )}
+                >
+                  <Plus />
+                  <span className="sr-only">Add Chat</span>
+                </Button>
+              </Link>
+            )}
+          </div>
+        ) : (
+          // When sidebar is open, show only the toggle button
+          <div className="my-5 py-1 mx-2 rounded-sm">
+            <Button
+              data-sidebar="trigger"
+              data-slot="sidebar-trigger"
+              variant="ghost"
+              size="icon"
+              className={cn("size-7")}
+              onClick={toggleSidebar}
+            >
+              <PanelLeftIcon />
+              <span className="sr-only">Toggle Sidebar</span>
+            </Button>
+          </div>
+        )}
+      </div>
+      <Sidebar>
+        <SidebarHeader className="flex flex-row items-center gap-2 py-2">
+          {/* */}{" "}
+          <Button
+            data-sidebar="trigger"
+            data-slot="sidebar-trigger"
+            variant="ghost"
+            size="icon"
+            className={cn("size-7 ")}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSidebar();
+            }}
+          >
+            <PanelLeftIcon />
+            <span className="sr-only">Toggle Sidebar</span>
+          </Button>
+          <div className="flex flex-row items-center  ">
+            <Image
+              className="rounded-sm "
+              src="/sparkchat.png"
+              alt="SparkChat"
+              height={48}
+              width={48}
+            />{" "}
+            <div className="text-lg font-base text-primary tracking-tight">
+              <Sparkchat />
+            </div>
+          </div>
+        </SidebarHeader>
+        <SidebarContent className="pt-2">
+          <div className="px-4">
+            <Link
+              className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
+              href="/"
+            >
+              <PlusIcon className="size-4" />
+              <span>New Chat</span>
+            </Link>
+          </div>
+          <SidebarGroup className="h-full">
+            <SidebarMenu className="px-2">
+              {Array.isArray(chatList) &&
+                chatList.map((chat) => (
+                  <SidebarMenuButton
+                    key={chat.id}
+                    className="text-base my-0.5 px-2 py-3 relative group" // Add 'group' class here
+                    onClick={() => onSelectChat(chat.id)}
+                    isActive={chat.id === selectedChatId}
+                  >
+                    {/* Title Container with Blur Effect */}
+                    <Link
+                      href={`/chat/${chat.id}`}
+                      // Prevent Link's default behavior from interfering with button click
+                      onClick={(e) => {
+                        e.stopPropagation(); // Stop propagation for the button click
+                        onSelectChat(chat.id); // Ensure chat selection happens
+                      }}
+                      className="absolute inset-0 flex items-center pr-10" // pr-10 to make space for the delete button
+                      // This div wraps the span to apply the gradient and ensure overflow properties work
+                    >
+                      <div
+                        className="relative flex-grow min-w-0" // min-w-0 to allow flex item to shrink
+                      >
+                        {/* <span
                         className="block whitespace-nowrap overflow-hidden pr-8" // pr-8 for gradient space
                         style={{
                           // Apply linear-gradient for the blur effect
@@ -326,53 +451,54 @@ function ChatSidebar({
                         {chat.title}
                       </span>
                       Optional: if you want a classic ellipsis, use this instead of maskImage */}
-                      <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
-                        {chat.title}
-                      </span>
-                    </div>
-                  </Link>
+                        <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
+                          {chat.title}
+                        </span>
+                      </div>
+                    </Link>
 
-                  {/* Delete Button */}
-                  <div
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                      chat.id === selectedChatId ? "block" : "" // Keep delete button visible if active (optional)
-                    }`}
-                  >
-                    <Button
-                      variant="outline" // Use a ghost variant for a subtle look
-                      size="icon" // Make it a small, icon-only button
-                      className="h-8 w-8 text-gray-500 hover:text-red-500" // Adjust size and color
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent onSelectChat from firing
-                        onDeleteChat(chat.id); // Call the actual delete function
-                        toast.success("Chat deleted");
-                      }}
+                    {/* Delete Button */}
+                    <div
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
+                        chat.id === selectedChatId ? "block" : "" // Keep delete button visible if active (optional)
+                      }`}
                     >
-                      <X className="h-4 w-4" /> {/* Adjust icon size */}
-                      <span className="sr-only">Delete Chat</span>{" "}
-                      {/* Accessibility text */}
-                    </Button>
-                  </div>
-                </SidebarMenuButton>
-              ))}
-          </SidebarMenu>
-        </SidebarGroup>
-        <SidebarFooter className="justify-end">
-          <Link href={session ? "/settings" : "/login"}>
-            <div className="text-center bg-accent px-4 py-3 rounded-md">
-              {session ? (
-                <h1>{session?.user.name}</h1>
-              ) : (
-                <span className="flex items-center space-x-2">
-                  <LogInIcon size={20} />
-                  <h1 className="font-medium">Login</h1>
-                </span>
-              )}
-            </div>
-          </Link>
-        </SidebarFooter>
-      </SidebarContent>
-    </Sidebar>
+                      <Button
+                        variant="outline" // Use a ghost variant for a subtle look
+                        size="icon" // Make it a small, icon-only button
+                        className="h-8 w-8 text-gray-500 hover:text-red-500" // Adjust size and color
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent onSelectChat from firing
+                          onDeleteChat(chat.id); // Call the actual delete function
+                          toast.success("Chat deleted");
+                        }}
+                      >
+                        <X className="h-4 w-4" /> {/* Adjust icon size */}
+                        <span className="sr-only">Delete Chat</span>{" "}
+                        {/* Accessibility text */}
+                      </Button>
+                    </div>
+                  </SidebarMenuButton>
+                ))}
+            </SidebarMenu>
+          </SidebarGroup>
+          <SidebarFooter className="justify-end">
+            <Link href={session ? "/settings" : "/login"}>
+              <div className="text-center bg-accent px-4 py-3 rounded-md">
+                {session ? (
+                  <h1>{session?.user.name}</h1>
+                ) : (
+                  <span className="flex items-center space-x-2">
+                    <LogInIcon size={20} />
+                    <h1 className="font-medium">Login</h1>
+                  </span>
+                )}
+              </div>
+            </Link>
+          </SidebarFooter>
+        </SidebarContent>
+      </Sidebar>
+    </div>
   );
 }
 
@@ -398,7 +524,6 @@ function AIPage({
     const savedModel = localStorage.getItem("selectedModel");
     return savedModel || "gemini-2.0-flash"; // default model if none saved
   });
-
   useEffect(() => {
     localStorage.setItem("selectedModel", selectedModel);
   }, [selectedModel]);
@@ -411,8 +536,13 @@ function AIPage({
   const [inputValue, setInputValue] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
   const [open, setOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [chatList, setChatList] = useState([]);
   const [value, setValue] = useState("");
+  const [remaining, setRemaining] = useState(10);
+  const [rateLimitReset, setRateLimitReset] = useState("");
+  const [promptDisabled, setPromptDisabled] = useState(false);
+
   const handleSend = () => {
     if (inputValue.trim()) {
       console.log("Sending:", inputValue);
@@ -457,17 +587,19 @@ function AIPage({
 
   const storeMessage = async (
     message: Message,
-    currentChatId: string,
+    currentChatId: string, // Changed from currentChatId to chatId (local scope)
     retryCount = 0
   ) => {
     try {
       if (!currentChatId) {
-        toast.error("No chat id found");
+        // Check against the passed chatId
+        toast.error("No chat id found for message storage.");
+        return false;
       }
 
       if (!session) {
         toast.error("Please login first");
-        return;
+        return false;
       }
 
       setIsLoading(true);
@@ -478,7 +610,7 @@ function AIPage({
             content: message.content,
             role: message.role,
           },
-          chatId: currentChatId,
+          chatId: currentChatId, // Use the passed chatId
         },
         {
           withCredentials: true,
@@ -494,7 +626,7 @@ function AIPage({
         ...prev,
         {
           ...message,
-          chatId: currentChatId,
+          chatId: currentChatId, // Use the passed chatId
           id: typeof message.id === "string" ? Number(message.id) : message.id,
           timestamp: Date.now(),
         } as MessageType,
@@ -508,7 +640,7 @@ function AIPage({
       if (retryCount < 3) {
         console.log(`Retrying message storage attempt ${retryCount + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retry
-        return storeMessage(message, currentChatId, retryCount + 1);
+        return storeMessage(message, currentChatId, retryCount + 1); // Pass the correct chatId
       }
 
       toast.error("Failed to save message after multiple attempts");
@@ -527,6 +659,7 @@ function AIPage({
     handleSubmit: originalHandleSubmit,
   } = useChat({
     api: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/ai`,
+    credentials: "include",
     initialMessages: currentMessages.map((msg) => ({
       ...msg,
       id: String(msg.id ?? ""),
@@ -536,8 +669,9 @@ function AIPage({
       searchEnabled: searchEnabled,
     },
     onFinish: async (message) => {
+      fetchRemaining(); // Re-added fetchRemaining here
       // Store the AI's response
-      const stored = await storeMessage(message, chatId as string);
+      const stored = await storeMessage(message, chatId as string); // Use currentChatId from state
       if (!stored) {
         toast.error(
           "AI response was not saved. The chat history may be incomplete."
@@ -546,8 +680,39 @@ function AIPage({
     },
   });
 
-  // Wrap the handleSubmit to store user messages
+  // Fetch remaining messages after each send
+  const fetchRemaining = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/ai`, {
+        method: "GET",
+        credentials: "include",
+      });
 
+      if (res.ok) {
+        const data = await res.json();
+        setRemaining(data.remaining);
+        setRateLimitReset(data.resetAt);
+        if (data.remaining === 0) {
+          setPromptDisabled(true);
+          toast.error(
+            "No more messages are available. Please wait until your quota resets."
+          );
+        } else {
+          setPromptDisabled(false);
+        }
+      } else {
+        console.error(
+          "Failed to fetch remaining messages:",
+          res.status,
+          res.statusText
+        );
+      }
+    } catch (e) {
+      console.error("Error fetching remaining messages:", e);
+    }
+  };
+
+  // Call fetchRemaining after each message is sent
   let chatId = currentChatId;
   const handleSubmit = async (e?: React.FormEvent) => {
     if (!session) {
@@ -609,6 +774,16 @@ function AIPage({
       toast.error("Failed to process your message");
     }
   };
+  useEffect(() => {
+    fetchRemaining();
+  }, []);
+
+  interface UseCaseDetails {
+    icon: JSX.Element; // Or React.ReactNode if it can be other things
+    color: string; // Tailwind CSS classes will be strings
+    tooltip: string; // tooltip content as strings
+  }
+
   const models = [
     {
       label: "Llama 4 Scout",
@@ -620,21 +795,9 @@ function AIPage({
       },
       description:
         "Llama 4 Scout is a versatile multimodal model from Meta, capable of understanding and generating content from text and images. It excels in tasks requiring both visual and textual comprehension, and supports a wide range of languages, making it ideal for diverse global applications.",
-      usecase: {
-        Text: {
-          icon: <Text size={16} />,
-          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
-        },
-        Vision: {
-          icon: <Eye size={16}></Eye>,
-          color: "bg-green-100 text-green-800",
-        },
-        Multilingual: {
-          icon: <Languages size={16} />,
-          color: "bg-purple-100 text-purple-800",
-        },
-      },
+      usecase: ["Vision", "Text", "Multilingual"],
     },
+
     {
       value: "llama3-8b-8192",
       label: "Llama 3",
@@ -643,18 +806,9 @@ function AIPage({
         title: "Meta",
         viewbox: "0 0 256 171 ",
       },
-
-      usecase: {
-        Text: {
-          icon: <Text size={16} />,
-          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
-        },
-
-        Multilingual: {
-          icon: <Languages size={16} />,
-          color: "bg-purple-100 text-purple-800",
-        },
-      },
+      description:
+        "Llama 3 is a powerful text-based large language model by Meta. It is designed for generating high-quality text, engaging in natural conversations, and performing various language understanding tasks. Its multilingual capabilities make it suitable for global applications requiring sophisticated text processing.",
+      usecase: ["Text", "Multilingual"],
     },
     {
       value: "llama-3.1-8b-instant",
@@ -664,17 +818,9 @@ function AIPage({
         title: "Meta",
         viewbox: "0 0 256 171 ",
       },
-      usecase: {
-        Text: {
-          icon: <Text size={16} />,
-          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
-        },
-
-        Multilingual: {
-          icon: <Languages size={16} />,
-          color: "bg-purple-100 text-purple-800",
-        },
-      },
+      description:
+        "Llama 3.1 is an advanced iteration of Meta's Llama series, primarily focused on refined text generation and improved multilingual support. It offers enhanced conversational abilities and is optimized for complex language tasks, providing more nuanced and contextually aware responses.",
+      usecase: ["Text", "Multilingual"],
     },
     {
       value: "gemini-2.0-flash",
@@ -684,20 +830,9 @@ function AIPage({
         title: "Gemini",
         viewbox: "0 0 16 16",
       },
-      usecase: {
-        Text: {
-          icon: <Text size={16} />,
-          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
-        },
-        Vision: {
-          icon: <Eye size={16}></Eye>,
-          color: "bg-green-100 text-green-800",
-        },
-        Multilingual: {
-          icon: <Languages size={16} />,
-          color: "bg-purple-100 text-purple-800",
-        },
-      },
+      description:
+        "Gemini 2.0 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
+      usecase: ["Text", "Vision", "PDFs", "Search"],
     },
 
     {
@@ -708,20 +843,9 @@ function AIPage({
         title: "Gemini",
         viewbox: "0 0 16 16",
       },
-      usecase: {
-        Text: {
-          icon: <Text size={16} />,
-          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
-        },
-        Vision: {
-          icon: <Eye size={16}></Eye>,
-          color: "bg-green-100 text-green-800",
-        },
-        Multilingual: {
-          icon: <Languages size={16} />,
-          color: "bg-purple-100 text-purple-800",
-        },
-      },
+      description:
+        "Gemini 2.0 Flash Lite is a streamlined and faster version of Gemini 2.0 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
+      usecase: ["Fast", "Text", "Vision", "PDFs"],
     },
     {
       value: "gemini-2.5-flash-preview-04-17",
@@ -731,20 +855,9 @@ function AIPage({
         title: "Gemini",
         viewbox: "0 0 16 16",
       },
-      usecase: {
-        Text: {
-          icon: <Text size={16} />,
-          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
-        },
-        Vision: {
-          icon: <Eye size={16}></Eye>,
-          color: "bg-green-100 text-green-800",
-        },
-        Multilingual: {
-          icon: <Languages size={16} />,
-          color: "bg-purple-100 text-purple-800",
-        },
-      },
+      description:
+        "Gemini 2.5 Flash, a cutting-edge model from Google, offers advanced multimodal capabilities, seamlessly handling text, vision, and PDF content. It features enhanced search integration for superior information access and is designed for complex, data-rich applications.",
+      usecase: ["Text", "Vision", "PDFs", "Search"],
     },
     {
       value: "qwen-qwq-32b",
@@ -754,37 +867,67 @@ function AIPage({
         title: "Qwen",
         viewbox: "0 0 24 24 ",
       },
-      usecase: {
-        Text: {
-          icon: <Text size={16} />,
-          color: "bg-blue-100 text-blue-800", // Tailwind CSS classes
-        },
-        Vision: {
-          icon: <Eye size={16}></Eye>,
-          color: "bg-green-100 text-green-800",
-        },
-        Multilingual: {
-          icon: <Languages size={16} />,
-          color: "bg-purple-100 text-purple-800",
-        },
-      },
+      description:
+        "Qwen QwQ is a robust language model known for its strong reasoning abilities and efficient text processing. Developed for tasks requiring logical deduction and coherent text generation, it's particularly effective in scenarios demanding analytical insights and structured outputs.",
+      usecase: ["Text", "Reasoning"],
     },
   ];
+  // Somewhere accessible in your project, e.g., in a separate config file or directly in your component file
+  const useCaseConfig: { [key: string]: UseCaseDetails } = {
+    Text: {
+      icon: <Text size={4} />,
+      tooltip: "Supports text generation",
+      color: "bg-blue-200 text-blue-800 ", // Tailwind CSS classes
+    },
+    Vision: {
+      icon: <Eye size={8}></Eye>,
+      tooltip: "Supports image uploads and analysis",
+      color: "bg-green-100 text-green-800",
+    },
+    Multilingual: {
+      icon: <Languages size={8} />,
+      tooltip: "Supports multiple languages",
+      color: "bg-purple-100 text-purple-800",
+    },
+    PDFs: {
+      icon: <FileText size={8} />,
+      tooltip: "Supports PDFs upload and analysis",
+      color: "bg-red-100 text-red-800",
+    },
+    Search: {
+      icon: <Globe size={4} />,
+      tooltip: "Supports Web Search to answer questions",
+      color: "bg-yellow-100 text-yellow-800",
+    },
+    Fast: {
+      icon: <Zap size={4} />,
+      tooltip: "Very fast model",
+      color: "bg-orange-100 text-orange-800",
+    },
+    Reasoning: {
+      icon: <Brain size={4} />,
+      tooltip: "Supports Reasoning capabilities",
+      color: "bg-fuchsia-100  text-fuchsia-800 ",
+    },
+  };
   return (
     <main className="flex h-screen flex-col overflow-hidden">
-      <header className="bg-background z-10 justify-between flex h-16 w-full shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger className="-ml-1"></SidebarTrigger>
-        <div className="flex flex-row gap-2 items-center">
-          <Link href="/settings">
-            <Button variant={"outline"}>
-              <Settings2></Settings2>
-            </Button>
-          </Link>
-          <ModeToggle></ModeToggle>
-        </div>
-        {/* <div className="text-foreground">{currentChatId}</div> */}
-      </header>
-      <div className="grid  max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto p-4">
+      <div className="flex h-13 flex-row">
+        <div className="h-2 bg-background w-full"></div>
+        <header className="bg-background z-10 justify-end flex h-auto py-2 my-2 w-fit -rounded-start-5 rounded-bl-lg  shrink-0 items-center gap-2 px-4">
+          <div className="flex flex-row gap-2 items-center">
+            <Link href="/settings">
+              <Button variant={"outline"}>
+                <Settings2></Settings2>
+              </Button>
+            </Link>
+            <ModeToggle></ModeToggle>
+          </div>
+          {/* <div className="text-foreground">{currentChatId}</div> */}
+        </header>
+      </div>
+      <hr></hr>
+      <div className="grid  max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto pb-4">
         <div className=" overflow-y-auto  space-y-4 pb-4">
           <ChatContainerRoot className="flex-1">
             <ChatContainerContent className="space-y-4 p-4">
@@ -884,15 +1027,27 @@ function AIPage({
           )}
         </div>
       </div> */}
-        <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
+        <div className="p-1 flex flex-col justify-center align-items-center max-w-(--breakpoint-md) rounded-xl bg-accent">
+          {remaining <= 5 && remaining > 0 && (
+            <div className="text-yellow-600 text-center mb-2">
+              {remaining} messages left before your daily limit.
+            </div>
+          )}
+          {remaining === 0 && (
+            <div className="text-red-600 text-center mb-2">
+              You have reached your daily message limit. Please wait until your
+              quota resets.
+            </div>
+          )}
           <PromptInput
             value={input}
             onSubmit={handleSubmit}
-            className="w-full max-w-(--breakpoint-md)"
+            className="w-full  max-w-(--breakpoint-md)"
           >
             <PromptInputTextarea
               onChange={handleInputChange}
               placeholder="Ask me anything..."
+              //disabled={promptDisabled}
             />
             <PromptInputActions className="justify-between  pt-2">
               <div className="flex align-items-center gap-2">
@@ -911,7 +1066,7 @@ function AIPage({
                         <ChevronsUpDown className="opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[360px]  p-0">
+                    <PopoverContent className="w-[400px]  p-0">
                       <Command>
                         <CommandInput
                           placeholder="Search framework..."
@@ -924,6 +1079,13 @@ function AIPage({
                               <CommandItem
                                 key={model.value}
                                 value={model.value}
+                                className={cn(
+                                  "ml-auto",
+                                  "flex flex-row justify-between items-center",
+                                  value === model.value
+                                    ? "bg-accent"
+                                    : "bg-none"
+                                )}
                                 onSelect={(currentValue) => {
                                   setValue(
                                     currentValue === value ? "" : currentValue
@@ -932,28 +1094,44 @@ function AIPage({
                                   setSelectedModel(currentValue);
                                 }}
                               >
-                                {" "}
-                                <svg
-                                  className="size-4 text-color-heading"
-                                  viewBox={model.svg.viewbox}
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="currentColor"
-                                >
-                                  <title>{model.svg?.title}</title>
-                                  <path d={model.svg?.path}></path>
-                                </svg>
-                                {model.label}
-                                {/* <Badge className={model.usecase.Text.color}>
-                                  {model.usecase.Multilingual.icon}
-                                </Badge> */}
-                                <Check
-                                  className={cn(
-                                    "ml-auto",
-                                    value === model.value
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
+                                <div className="inline-flex gap-2 items-center">
+                                  <svg
+                                    className="size-4 text-color-heading"
+                                    viewBox={model.svg.viewbox}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="currentColor"
+                                  >
+                                    <title>{model.svg?.title}</title>
+                                    <path d={model.svg?.path}></path>
+                                  </svg>
+                                  <p className="text-base">{model.label}</p>{" "}
+                                </div>
+                                <div className="space-x-2 my-3 inline-flex">
+                                  {model.usecase.map((usecase) => {
+                                    const config = useCaseConfig[usecase];
+                                    if (!config) return null; // Handle cases where a use case might not have a config
+
+                                    return (
+                                      <Tooltip>
+                                        <TooltipTrigger>
+                                          <Badge
+                                            key={usecase}
+                                            className={`flex items-center rounded-sm p-1 gap-1 ${config.color}`}
+                                          >
+                                            {config.icon && (
+                                              <span className="h-4 rounded-none w-4">
+                                                {config.icon}
+                                              </span>
+                                            )}
+                                          </Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent key={usecase}>
+                                          {config.tooltip}
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    );
+                                  })}
+                                </div>
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -964,7 +1142,7 @@ function AIPage({
                 </PromptInputAction>
                 <PromptInputAction
                   tooltip={
-                    !session ? "Please login to use Search Web" : "Search Web"
+                    !session ? "Please login to use Web Search" : "Search Web"
                   }
                 >
                   <Button
@@ -979,9 +1157,7 @@ function AIPage({
                         return newState;
                       });
                     }}
-                    variant={
-                      searchEnabled === true ? "destructive" : "secondary"
-                    }
+                    variant={searchEnabled === true ? "default" : "outline"}
                   >
                     <Globe></Globe>Search
                   </Button>
@@ -998,6 +1174,7 @@ function AIPage({
                   onClick={() => {
                     handleSubmit();
                   }}
+                  disabled={promptDisabled}
                 >
                   {isLoading ? (
                     <Square className="size-5 fill-current" />
@@ -1014,115 +1191,6 @@ function AIPage({
   );
 }
 
-// function NewChatPage() {
-//   const [input, setInput] = useState("");
-//   const [isCommandBoxOpen, setIsCommandBoxOpen] = useState(true);
-//   const router = useRouter();
-//   const { data: session } = authClient.useSession();
-//   const { refreshChats } = useChatContext();
-
-//   useHotkeys("ctrl+o", (event) => {
-//     event.preventDefault(); // Prevent default browser behavior
-//     router.replace("/");
-//     toast.success("CTRL+O pressed");
-//   });
-
-//   useHotkeys("ctrl+b", (event) => {
-//     const { toggleSidebar } = useSidebar();
-//     event.preventDefault(); // Prevent default browser behavior
-//     toggleSidebar();
-//     toast.success("CTRL+B pressed");
-//   });
-
-//   useHotkeys("ctrl+q", (event) => {
-//     event.preventDefault(); // Prevent default browser behavior
-//     setIsCommandBoxOpen(true); // Open the Commandbox
-//     toast.success("CTRL+K pressed! Opening command box...");
-//     toast.success(isCommandBoxOpen);
-//   });
-
-//   const closeCommandBox = () => {
-//     setIsCommandBoxOpen(false); // Close the Commandbox
-//   };
-
-//   const handleSubmit = async (e?: React.FormEvent) => {
-//     e?.preventDefault();
-
-//     if (!session) {
-//       toast.error("Please login first");
-//       return;
-//     }
-
-//     try {
-//       // Create new chat with initial message
-//       const response = await axios.post(
-//         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
-//         {
-//           title: input.slice(0, 30) + (input.length > 30 ? "..." : ""),
-//           initialMessage: input,
-//         },
-//         { withCredentials: true }
-//       );
-
-//       if (response.data.success) {
-//         const newChatId = response.data.chatId;
-//         // Store both the initial prompt and chatId
-//         sessionStorage.setItem("initialPrompt", input);
-//         sessionStorage.setItem("newChatId", newChatId);
-//         // Refresh the chat list
-//         await refreshChats();
-//         // Redirect to the new chat
-//         router.push(`/chat/${newChatId}`);
-//       }
-//     } catch (error) {
-//       console.error("Error creating new chat:", error);
-//       toast.error("Failed to create new chat");
-//     }
-//   };
-
-//   return (
-//     <main className="flex h-screen flex-col overflow-hidden">
-//       {!isCommandBoxOpen && <Commandbox onClose={closeCommandBox} />}
-//       <div className="grid max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto p-4">
-//         <div className="overflow-y-auto space-y-4 pb-4">
-//           <ChatContainerRoot className="flex-1">
-//             <ChatContainerContent className="space-y-4 p-4">
-//               <div className="text-center text-muted-foreground mt-8">
-//                 Start a new chat by typing your message below
-//               </div>
-//             </ChatContainerContent>
-//           </ChatContainerRoot>
-//         </div>
-//         <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
-//           <PromptInput
-//             value={input}
-//             onSubmit={handleSubmit}
-//             className="w-full max-w-(--breakpoint-md)"
-//           >
-//             <PromptInputTextarea
-//               value={input}
-//               onChange={(e) => setInput(e.target.value)}
-//               placeholder="Type your message to start a new chat..."
-//             />
-//             <PromptInputActions className="justify-end pt-2">
-//               <PromptInputAction tooltip="Send message">
-//                 <Button
-//                   variant="default"
-//                   size="icon"
-//                   className="h-8 w-8 rounded-full"
-//                   onClick={handleSubmit}
-//                 >
-//                   <ArrowUp className="size-5" />
-//                 </Button>
-//               </PromptInputAction>
-//             </PromptInputActions>
-//           </PromptInput>
-//         </div>
-//       </div>
-//     </main>
-//   );
-// }
-
 function FullChatApp() {
   const [chats, setChats] = useState<ChatType[]>([]);
   const [loadingChats, setLoadingChats] = useState(true);
@@ -1132,10 +1200,7 @@ function FullChatApp() {
   const [modelValue, setModelValue] = useState<string>("llama3.2"); // Default model
   const router = useRouter();
 
-  // Rely on useChatContext for chat data instead of fetching directly
-  useEffect(() => {
-    // No need to fetch chats directly; useChatContext provides the data
-  }, []);
+  // No need to fetch chats directly; useChatContext provides the data
 
   // Handle chat selection
   const handleSelectChat = async (id: string) => {
