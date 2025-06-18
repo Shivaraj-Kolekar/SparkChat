@@ -461,14 +461,25 @@ function AIPage({
   router: any;
   session: any;
 }) {
-  const [selectedModel, setSelectedModel] = useState(() => {
-    const savedModel = localStorage.getItem("selectedModel");
-    return savedModel || "gemini-2.0-flash"; // default model if none saved
-  });
+  const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash"); // default model
 
   useEffect(() => {
-    localStorage.setItem("selectedModel", selectedModel);
+    // Only access localStorage in the browser
+    if (typeof window !== "undefined") {
+      const savedModel = localStorage.getItem("selectedModel");
+      if (savedModel) {
+        setSelectedModel(savedModel);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only save to localStorage in the browser
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selectedModel", selectedModel);
+    }
   }, [selectedModel]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
