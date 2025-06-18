@@ -54,12 +54,10 @@ apiClient.interceptors.response.use(
       data: error.response?.data,
     });
 
+    // Don't automatically redirect on 401 - let components handle it
     if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      if (typeof window !== "undefined") {
-        console.log("Unauthorized access, redirecting to login");
-        window.location.href = "/login";
-      }
+      console.log("Unauthorized access detected");
+      // Let the calling component decide how to handle this
     }
 
     // Handle network errors
