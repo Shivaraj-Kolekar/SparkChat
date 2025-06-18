@@ -5,6 +5,10 @@ export const authClient = createAuthClient({
   session: {
     strategy: "jwt",
   },
+  cookies: {
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+  },
 });
 
 export const { signIn, signOut, signUp, useSession } = authClient;

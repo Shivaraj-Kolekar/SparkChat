@@ -59,6 +59,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { api } from "@/lib/api-client";
 // Create form schema
 
 export default function Settings() {
@@ -90,12 +91,7 @@ export default function Settings() {
   const fetchPreferences = async () => {
     try {
       setIsLoadingPreferences(true);
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/preferences`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await api.get(`/preferences`);
 
       if (response.data.success && response.data.data) {
         setExistingPreferences(response.data.data);
@@ -126,18 +122,7 @@ export default function Settings() {
     onSubmit: async ({ value }) => {
       try {
         setIsSaving(true);
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/preferences`,
-          {
-            name: value.name,
-            profession: value.profession,
-            traits: value.traits,
-            description: value.description,
-          },
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await api.post("/preferences");
 
         if (response.data.success) {
           toast.success(
@@ -196,12 +181,7 @@ export default function Settings() {
   const [enableSearch, setEnableSearch] = useState(true);
   const handleDeleteAccount = async (id: string) => {
     try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/account/${id}`,
-        {
-          withCredentials: true,
-        }
-      );
+      await api.delete(`/account/${id}`);
 
       toast.success("Account Deleted");
       router.push("/login");

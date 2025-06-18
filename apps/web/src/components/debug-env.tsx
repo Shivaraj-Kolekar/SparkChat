@@ -1,5 +1,6 @@
 "use client";
 import { authClient } from "@/lib/auth-client";
+import { api } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 
 export function DebugEnv() {
@@ -21,18 +22,14 @@ export function DebugEnv() {
         // Get client session data
         const sessionData = await authClient.getSession();
 
-        // Test server session
+        // Test server session using the centralized API client
         let serverSessionData = null;
         try {
-          const response = await fetch(
-            `${envData.NEXT_PUBLIC_SERVER_URL}/api/test-session`,
-            {
-              credentials: "include",
-            }
-          );
-          serverSessionData = await response.json();
+          const response = await api.get("/test-session");
+          serverSessionData = response.data;
         } catch (error) {
           console.error("Error testing server session:", error);
+          serverSessionData = { error: "Failed to connect to server" };
         }
 
         setEnvVars(envData);
@@ -97,6 +94,9 @@ export function DebugEnv() {
         )}
         {serverSession?.message && (
           <div className="text-red-400">Error: {serverSession.message}</div>
+        )}
+        {serverSession?.error && (
+          <div className="text-red-400">Error: {serverSession.error}</div>
         )}
       </div>
 

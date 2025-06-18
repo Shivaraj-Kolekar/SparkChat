@@ -16,7 +16,7 @@ export async function middleware(request: Request) {
   );
   res.headers.append(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Cookie"
+    "Content-Type, Authorization, Cookie, X-Requested-With"
   );
 
   // Handle preflight requests

@@ -13,6 +13,11 @@ export const auth = betterAuth({
     strategy: "jwt",
     expiresIn: 60 * 60 * 24 * 7, // 7 days
   },
+  cookies: {
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+    domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined,
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
