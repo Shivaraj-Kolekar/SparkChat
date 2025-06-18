@@ -1,5 +1,9 @@
 # SparkChat
 
+![SparkChat UI](apps/web/public/sparkchat.png)
+
+_Screenshot: SparkChat main chat interface_
+
 This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Next, TRPC, and more.
 
 ## Features
