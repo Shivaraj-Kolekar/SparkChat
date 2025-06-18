@@ -1,6 +1,6 @@
 # SparkChat
 
-![SparkChat UI](apps/web/public/sparkchat.png)
+![SparkChat UI](apps/web/public/sparkchat-ui.png)
 
 _Screenshot: SparkChat main chat interface_
 
