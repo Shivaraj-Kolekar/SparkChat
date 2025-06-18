@@ -1,30 +1,30 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
 
-export async function POST (req: Request) {
+export async function POST(req: NextReqeust) {
   try {
-    const body = await req.json()
+    const body = await req.json();
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SERVER_URL}/api/messages`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       }
-    )
+    );
 
     if (!response.ok) {
-      throw new Error('Failed to store message')
+      throw new Error("Failed to store message");
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error storing message:', error)
+    console.error("Error storing message:", error);
     return NextResponse.json(
-      { error: 'Failed to store message' },
+      { error: "Failed to store message" },
       { status: 500 }
-    )
+    );
   }
 }

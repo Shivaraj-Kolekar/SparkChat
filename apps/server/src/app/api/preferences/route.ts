@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { userInfo } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { invalidateUserPreferencesCache } from "../ai/route";
 
 // GET - Fetch user preferences
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const session = await auth.api.getSession(req);
 
@@ -42,7 +42,7 @@ export async function GET(req: Request) {
 }
 
 // POST - Create or update user preferences
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession(req);
 

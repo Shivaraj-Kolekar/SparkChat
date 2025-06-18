@@ -1,44 +1,44 @@
-import { NextResponse } from 'next/server'
-import { db } from '../../../db'
+import { NextResponse } from "next/server";
+import { db } from "../../../db";
 import {
   chats as chatTable,
-  messages as messagesTable
-} from '../../../db/schema/auth'
-import { v4 as uuidv4 } from 'uuid'
-import { eq } from 'drizzle-orm'
-import { auth } from '@/lib/auth'
+  messages as messagesTable,
+} from "../../../db/schema/auth";
+import { v4 as uuidv4 } from "uuid";
+import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 
-export async function POST (req: Request) {
+export async function POST(req: NextReqeust) {
   try {
-    const { message, chatId } = await req.json()
-    const session = await auth.api.getSession(req)
+    const { message, chatId } = await req.json();
+    const session = await auth.api.getSession(req);
     if (!session) {
-      return new Response('Unauthorized', {
-        status: 401
-      })
+      return new Response("Unauthorized", {
+        status: 401,
+      });
     }
 
     if (!message || !message.role || !message.content || !chatId) {
       return NextResponse.json(
-        { error: 'Invalid message data or missing chatId' },
+        { error: "Invalid message data or missing chatId" },
         { status: 400 }
-      )
+      );
     }
 
     const chatcheck = await db
       .select()
       .from(chatTable)
-      .where(eq(chatTable.id, chatId))
+      .where(eq(chatTable.id, chatId));
 
-    const id = uuidv4()
+    const id = uuidv4();
 
     if (!chatcheck || chatcheck.length === 0) {
       await db.insert(chatTable).values({
         id: id,
         title: message.content,
         created_at: new Date(),
-        userId: session.session.userId
-      })
+        userId: session.session.userId,
+      });
     }
 
     await db.insert(messagesTable).values({
@@ -47,15 +47,15 @@ export async function POST (req: Request) {
       role: message.role,
       content: message.content,
       userId: session.session.userId,
-      created_at: new Date()
-    })
+      created_at: new Date(),
+    });
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error storing message:', error)
+    console.error("Error storing message:", error);
     return NextResponse.json(
-      { error: 'Failed to store message' },
+      { error: "Failed to store message" },
       { status: 500 }
-    )
+    );
   }
 }

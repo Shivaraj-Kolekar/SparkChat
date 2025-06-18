@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import {
   chats as chatTable,
@@ -8,7 +8,7 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
 export async function GET(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -47,7 +47,7 @@ export async function GET(
 }
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

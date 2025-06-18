@@ -2,11 +2,11 @@ import { db } from "@/db";
 import { user as userTable, userInfo } from "@/db/schema/auth";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { invalidateUserPreferencesCache } from "../../ai/route";
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

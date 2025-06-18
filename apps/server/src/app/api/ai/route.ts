@@ -6,6 +6,7 @@ import { google } from "@ai-sdk/google";
 import { rateLimit } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { NextRequest } from "next/server";
 
 export const maxDuration = 30;
 
@@ -87,7 +88,7 @@ function createPersonalizedSystemPrompt(
   return systemPrompt;
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   // Get user session
   const session = await auth.api.getSession(req);
   if (!session || !session.session?.userId) {
@@ -187,7 +188,7 @@ export async function POST(req: Request) {
   return result.toDataStreamResponse();
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   // Get user session
   const session = await auth.api.getSession(req);
   if (!session || !session.session?.userId) {
