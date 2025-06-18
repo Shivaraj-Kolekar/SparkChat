@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { userInfo } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { invalidateUserPreferencesCache } from "../ai/route";
+import { invalidateUserPreferencesCache } from "@/lib/cache";
 
 // GET - Fetch user preferences
 export async function GET(req: NextRequest) {

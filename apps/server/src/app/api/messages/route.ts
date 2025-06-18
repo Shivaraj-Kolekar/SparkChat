@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { db } from "../../../db";
 import {
   chats as chatTable,
@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
-export async function POST(req: NextReqeust) {
+export async function POST(req: NextRequest) {
   try {
     const { message, chatId } = await req.json();
     const session = await auth.api.getSession(req);

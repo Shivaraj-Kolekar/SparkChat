@@ -3,13 +3,14 @@ import { user as userTable, userInfo } from "@/db/schema/auth";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-import { invalidateUserPreferencesCache } from "../../ai/route";
+import { invalidateUserPreferencesCache } from "@/lib/cache";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const id = params.id;
     const session = await auth.api.getSession(req);
 

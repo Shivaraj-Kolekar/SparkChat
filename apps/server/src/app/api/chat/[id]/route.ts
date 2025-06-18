@@ -9,9 +9,10 @@ import { auth } from "@/lib/auth";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const chatId = params.id;
     const session = await auth.api.getSession(req);
     if (!session) {
@@ -48,9 +49,10 @@ export async function GET(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const chatId = params.id;
     const session = await auth.api.getSession(req);
     if (!session) {
