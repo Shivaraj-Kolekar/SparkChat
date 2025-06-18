@@ -38,7 +38,7 @@ export function DebugEnv() {
         // Test server session using the centralized API client
         let serverSessionData = null;
         try {
-          const response = await api.get("/test-session");
+          const response = await api.get("/api/test-session");
           serverSessionData = response.data;
         } catch (error: any) {
           const errorMsg = error.response?.status

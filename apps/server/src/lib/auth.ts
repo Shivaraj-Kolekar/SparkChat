@@ -30,7 +30,17 @@ export const auth = betterAuth({
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     httpOnly: true,
-    domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined,
+    // Remove domain restriction for now to debug
+  },
+  callbacks: {
+    onSignIn: async ({ user, account, profile }: any) => {
+      console.log("User signed in:", user.email);
+      return true;
+    },
+    onSession: async ({ session, user }: any) => {
+      console.log("Session created for user:", user.email);
+      return session;
+    },
   },
   socialProviders: {
     google: {
