@@ -36,6 +36,11 @@ import {
   Save,
   Text,
   Zap,
+  Mail,
+  Github,
+  Linkedin,
+  Code,
+  User,
 } from "lucide-react";
 import Header from "@/components/header";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,12 +50,23 @@ import { createFormHook, createFormHookContexts } from "@tanstack/react-form";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 // Create form schema
 
 export default function Settings() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
+  const [existingPreferences, setExistingPreferences] = useState<any>(null);
   const userFormSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters").max(30),
     profession: z.string().min(2).max(100),
@@ -69,34 +85,102 @@ export default function Settings() {
     fieldContext,
     formContext,
   });
-  // Create form using schema
+
+  // Fetch existing preferences
+  const fetchPreferences = async () => {
+    try {
+      setIsLoadingPreferences(true);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/preferences`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success && response.data.data) {
+        setExistingPreferences(response.data.data);
+      }
+    } catch (error: any) {
+      console.error("Error fetching preferences:", error);
+      if (error.response?.status === 401) {
+        toast.error("Please login to view preferences");
+      } else {
+        toast.error("Failed to load preferences");
+      }
+    } finally {
+      setIsLoadingPreferences(false);
+    }
+  };
+
+  // Create form using schema with default values from existing preferences
   const form = useAppForm({
     defaultValues: {
-      name: "",
-      profession: "",
-      traits: "",
-      description: "",
+      name: existingPreferences?.name || "",
+      profession: existingPreferences?.profession || "",
+      traits: existingPreferences?.traits || "",
+      description: existingPreferences?.user_description || "",
     },
     validators: {
-      // Pass a schema or function to validate
       onChange: userFormSchema,
     },
     onSubmit: async ({ value }) => {
       try {
-        await axios.post(
+        setIsSaving(true);
+        const response = await axios.post(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/preferences`,
-          { value },
+          {
+            name: value.name,
+            profession: value.profession,
+            traits: value.traits,
+            description: value.description,
+          },
           {
             withCredentials: true,
           }
         );
-        toast.success("Profile updated successfully");
-      } catch (error) {
+
+        if (response.data.success) {
+          toast.success(
+            response.data.message || "Profile updated successfully"
+          );
+          // Refresh preferences after update
+          await fetchPreferences();
+        }
+      } catch (error: any) {
         console.error(error);
-        toast.error("An error occurred while updating preferences");
+        if (error.response?.status === 401) {
+          toast.error("Please login to update preferences");
+        } else if (error.response?.data?.error) {
+          toast.error(error.response.data.error);
+        } else {
+          toast.error("An error occurred while updating preferences");
+        }
+      } finally {
+        setIsSaving(false);
       }
     },
   });
+
+  // Fetch preferences when component mounts
+  useEffect(() => {
+    if (session && !isPending) {
+      fetchPreferences();
+    }
+  }, [session, isPending]);
+
+  // Update form values when preferences are loaded
+  useEffect(() => {
+    if (existingPreferences) {
+      form.setFieldValue("name", existingPreferences.name || "");
+      form.setFieldValue("profession", existingPreferences.profession || "");
+      form.setFieldValue("traits", existingPreferences.traits || "");
+      form.setFieldValue(
+        "description",
+        existingPreferences.user_description || ""
+      );
+    }
+  }, [existingPreferences, form]);
+
   interface UseCaseDetails {
     icon: JSX.Element; // Or React.ReactNode if it can be other things
     color: string; // Tailwind CSS classes will be strings
@@ -110,7 +194,22 @@ export default function Settings() {
   const [autoSave, setAutoSave] = useState(true);
   const [streamMessages, setStreamMessages] = useState(true);
   const [enableSearch, setEnableSearch] = useState(true);
+  const handleDeleteAccount = async (id: string) => {
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/account/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
 
+      toast.success("Account Deleted");
+      router.push("/login");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("Error deleting account");
+    }
+  };
   // Appearance Settings
   const [fontSize, setFontSize] = useState("16");
   const [enableMarkdown, setEnableMarkdown] = useState(true);
@@ -301,21 +400,11 @@ export default function Settings() {
             Manage your chat preferences and configurations
           </p>
         </div>
-        <Button onClick={saveSettings} disabled={isSaving}>
-          {isSaving ? (
-            "Saving..."
-          ) : (
-            <>
-              <Save className="w-4 h-4 mr-2" />
-              Save Changes
-            </>
-          )}
-        </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-3 space-y-6">
+      <div className="flex flex-col md:flex-row gap-5 space-y-6">
         {/* Model Settings */}
-        <div className="flex md:justify-start items-start space-y-1 flex-col">
+        <div className="flex min-w-[300] space-y-2 justify-start   items-center  flex-col">
           <Image
             className="rounded-full "
             src={session?.user.image ? session?.user.image : "/sparkchat.png"}
@@ -323,15 +412,16 @@ export default function Settings() {
             width={180}
             height={180}
           />
-          <h1 className="text-4xl text-start font-semibold">
+          <h1 className="text-4xl text-center font-semibold">
             {session?.user.name}
           </h1>
           <h2 className="text-lg font-normal text-center">
             {session?.user.email}
           </h2>
+
           <Button
             variant="destructive"
-            className="w-full"
+            className=""
             onClick={() => {
               authClient.signOut({
                 fetchOptions: {
@@ -344,34 +434,48 @@ export default function Settings() {
           >
             Sign Out
           </Button>
-          <Card className=" mt-6 shadow-lg rounded-xl">
+          <Card className=" mt-6 shadow-lg w-full rounded-xl">
             <CardHeader>
               <CardTitle>
                 <h2 className="text-lg font-semibold">Keyboard Shortcuts</h2>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <span>Search</span>
                   <span>
-                    <kbd className="kbd-box">Ctrl</kbd>
-                    <kbd className="kbd-box ml-1">K</kbd>
+                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box">
+                      Ctrl
+                    </kbd>
+                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box ml-1">
+                      K
+                    </kbd>
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>New Chat</span>
                   <span>
-                    <kbd className="kbd-box">Ctrl</kbd>
-                    <kbd className="kbd-box ml-1">Shift</kbd>
-                    <kbd className="kbd-box ml-1">O</kbd>
+                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box">
+                      Ctrl
+                    </kbd>
+                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box ml-1">
+                      Shift
+                    </kbd>
+                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box ml-1">
+                      O
+                    </kbd>
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Toggle Sidebar</span>
                   <span>
-                    <kbd className="kbd-box">Ctrl</kbd>
-                    <kbd className="kbd-box ml-1">B</kbd>
+                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box">
+                      Ctrl
+                    </kbd>
+                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box ml-1">
+                      B
+                    </kbd>
                   </span>
                 </div>
               </div>
@@ -388,17 +492,44 @@ export default function Settings() {
           <TabsContent value="account">
             <div className="mt-8 border bg-secondary rounded-lg p-6">
               <h2 className="text-lg font-semibold  mb-2">Danger Zone</h2>
-              <p className="text-destructive mb-4">
-                Deleting your account is irreversible. All your data will be
-                lost.
-              </p>
-              <Button
-                variant="destructive"
-                className="bg-red-600 hover:bg-red-700 text-white"
-                onClick={() => {}}
-              >
-                Delete Account
-              </Button>
+
+              <Dialog>
+                <DialogTrigger>
+                  <Button
+                    variant="destructive"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Delete Account
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      Are you sure you want to Delete your account ?
+                    </DialogTitle>
+                  </DialogHeader>
+                  <p className="text-destructive mb-4">
+                    Deleting your account is irreversible. All your data will be
+                    lost.
+                  </p>
+                  <DialogFooter className="space-x-1.5">
+                    <DialogClose className="h-9 px-4 py-2 has-[>svg]:px-3 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50">
+                      Cancel
+                    </DialogClose>
+                    <Button
+                      variant="destructive"
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                      onClick={() => {
+                        if (session?.user?.id) {
+                          handleDeleteAccount(session.user.id);
+                        }
+                      }}
+                    >
+                      Delete Account
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
             {/* Message Usage Section */}
             <Card className="mt-6 shadow-lg rounded-xl">
@@ -425,7 +556,7 @@ export default function Settings() {
                     </div>
                     <div className="w-full h-2 bg-gray-300 rounded-full mb-2">
                       <div
-                        className="h-2 bg-pink-600 rounded-full"
+                        className="h-2 bg-primary rounded-full"
                         style={{ width: `${((10 - remaining) / 10) * 100}%` }}
                       />
                     </div>
@@ -438,7 +569,12 @@ export default function Settings() {
           <TabsContent value="customization">
             <Card className="mt-8">
               <CardHeader>
-                <CardTitle>Customize O chat</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Customize SparkChat
+                  {isLoadingPreferences && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <form
@@ -450,8 +586,13 @@ export default function Settings() {
                 >
                   <div className="space-y-2">
                     <Label>Name</Label>
-
-                    <>
+                    {isLoadingPreferences ? (
+                      <Input
+                        disabled
+                        placeholder="Loading..."
+                        className="opacity-50"
+                      />
+                    ) : (
                       <form.AppField
                         name="name"
                         children={(field) => (
@@ -463,49 +604,67 @@ export default function Settings() {
                           />
                         )}
                       />
-                    </>
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <Label>Profession</Label>
-                    <form.AppField
-                      name="profession"
-                      children={(field) => (
-                        <>
+                    {isLoadingPreferences ? (
+                      <Input
+                        disabled
+                        placeholder="Loading..."
+                        className="opacity-50"
+                      />
+                    ) : (
+                      <form.AppField
+                        name="profession"
+                        children={(field) => (
                           <Input
                             value={field.state.value}
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
                             placeholder="What do you do?"
                           />
-                        </>
-                      )}
-                    />
+                        )}
+                      />
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <Label>Traits</Label>
-                    <form.AppField
-                      name="traits"
-                      children={(field) => (
-                        <>
+                    {isLoadingPreferences ? (
+                      <Input
+                        disabled
+                        placeholder="Loading..."
+                        className="opacity-50"
+                      />
+                    ) : (
+                      <form.AppField
+                        name="traits"
+                        children={(field) => (
                           <Input
                             value={field.state.value}
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
                             placeholder="Funny, concise, curious, etc"
                           />
-                        </>
-                      )}
-                    />
+                        )}
+                      />
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <Label>User description</Label>
-                    <form.AppField
-                      name="description"
-                      children={(field) => (
-                        <>
+                    {isLoadingPreferences ? (
+                      <Textarea
+                        disabled
+                        placeholder="Loading..."
+                        className="h-32 opacity-50"
+                      />
+                    ) : (
+                      <form.AppField
+                        name="description"
+                        children={(field) => (
                           <Textarea
                             value={field.state.value}
                             onBlur={field.handleBlur}
@@ -513,13 +672,30 @@ export default function Settings() {
                             className="h-32"
                             placeholder="Tell us more about yourself..."
                           />
-                        </>
-                      )}
-                    />
+                        )}
+                      />
+                    )}
                   </div>
                   <form.AppForm>
-                    <form.Button disabled={form.state.isSubmitting}>
-                      {form.state.isSubmitting ? "Submitting..." : "Submit"}
+                    <form.Button
+                      disabled={form.state.isSubmitting || isLoadingPreferences}
+                      className="flex items-center gap-2"
+                    >
+                      {isLoadingPreferences ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Loading...
+                        </>
+                      ) : form.state.isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          {existingPreferences ? "Updating..." : "Saving..."}
+                        </>
+                      ) : existingPreferences ? (
+                        "Update Preferences"
+                      ) : (
+                        "Save Preferences"
+                      )}
                     </form.Button>
                   </form.AppForm>
                 </form>
@@ -574,21 +750,58 @@ export default function Settings() {
             <Card className="mt-8">
               <CardHeader>
                 <CardTitle>
-                  {" "}
                   <h2 className="text-lg font-semibold mb-2">Contact Us</h2>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="">
-                  <p>
-                    Email:{" "}
-                    <a
-                      href="mailto:shivkolekar01@gmail.com"
-                      className="text-blue-600 underline"
+                <div className="space-y-6">
+                  {/* Contact Links */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-5 w-5 text-primary" />
+                      <a
+                        href="mailto:shivkolekar01@gmail.com"
+                        className="text-blue-600 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        shivkolekar01@gmail.com
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Github className="h-5 w-5 text-primary" />
+                      <a
+                        href="https://github.com/Shivaraj-Kolekar"
+                        className="text-blue-600 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        github.com/Shivaraj-Kolekar
+                      </a>
+                    </div>
+                  </div>
+                  {/* Feedback Form */}
+                  <div className="mt-6">
+                    <h3 className="text-base font-semibold mb-2">
+                      Send Feedback, Suggestions, or Report a Bug
+                    </h3>
+                    <form
+                      action="mailto:shivkolekar01@gmail.com"
+                      method="POST"
+                      encType="text/plain"
                     >
-                      shivkolekar01@gmail.com
-                    </a>
-                  </p>
+                      <textarea
+                        name="message"
+                        rows={5}
+                        placeholder="Type your feedback, suggestion, or bug report here..."
+                        className="w-full rounded-lg border border-border bg-background p-3 text-base focus:outline-none focus:ring-2 focus:ring-primary resize-none mb-3"
+                        required
+                      />
+                      <Button type="submit" className="w-full">
+                        Send to Email
+                      </Button>
+                    </form>
+                  </div>
                 </div>
               </CardContent>
             </Card>

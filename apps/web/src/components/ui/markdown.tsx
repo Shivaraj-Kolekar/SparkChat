@@ -1,10 +1,14 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { marked } from "marked";
-import { memo, useId, useMemo } from "react";
+import { memo, useId, useMemo, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import { CodeBlock, CodeBlockCode, CodeBlockGroup } from "./code-block";
+import { Button } from "./button";
+import { Copy, Check } from "lucide-react";
+import { toast } from "sonner";
 
 export type MarkdownProps = {
   children: string;
@@ -34,7 +38,7 @@ const INITIAL_COMPONENTS: Partial<Components> = {
       return (
         <span
           className={cn(
-            "bg-primary-foreground rounded-sm px-1 font-mono text-sm",
+            "bg-primary-foreground  dark:bg-secondary/50 rounded-sm px-1 my-2 font-mono text-sm",
             className
           )}
           {...props}
@@ -45,14 +49,41 @@ const INITIAL_COMPONENTS: Partial<Components> = {
     }
 
     const language = extractLanguage(className);
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(children as string);
+        setCopied(true);
+        toast.success("Code copied to clipboard");
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        toast.error("Failed to copy code");
+      }
+    };
 
     return (
       <CodeBlock className={className}>
         <CodeBlockGroup className="border-border border-b py-2 pr-2 pl-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between w-full">
+            {/* Language label at the far left */}
             <div className="bg-primary/10 text-primary rounded px-2 py-1 text-xs font-medium">
               {language}
             </div>
+            {/* Copy button at the far right */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={handleCopy}
+            >
+              {copied ? (
+                <Check className="h-3 w-3" />
+              ) : (
+                <Copy className="h-3 w-3" />
+              )}
+              <span className="sr-only">Copy code</span>
+            </Button>
           </div>
         </CodeBlockGroup>
         <CodeBlockCode code={children as string} language={language} />

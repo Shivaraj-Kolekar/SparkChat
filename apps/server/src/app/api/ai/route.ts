@@ -1,13 +1,91 @@
 import { db } from "@/db";
 import { streamText } from "ai";
 import { groq } from "@ai-sdk/groq";
-import { messages } from "@/db/schema/auth";
+import { messages, userInfo } from "@/db/schema/auth";
 import { google } from "@ai-sdk/google";
 import { rateLimit } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 
 export const maxDuration = 30;
+
+// Simple in-memory cache for user preferences
+const userPreferencesCache = new Map<
+  string,
+  { preferences: any; timestamp: number }
+>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Function to get user preferences with caching
+async function getUserPreferences(userId: string) {
+  const now = Date.now();
+  const cached = userPreferencesCache.get(userId);
+
+  // Return cached data if it's still valid
+  if (cached && now - cached.timestamp < CACHE_DURATION) {
+    return cached.preferences;
+  }
+
+  try {
+    const [preferences] = await db
+      .select()
+      .from(userInfo)
+      .where(eq(userInfo.userId, userId))
+      .limit(1);
+
+    if (preferences) {
+      // Cache the preferences
+      userPreferencesCache.set(userId, { preferences, timestamp: now });
+      return preferences;
+    }
+  } catch (error) {
+    console.log(
+      "No user preferences found or error fetching preferences:",
+      error
+    );
+  }
+
+  return null;
+}
+
+// Function to invalidate cache when preferences are updated
+export function invalidateUserPreferencesCache(userId: string) {
+  userPreferencesCache.delete(userId);
+}
+
+// Function to create personalized system prompt based on user preferences
+function createPersonalizedSystemPrompt(
+  userPreferences: any,
+  userName: string
+) {
+  let systemPrompt = "You are a helpful AI assistant.";
+
+  // Add user's name if available
+  if (userName) {
+    systemPrompt += ` The user's name is ${userName}.`;
+  }
+
+  // Add profession if available
+  if (userPreferences?.profession) {
+    systemPrompt += ` The user is a ${userPreferences.profession}.`;
+  }
+
+  // Add traits if available
+  if (userPreferences?.traits) {
+    systemPrompt += ` The user prefers conversations to be ${userPreferences.traits}.`;
+  }
+
+  // Add user description if available
+  if (userPreferences?.user_description) {
+    systemPrompt += ` Additional context about the user: ${userPreferences.user_description}`;
+  }
+
+  // Add default behavior instructions
+  systemPrompt +=
+    " Always be helpful, accurate, and engaging in your responses.";
+
+  return systemPrompt;
+}
 
 export async function POST(req: Request) {
   // Get user session
@@ -77,6 +155,9 @@ export async function POST(req: Request) {
     });
   }
 
+  // Fetch user preferences for personalized system prompt
+  const userPreferences = await getUserPreferences(userId);
+
   const { messages, model, searchEnabled } = await req.json();
   let aiModel;
   if (
@@ -90,10 +171,16 @@ export async function POST(req: Request) {
   } else {
     aiModel = groq(model); // Using Qwen model from Groq
   }
+
+  // Create personalized system prompt
+  const personalizedSystemPrompt = createPersonalizedSystemPrompt(
+    userPreferences,
+    session.user?.name || "User"
+  );
+
   const result = streamText({
     model: aiModel,
-    system:
-      "You are a helpful agent. My name is Shivraj and im a web developer and i want the chats to be funny, concise and creative ",
+    system: personalizedSystemPrompt,
     messages,
   });
 

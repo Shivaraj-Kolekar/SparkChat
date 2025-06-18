@@ -93,17 +93,32 @@ export const chats = pgTable("chat", {
 });
 
 export const userInfo = pgTable("userInfo", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   name: text("name"),
   profession: text("profession"),
   traits: text("traits"),
   user_description: text("user_description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
 export const chatsRelations = relations(chats, ({ many }) => ({
   messages: many(messages),
 }));
+
 export const messagesRelations = relations(messages, ({ one }) => ({
   chat: one(chats, {
     fields: [messages.chatId],
     references: [chats.id],
+  }),
+}));
+
+export const userInfoRelations = relations(userInfo, ({ one }) => ({
+  user: one(user, {
+    fields: [userInfo.userId],
+    references: [user.id],
   }),
 }));

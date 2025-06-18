@@ -1,6 +1,6 @@
 "use client";
 import { useChat, type Message } from "@ai-sdk/react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
   ArrowRight,
@@ -87,7 +87,9 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -116,6 +118,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import Loader from "@/components/loader";
 
 function ChatSidebar({
   onSelectChat,
@@ -126,7 +129,7 @@ function ChatSidebar({
   selectedChatId: string | null;
   onDeleteChat: (title: string) => void;
 }) {
-  const { chats, loadingChats, errorChats } = useChatContext();
+  const { chats, refreshChats, loadingChats, errorChats } = useChatContext();
   const { data: session } = authClient.useSession();
   const [showAdditionalButtons, setShowAdditionalButtons] = useState(false);
   const [animateSearch, setAnimateSearch] = useState(false);
@@ -168,6 +171,23 @@ function ChatSidebar({
       return () => clearTimeout(hideTimeout);
     }
   }, [state]);
+  const handleDeleteChat = async (id: string) => {
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
+      refreshChats();
+      toast.success("Chat Deleted");
+    } catch (error) {
+      console.error("Error loading chat messages:", error);
+      toast.error("Error loading chat messages");
+    }
+  };
+  const router = useRouter();
+
   const buttonContainerWidthClass = state === "collapsed" ? "w-28" : "w-7"; // Adjust w-28 as needed for 3 buttons
   useHotkeys("ctrl+k", (event) => {
     event.preventDefault(); //
@@ -213,13 +233,9 @@ function ChatSidebar({
       <div>
         {" "}
         {state === "collapsed" ? (
-          // When sidebar is closed, show all three buttons with animation
           <div
             className={cn(
-              "bg-sidebar mt-4 mb-1 py-1 mx-2 px-1 rounded-sm flex items-center",
-              "overflow-hidden", // Crucial for hiding content as it shrinks
-              "transition-all duration-300 ease-out", // Animation for width
-              buttonContainerWidthClass
+              "fixed top-2 left-4 z-50 flex flex-row gap-2 items-center justify-center bg-sidebar/80 rounded-lg px-2 py-1 border  shadow-lg"
             )}
           >
             {showAdditionalButtons && (
@@ -229,11 +245,10 @@ function ChatSidebar({
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "size-7 rounded-md",
-                  "transition-all duration-300 ease-out", // Base transition
+                  "size-6 rounded-md transition-all duration-300 ease-out",
                   animateSearch
                     ? "opacity-100 translate-x-0"
-                    : "opacity-0 -translate-x-full" // Animation classes
+                    : "opacity-0 -translate-x-full"
                 )}
                 onClick={toggleSidebar}
               >
@@ -241,44 +256,32 @@ function ChatSidebar({
                 <span className="sr-only">Toggle Sidebar</span>
               </Button>
             )}
-
             {showAdditionalButtons && (
-              <>
-                {/* Search Button (now directly opens CommandDialog) */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "size-7 rounded-md",
-                    "transition-all duration-300 ease-out", // Base transition
-                    animatePlus
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 -translate-x-full", // Animation classes
-                    // Apply a margin-left to create space after the search button
-                    "ml-2"
-                  )}
-                  onClick={() => setIsCmndDialogOpen(true)} // Toggle CommandDialog open state
-                >
-                  <Search />
-                  <span className="sr-only">Search Sidebar Chats</span>
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "size-6 rounded-md transition-all duration-300 ease-out",
+                  animateSearch
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 -translate-x-full"
+                )}
+                onClick={() => setIsCmndDialogOpen(true)}
+              >
+                <Search />
+                <span className="sr-only">Search Sidebar Chats</span>
+              </Button>
             )}
-
-            {/* Plus Button */}
             {showAdditionalButtons && (
               <Link href="/">
                 <Button
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "size-7 rounded-md",
-                    "transition-all duration-300 ease-out", // Base transition
-                    animatePlus
+                    "size-6 rounded-md transition-all duration-300 ease-out",
+                    animateSearch
                       ? "opacity-100 translate-x-0"
-                      : "opacity-0 -translate-x-full", // Animation classes
-                    // Apply a margin-left to create space after the search button
-                    "ml-2"
+                      : "opacity-0 -translate-x-full"
                   )}
                 >
                   <Plus />
@@ -288,7 +291,6 @@ function ChatSidebar({
             )}
           </div>
         ) : (
-          // When sidebar is open, show only the toggle button
           <div className="my-5 py-1 mx-2 rounded-sm">
             <Button
               data-sidebar="trigger"
@@ -345,24 +347,30 @@ function ChatSidebar({
             </Link>
           </div>
           <SidebarGroup className="h-full">
-            <SidebarMenu className="px-2">
-              {Array.isArray(chats) &&
-                chats.map((chat) => (
-                  <>
-                    <SidebarMenuButton
-                      key={chat.id}
-                      className="text-base my-0.5 px-2 py-3 relative group"
-                      onClick={() => onSelectChat(chat.id)}
-                      isActive={chat.id === selectedChatId}
-                    >
-                      <Link
-                        className="absolute inset-0 flex items-center pr-10"
-                        href={`/chat/${chat.id}`}
+            {chats.length === 0 ? (
+              <SidebarMenu>
+                <p>Loading chats</p>
+                <Loader></Loader>
+              </SidebarMenu>
+            ) : (
+              <SidebarMenu className="px-2">
+                {Array.isArray(chats) &&
+                  chats.map((chat) => (
+                    <>
+                      <SidebarMenuButton
+                        key={chat.id}
+                        className="text-base my-0.5 px-2 py-3 relative group"
+                        onClick={() => onSelectChat(chat.id)}
+                        isActive={chat.id === selectedChatId}
                       >
-                        <div
-                          className="relative flex-grow min-w-0" // min-w-0 to allow flex item to shrink
+                        <Link
+                          className="absolute inset-0 flex items-center pr-10"
+                          href={`/chat/${chat.id}`}
                         >
-                          {/* <span
+                          <div
+                            className="relative flex-grow min-w-0" // min-w-0 to allow flex item to shrink
+                          >
+                            {/* <span
                         className="block whitespace-nowrap overflow-hidden pr-8" // pr-8 for gradient space
                         style={{
                           // Apply linear-gradient for the blur effect
@@ -376,35 +384,60 @@ function ChatSidebar({
                         {chat.title}
                       </span>
                       Optional: if you want a classic ellipsis, use this instead of maskImage */}
-                          <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
-                            {chat.title}
-                          </span>
-                        </div>{" "}
-                      </Link>{" "}
-                      <div
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                          chat.id === selectedChatId ? "block" : "" // Keep delete button visible if active (optional)
-                        }`}
-                      >
-                        <Button
-                          variant="outline" // Use a ghost variant for a subtle look
-                          size="icon" // Make it a small, icon-only button
-                          className="h-8 w-8 text-gray-500 hover:text-red-500" // Adjust size and color
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent onSelectChat from firing
-                            onDeleteChat(chat.id); // Call the actual delete function
-                            toast.success("Chat deleted");
-                          }}
+                            <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
+                              {chat.title}
+                            </span>
+                          </div>{" "}
+                        </Link>{" "}
+                        <div
+                          className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
+                            chat.id === selectedChatId ? "block" : "" // Keep delete button visible if active (optional)
+                          }`}
                         >
-                          <X className="h-4 w-4" /> {/* Adjust icon size */}
-                          <span className="sr-only">Delete Chat</span>{" "}
-                          {/* Accessibility text */}
-                        </Button>
-                      </div>
-                    </SidebarMenuButton>
-                  </>
-                ))}
-            </SidebarMenu>
+                          <Dialog>
+                            <DialogTrigger>
+                              <Button
+                                variant="outline" // Use a ghost variant for a subtle look
+                                size="icon" // Make it a small, icon-only button
+                                className="h-8 w-8 text-gray-500 hover:text-red-500" // Adjust size and color
+                              >
+                                <X className="h-4 w-4" />{" "}
+                                {/* Adjust icon size */}
+                                <span className="sr-only">
+                                  Delete Chat
+                                </span>{" "}
+                                {/* Accessibility text */}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Delete Chat</DialogTitle>
+                              </DialogHeader>
+                              <DialogDescription>
+                                Are you sure you want to delete this chat ?
+                              </DialogDescription>
+                              <DialogFooter>
+                                <DialogClose>Close</DialogClose>
+                                <Button
+                                  variant={"destructive"}
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent onSelectChat from firing
+                                    handleDeleteChat(chat.id); // Call the actual delete function
+                                    toast.success("Chat deleted");
+                                    router.push("/");
+                                  }}
+                                >
+                                  Delete Chat
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </SidebarMenuButton>
+                    </>
+                  ))}
+              </SidebarMenu>
+            )}
           </SidebarGroup>
           <SidebarFooter className="justify-end">
             <Link href="/settings">
@@ -501,8 +534,8 @@ function AIPage({
           "AI response was not saved. The chat history may be incomplete."
         );
       }
-      fetchRemaining();
       fetchMessages(currentChatId as string);
+      // fetchRemaining();
     },
   });
 
@@ -663,6 +696,11 @@ function AIPage({
     color: string; // Tailwind CSS classes will be strings
     tooltip: string; // tooltip content as strings
   }
+  const WebSearchModels = [
+    "gemini-2.0-flash",
+    "gemini-2.5-flash-preview-04-17",
+    "gemini-2.0-flash-lite",
+  ];
   const models = [
     {
       label: "Llama 4 Scout",
@@ -876,10 +914,9 @@ function AIPage({
 
   return (
     <main className="flex h-screen flex-col overflow-hidden">
-      {/*  */}
       <div className="flex h-13 flex-row">
         <div className="h-2 bg-background w-full"></div>
-        <header className="bg-background z-10 justify-end flex h-auto py-2 my-2 w-fit -rounded-start-5 rounded-bl-lg  shrink-0 items-center gap-2 px-4">
+        <header className="bg-background z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
           <div className="flex flex-row gap-2 items-center">
             <Link href="/settings">
               <Button variant={"outline"}>
@@ -888,7 +925,6 @@ function AIPage({
             </Link>
             <ModeToggle></ModeToggle>
           </div>
-          {/* <div className="text-foreground">{currentChatId}</div> */}
         </header>
       </div>
       <hr></hr>
@@ -896,11 +932,12 @@ function AIPage({
         {" "}
         <div className="overflow-y-auto space-y-4 pb-4">
           <ChatContainerRoot className="flex-1">
-            <ChatContainerContent className="space-y-4 p-4">
+            <ChatContainerContent className="space-y-4 py-4">
               {messages.length === 0 ? (
                 <div className="">
                   <div className="text-center text-muted-foreground mt-8">
-                    Ask me anything to get started {session?.user?.name}!
+                    <Loader></Loader>
+                    <p className="text-xl">Loading Messages</p>
                   </div>
                 </div>
               ) : (
@@ -911,9 +948,15 @@ function AIPage({
                       message.role === "user" ? "justify-end" : "justify-start"
                     }
                   >
-                    <div className="max-w-[85%] flex-1 sm:max-w-[75%]">
+                    <div
+                      className={
+                        message.role === "assistant"
+                          ? "min-w-[95%] flex-1 sm:max-w-[75%] mr-auto"
+                          : " flex-1 min-w-[25%] w-auto max-w-[50%] ml-auto"
+                      }
+                    >
                       {message.role === "assistant" ? (
-                        <div className="bg-transparent text-foreground prose rounded-lg p-2">
+                        <div className="bg-transparent min-w-[95%] text-foreground prose rounded-lg p-2">
                           {(() => {
                             const thinkMatch = message.content.match(
                               /<think>([\s\S]*?)<\/think>/
@@ -978,7 +1021,7 @@ function AIPage({
                       ) : (
                         <MessageContent
                           markdown
-                          className="bg-primary text-primary-foreground"
+                          className="bg-primary min-w-[50%]  text-primary-foreground"
                         >
                           {message.content}
                         </MessageContent>
@@ -994,7 +1037,7 @@ function AIPage({
         <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
           {remaining <= 5 && remaining > 0 && (
             <div className="text-yellow-600 text-center mb-2">
-              {remaining} messages left before your daily limit.
+              {remaining} messages left before your daily limit is reached.
             </div>
           )}
           {remaining === 0 && (
@@ -1073,13 +1116,11 @@ function AIPage({
                                 <div className="space-x-2 my-1.5 inline-flex">
                                   {model.usecase.map((usecase) => {
                                     const config = useCaseConfig[usecase];
-                                    if (!config) return null; // Handle cases where a use case might not have a config
-
+                                    if (!config) return null;
                                     return (
-                                      <Tooltip>
+                                      <Tooltip key={usecase}>
                                         <TooltipTrigger>
                                           <Badge
-                                            key={usecase}
                                             className={`flex items-center rounded-sm p-1 gap-1 ${config.color}`}
                                           >
                                             {config.icon && (
@@ -1089,20 +1130,12 @@ function AIPage({
                                             )}
                                           </Badge>
                                         </TooltipTrigger>
-                                        <TooltipContent key={usecase}>
+                                        <TooltipContent>
                                           {config.tooltip}
                                         </TooltipContent>
                                       </Tooltip>
                                     );
                                   })}
-                                  {/* <Check
-                                    className={cn(
-                                      "ml-auto",
-                                      value === model.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  /> */}
                                 </div>
                               </CommandItem>
                             ))}
@@ -1117,27 +1150,26 @@ function AIPage({
                     !session ? "Please login to use Search Web" : "Search Web"
                   }
                 >
-                  <Button
-                    onClick={() => {
-                      setSearchEnabled((prevSearchEnabled) => {
-                        const newState = !prevSearchEnabled;
-                        if (newState) {
-                          toast.success("Web search enabled");
-                        } else {
-                          toast.info("Web search disabled");
-                        }
-                        return newState;
-                      });
-                    }}
-                    variant={
-                      searchEnabled === true ? "destructive" : "secondary"
-                    }
-                  >
-                    <Globe></Globe>Search
-                  </Button>
+                  {WebSearchModels.includes(selectedModel) && (
+                    <Button
+                      onClick={() => {
+                        setSearchEnabled((prevSearchEnabled) => {
+                          const newState = !prevSearchEnabled;
+                          if (newState) {
+                            toast.success("Web search enabled");
+                          } else {
+                            toast.info("Web search disabled");
+                          }
+                          return newState;
+                        });
+                      }}
+                      variant={searchEnabled === true ? "default" : "secondary"}
+                    >
+                      <Globe></Globe>Search
+                    </Button>
+                  )}
                 </PromptInputAction>
               </div>
-
               <PromptInputAction
                 tooltip={isLoading ? "Processing..." : "Send message"}
               >
@@ -1209,7 +1241,7 @@ function FullChatApp({ params }: { params: { id: string } }) {
     router.push(`/chat/${id}`);
   };
 
-  useHotkeys("ctrl+o", (event) => {
+  useHotkeys("ctrl+shift+o", (event) => {
     event.preventDefault(); //
     router.replace("/");
     toast.success("CTRL+O pressed");

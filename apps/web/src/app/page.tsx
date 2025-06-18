@@ -30,6 +30,10 @@ import {
   User,
   X,
   Zap,
+  Sparkles,
+  BookOpen,
+  Code2,
+  GraduationCap,
 } from "lucide-react";
 import { useRef, useEffect, type JSX } from "react";
 import {
@@ -92,13 +96,16 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { suggestionGroups } from "@/components/suggestions";
+import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
 import { db } from "../../../server/src/db";
 import { chats as chattable } from "../../../server/src/db/schema/auth";
 import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
+  DialogHeader,
   DialogOverlay,
   DialogTitle,
   DialogTrigger,
@@ -121,6 +128,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Loader from "@/components/loader";
 
 function ChatSidebar({
   onSelectChat,
@@ -149,7 +157,10 @@ function ChatSidebar({
   const [animateSearch, setAnimateSearch] = useState(false);
   const [animatePlus, setAnimatePlus] = useState(false);
   const [isCmndDialogOpen, setIsCmndDialogOpen] = useState(false);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
+
   const fetchChats = async () => {
+    setIsLoadingChats(true);
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
@@ -165,6 +176,8 @@ function ChatSidebar({
       }
     } catch (error) {
       console.error("Error fetching chats:", error);
+    } finally {
+      setIsLoadingChats(false);
     }
   };
 
@@ -198,6 +211,23 @@ function ChatSidebar({
       toast.error("Error occurred in chat creation");
     }
   };
+
+  const handleDeleteChat = async (id: string) => {
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
+      fetchChats();
+      toast.success("Chat Deleted");
+    } catch (error) {
+      console.error("Error loading chat messages:", error);
+      toast.error("Error loading chat messages");
+    }
+  };
+
   const { toggleSidebar, state } = useSidebar();
   useEffect(() => {
     if (state === "collapsed") {
@@ -242,7 +272,7 @@ function ChatSidebar({
 
   const buttonContainerWidthClass = state === "collapsed" ? "w-28" : "w-7"; // Adjust w-28 as needed for 3 buttons
   return (
-    <div>
+    <div className="h-40">
       <div>
         {" "}
         <CommandDialog
@@ -281,100 +311,85 @@ function ChatSidebar({
             </CommandList>
           </Command>
         </CommandDialog>
-        {state === "collapsed" ? (
-          // When sidebar is closed, show all three buttons with animation
-          <div
-            className={cn(
-              "bg-sidebar mt-4 mb-1 py-1 mx-2 px-1 rounded-sm flex items-center",
-              "overflow-hidden", // Crucial for hiding content as it shrinks
-              "transition-all duration-300 ease-out", // Animation for width
-              buttonContainerWidthClass
-            )}
-          >
-            {showAdditionalButtons && (
+        <div>
+          {" "}
+          {state === "collapsed" ? (
+            <div
+              className={cn(
+                "fixed top-2 left-4 z-50 flex flex-row gap-2 items-center justify-center bg-sidebar/80 rounded-lg px-2 py-1 border  shadow-lg"
+              )}
+            >
+              {showAdditionalButtons && (
+                <Button
+                  data-sidebar="trigger"
+                  data-slot="sidebar-trigger"
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "size-6 rounded-md transition-all duration-300 ease-out",
+                    animateSearch
+                      ? "opacity-100 translate-x-0"
+                      : "opacity-0 -translate-x-full"
+                  )}
+                  onClick={toggleSidebar}
+                >
+                  <PanelLeftIcon />
+                  <span className="sr-only">Toggle Sidebar</span>
+                </Button>
+              )}
+              {showAdditionalButtons && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "size-6 rounded-md transition-all duration-300 ease-out",
+                    animateSearch
+                      ? "opacity-100 translate-x-0"
+                      : "opacity-0 -translate-x-full"
+                  )}
+                  onClick={() => setIsCmndDialogOpen(true)}
+                >
+                  <Search />
+                  <span className="sr-only">Search Sidebar Chats</span>
+                </Button>
+              )}
+              {showAdditionalButtons && (
+                <Link href="/">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "size-6 rounded-md transition-all duration-300 ease-out",
+                      animateSearch
+                        ? "opacity-100 translate-x-0"
+                        : "opacity-0 -translate-x-full"
+                    )}
+                  >
+                    <Plus />
+                    <span className="sr-only">Add Chat</span>
+                  </Button>
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="my-5 py-1 mx-2 rounded-sm">
               <Button
                 data-sidebar="trigger"
                 data-slot="sidebar-trigger"
                 variant="ghost"
                 size="icon"
-                className={cn(
-                  "size-7 rounded-md",
-                  "transition-all duration-300 ease-out", // Base transition
-                  animateSearch
-                    ? "opacity-100 translate-x-0"
-                    : "opacity-0 -translate-x-full" // Animation classes
-                )}
+                className={cn("size-7")}
                 onClick={toggleSidebar}
               >
                 <PanelLeftIcon />
                 <span className="sr-only">Toggle Sidebar</span>
               </Button>
-            )}
-
-            {showAdditionalButtons && (
-              <>
-                {/* Search Button (now directly opens CommandDialog) */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "size-7 rounded-md",
-                    "transition-all duration-300 ease-out", // Base transition
-                    animatePlus
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 -translate-x-full", // Animation classes
-                    // Apply a margin-left to create space after the search button
-                    "ml-2"
-                  )}
-                  onClick={() => setIsCmndDialogOpen(true)} // Toggle CommandDialog open state
-                >
-                  <Search />
-                  <span className="sr-only">Search Sidebar Chats</span>
-                </Button>
-              </>
-            )}
-
-            {/* Plus Button */}
-            {showAdditionalButtons && (
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "size-7 rounded-md",
-                    "transition-all duration-300 ease-out", // Base transition
-                    animatePlus
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 -translate-x-full", // Animation classes
-                    // Apply a margin-left to create space after the search button
-                    "ml-2"
-                  )}
-                >
-                  <Plus />
-                  <span className="sr-only">Add Chat</span>
-                </Button>
-              </Link>
-            )}
-          </div>
-        ) : (
-          // When sidebar is open, show only the toggle button
-          <div className="my-5 py-1 mx-2 rounded-sm">
-            <Button
-              data-sidebar="trigger"
-              data-slot="sidebar-trigger"
-              variant="ghost"
-              size="icon"
-              className={cn("size-7")}
-              onClick={toggleSidebar}
-            >
-              <PanelLeftIcon />
-              <span className="sr-only">Toggle Sidebar</span>
-            </Button>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
       <Sidebar>
-        <SidebarHeader className="flex flex-row items-center gap-2 py-2">
+        <SidebarHeader className="flex flex-row items-center gap-2 pb-2">
           {/* */}{" "}
           <Button
             data-sidebar="trigger"
@@ -414,73 +429,84 @@ function ChatSidebar({
             </Link>
           </div>
           <SidebarGroup className="h-full">
-            <SidebarMenu className="px-2">
-              {Array.isArray(chatList) &&
-                chatList.map((chat) => (
-                  <SidebarMenuButton
-                    key={chat.id}
-                    className="text-base my-0.5 px-2 py-3 relative group" // Add 'group' class here
-                    onClick={() => onSelectChat(chat.id)}
-                    isActive={chat.id === selectedChatId}
-                  >
-                    {/* Title Container with Blur Effect */}
-                    <Link
-                      href={`/chat/${chat.id}`}
-                      // Prevent Link's default behavior from interfering with button click
-                      onClick={(e) => {
-                        e.stopPropagation(); // Stop propagation for the button click
-                        onSelectChat(chat.id); // Ensure chat selection happens
-                      }}
-                      className="absolute inset-0 flex items-center pr-10" // pr-10 to make space for the delete button
-                      // This div wraps the span to apply the gradient and ensure overflow properties work
+            {isLoadingChats ? (
+              <SidebarMenu>
+                <p className="text-center">Loading chats...</p>
+                <Loader />
+              </SidebarMenu>
+            ) : chatList.length === 0 ? (
+              <SidebarMenu>
+                <p className="text-center">No chats found</p>
+              </SidebarMenu>
+            ) : (
+              <SidebarMenu className="px-2">
+                {Array.isArray(chatList) &&
+                  chatList.map((chat) => (
+                    <SidebarMenuButton
+                      key={chat.id}
+                      className="text-base my-0.5 px-2 py-3 relative group"
+                      onClick={() => onSelectChat(chat.id)}
+                      isActive={chat.id === selectedChatId}
                     >
-                      <div
-                        className="relative flex-grow min-w-0" // min-w-0 to allow flex item to shrink
-                      >
-                        {/* <span
-                        className="block whitespace-nowrap overflow-hidden pr-8" // pr-8 for gradient space
-                        style={{
-                          // Apply linear-gradient for the blur effect
-                          // Make sure the background of the parent (Link) is set, e.g., white or matching your theme
-                          maskImage:
-                            "linear-gradient(to right, black 85%, transparent 100%)",
-                          WebkitMaskImage:
-                            "linear-gradient(to right, black 85%, transparent 100%)",
-                        }}
-                      >
-                        {chat.title}
-                      </span>
-                      Optional: if you want a classic ellipsis, use this instead of maskImage */}
-                        <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
-                          {chat.title}
-                        </span>
-                      </div>
-                    </Link>
-
-                    {/* Delete Button */}
-                    <div
-                      className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                        chat.id === selectedChatId ? "block" : "" // Keep delete button visible if active (optional)
-                      }`}
-                    >
-                      <Button
-                        variant="outline" // Use a ghost variant for a subtle look
-                        size="icon" // Make it a small, icon-only button
-                        className="h-8 w-8 text-gray-500 hover:text-red-500" // Adjust size and color
+                      {/* Title Container with Blur Effect */}
+                      <Link
+                        href={`/chat/${chat.id}`}
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent onSelectChat from firing
-                          onDeleteChat(chat.id); // Call the actual delete function
-                          toast.success("Chat deleted");
+                          e.stopPropagation();
+                          onSelectChat(chat.id);
                         }}
+                        className="absolute inset-0 flex items-center pr-10"
                       >
-                        <X className="h-4 w-4" /> {/* Adjust icon size */}
-                        <span className="sr-only">Delete Chat</span>{" "}
-                        {/* Accessibility text */}
-                      </Button>
-                    </div>
-                  </SidebarMenuButton>
-                ))}
-            </SidebarMenu>
+                        <div className="relative flex-grow min-w-0">
+                          <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
+                            {chat.title}
+                          </span>
+                        </div>
+                      </Link>
+                      {/* Delete Button */}
+                      <div
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
+                          chat.id === selectedChatId ? "block" : ""
+                        }`}
+                      >
+                        <Dialog>
+                          <DialogTrigger>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 text-gray-500 hover:text-red-500"
+                            >
+                              <X className="h-4 w-4" />
+                              <span className="sr-only">Delete Chat</span>
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Delete Chat</DialogTitle>
+                            </DialogHeader>
+                            <DialogDescription>
+                              Are you sure you want to delete this chat ?
+                            </DialogDescription>
+                            <DialogFooter>
+                              <DialogClose>Close</DialogClose>
+                              <Button
+                                variant={"destructive"}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteChat(chat.id);
+                                  toast.success("Chat deleted");
+                                }}
+                              >
+                                Delete Chat
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </SidebarMenuButton>
+                  ))}
+              </SidebarMenu>
+            )}
           </SidebarGroup>
           <SidebarFooter className="justify-end">
             <Link href={session ? "/settings" : "/login"}>
@@ -542,29 +568,7 @@ function AIPage({
   const [remaining, setRemaining] = useState(10);
   const [rateLimitReset, setRateLimitReset] = useState("");
   const [promptDisabled, setPromptDisabled] = useState(false);
-
-  const handleSend = () => {
-    if (inputValue.trim()) {
-      console.log("Sending:", inputValue);
-      setInputValue("");
-      setActiveCategory("");
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handlePromptInputValueChange = (value: string) => {
-    setInputValue(value);
-    // Clear active category when typing something different
-    if (value.trim() === "") {
-      setActiveCategory("");
-    }
-  };
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Get suggestions based on active category
   const activeCategoryData = suggestionGroups.find(
@@ -669,7 +673,6 @@ function AIPage({
       searchEnabled: searchEnabled,
     },
     onFinish: async (message) => {
-      fetchRemaining(); // Re-added fetchRemaining here
       // Store the AI's response
       const stored = await storeMessage(message, chatId as string); // Use currentChatId from state
       if (!stored) {
@@ -677,6 +680,7 @@ function AIPage({
           "AI response was not saved. The chat history may be incomplete."
         );
       }
+      // fetchRemaining(); // Re-added fetchRemaining here
     },
   });
 
@@ -910,11 +914,36 @@ function AIPage({
       color: "bg-fuchsia-100  text-fuchsia-800 ",
     },
   };
+
+  // Example prompts for landing
+  const examplePrompts = [
+    "How does AI work?",
+    "Are black holes real?",
+    'How many Rs are in the word "strawberry"?',
+    "What is the meaning of life?",
+  ];
+
+  const categoryMap = {
+    Create: "Summary",
+    Explore: "Research",
+    Code: "Code",
+    Learn: "Writing",
+  };
+
+  const categoryIcons = {
+    Create: <Sparkles className="h-4 w-4" />,
+    Explore: <BookOpen className="h-4 w-4" />,
+    Code: <Code2 className="h-4 w-4" />,
+    Learn: <GraduationCap className="h-4 w-4" />,
+  };
+
+  const categories = ["Create", "Explore", "Code", "Learn"];
+
   return (
-    <main className="flex h-screen flex-col overflow-hidden">
+    <main className="flex flex-col min-h-screen bg-background">
       <div className="flex h-13 flex-row">
         <div className="h-2 bg-background w-full"></div>
-        <header className="bg-background z-10 justify-end flex h-auto py-2 my-2 w-fit -rounded-start-5 rounded-bl-lg  shrink-0 items-center gap-2 px-4">
+        <header className="bg-background z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
           <div className="flex flex-row gap-2 items-center">
             <Link href="/settings">
               <Button variant={"outline"}>
@@ -923,268 +952,353 @@ function AIPage({
             </Link>
             <ModeToggle></ModeToggle>
           </div>
-          {/* <div className="text-foreground">{currentChatId}</div> */}
         </header>
       </div>
       <hr></hr>
-      <div className="grid  max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto pb-4">
-        <div className=" overflow-y-auto  space-y-4 pb-4">
-          <ChatContainerRoot className="flex-1">
-            <ChatContainerContent className="space-y-4 p-4">
-              {messages.length === 0 ? (
-                <div className="">
-                  <div className="text-center text-muted-foreground mt-8">
-                    Ask me anything to get started {session?.user.name}!
+      <div className="flex-1 flex flex-col items-start justify-center w-full">
+        <div className="flex flex-col items-start justify-center w-full max-w-[800px] mx-auto flex-1">
+          {messages.length === 0 ? (
+            <div className="w-full flex flex-col items-start justify-start">
+              <div className="flex flex-col items-start justify-start w-full">
+                <div className="bg-background rounded-2xl px-2 py-4 sm:px-4 sm:py-4 mx-auto">
+                  <div className="text-left space-y-4 sm:space-y-6">
+                    <h1 className="text-2xl text-center sm:text-lg md:text-xl font-bold text-foreground leading-tight">
+                      How can I help you
+                      {session?.user?.name ? `, ${session.user.name}` : ""}?
+                    </h1>
+
+                    {/* Category Buttons */}
+                    <div className="w-full max-w-lg flex flex-row gap-2 px-2">
+                      {categories.map((cat) => (
+                        <div
+                          key={cat}
+                          className={`flex-1 flex items-center gap-2 rounded-full font-medium justify-center p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent  cursor-pointer transition-all duration-200 hover:shadow-sm border ${
+                            selectedCategory === cat
+                              ? "border-border bg-accent"
+                              : "border"
+                          }`}
+                          style={{ minWidth: 0 }}
+                          onClick={() =>
+                            setSelectedCategory(
+                              cat === selectedCategory ? null : cat
+                            )
+                          }
+                        >
+                          <span className="inline ">
+                            {categoryIcons[cat as keyof typeof categoryIcons]}
+                          </span>
+                          {cat}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Category Prompt Suggestions */}
+                    {selectedCategory && (
+                      <div className="w-full bg-background border border-border rounded-xl shadow-lg p-4 sm:p-6 animate-in fade-in duration-300 mt-2">
+                        <div className="flex items-center justify-between mb-3 sm:mb-4">
+                          <div className="flex items-center gap-2">
+                            <span className="inline">
+                              {
+                                categoryIcons[
+                                  selectedCategory as keyof typeof categoryIcons
+                                ]
+                              }
+                            </span>
+                            <span className="font-semibold text-foreground text-sm sm:text-base">
+                              {selectedCategory} Suggestions
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground"
+                            onClick={() => setSelectedCategory(null)}
+                          >
+                            <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </Button>
+                        </div>
+                        <div className="space-y-1.5 sm:space-y-2">
+                          {suggestionGroups
+                            .find(
+                              (g) =>
+                                g.label ===
+                                categoryMap[
+                                  selectedCategory as keyof typeof categoryMap
+                                ]
+                            )
+                            ?.items.slice(0, 6)
+                            .map((prompt) => (
+                              <div
+                                key={prompt}
+                                className="w-full p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm border border-transparent hover:border-border"
+                                onClick={() => {
+                                  handleInputChange({
+                                    target: { value: prompt },
+                                  } as any);
+                                  setSelectedCategory(null);
+                                }}
+                              >
+                                {prompt}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Example Prompts (only if no category selected) */}
+                    {!selectedCategory && (
+                      <div className="w-full space-y-1.5 sm:space-y-2 mt-4">
+                        {examplePrompts.map((prompt) => (
+                          <div
+                            key={prompt}
+                            className="w-full p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm border border-transparent hover:border-border"
+                            onClick={() =>
+                              handleInputChange({
+                                target: { value: prompt },
+                              } as any)
+                            }
+                          >
+                            {prompt}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              ) : (
-                messages.map((message) => (
-                  <MessageComponent
-                    key={message.id}
-                    className={
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }
-                  >
-                    <div className="max-w-[85%] flex-1 sm:max-w-[75%]">
-                      {message.role === "assistant" ? (
-                        <div className="bg-transparent text-foreground prose rounded-lg p-2">
-                          <Markdown>{message.content}</Markdown>
-                          <MessageActions>
-                            <MessageAction tooltip="Copy response">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {}}
-                                className="rounded-full"
-                              >
-                                <Copy />
-                              </Button>
-                            </MessageAction>
-                            <MessageAction tooltip="reload response">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  reload();
-                                }}
-                                className="rounded-full"
-                              >
-                                <ListRestart />
-                              </Button>
-                            </MessageAction>
-                          </MessageActions>
-                        </div>
-                      ) : (
-                        <MessageContent
-                          markdown
-                          className="bg-primary text-primary-foreground"
-                        >
-                          {message.content}
-                        </MessageContent>
-                      )}
-                    </div>
-                  </MessageComponent>
-                ))
-              )}
-              <div ref={messagesEndRef} />
-            </ChatContainerContent>
-          </ChatContainerRoot>
-        </div>
-        {/* <div className="relative flex w-full flex-col items-center justify-center space-y-2">
-        <div className="absolute top-0 left-0 h-auto w-full">
-          {showCategorySuggestions ? (
-            <div className="flex w-full flex-col space-y-1">
-              {activeCategoryData?.items.map((suggestion) => (
-                <PromptSuggestion
-                  key={suggestion}
-                  highlight={activeCategoryData.highlight}
-                  onClick={() => {
-                    setInputValue(suggestion);
-                    // Optional: auto-send
-                    // handleSend()
-                  }}
-                >
-                  {suggestion}
-                </PromptSuggestion>
-              ))}
+              </div>
             </div>
           ) : (
-            <div className=" flex w-full flex-wrap items-stretch justify-start gap-2">
-              {suggestionGroups.map((suggestion) => (
-                <PromptSuggestion
-                  key={suggestion.label}
-                  onClick={() => {
-                    setActiveCategory(suggestion.label);
-                    setInputValue(""); // Clear input when selecting a category
-                  }}
-                  className="capitalize"
-                >
-                  <BrainIcon className="mr-2 h-4 w-4" />
-                  {suggestion.label}
-                </PromptSuggestion>
-              ))}
+            <div className="w-full flex flex-col items-start justify-center">
+              <ChatContainerRoot className="flex-1 w-full">
+                <ChatContainerContent className="space-y-4 py-4 flex flex-col items-start justify-center">
+                  {messages.map((message) => (
+                    <MessageComponent
+                      key={message.id}
+                      className={
+                        message.role === "user"
+                          ? "justify-end"
+                          : "justify-start"
+                      }
+                    >
+                      <div
+                        className={
+                          message.role === "assistant"
+                            ? "min-w-[95%] flex-1 sm:max-w-[75%] mx-auto"
+                            : "w-fit flex-1 sm:max-w-[75%]"
+                        }
+                      >
+                        {message.role === "assistant" ? (
+                          <div className="min-w-[95%] text-foreground prose rounded-lg py-2">
+                            <Markdown className="bg-none">
+                              {message.content}
+                            </Markdown>
+                            <MessageActions>
+                              <MessageAction tooltip="Copy response">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {}}
+                                  className="rounded-full"
+                                >
+                                  <Copy />
+                                </Button>
+                              </MessageAction>
+                              <MessageAction tooltip="reload response">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    reload();
+                                  }}
+                                  className="rounded-full"
+                                >
+                                  <ListRestart />
+                                </Button>
+                              </MessageAction>
+                            </MessageActions>
+                          </div>
+                        ) : (
+                          <MessageContent
+                            markdown
+                            className="bg-primary text-primary-foreground px-4 py-2 rounded-lg"
+                          >
+                            {message.content}
+                          </MessageContent>
+                        )}
+                      </div>
+                    </MessageComponent>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </ChatContainerContent>
+              </ChatContainerRoot>
             </div>
           )}
         </div>
-      </div> */}
-        <div className="p-1 flex flex-col justify-center align-items-center max-w-(--breakpoint-md) rounded-xl bg-accent">
-          {remaining <= 5 && remaining > 0 && (
-            <div className="text-yellow-600 text-center mb-2">
-              {remaining} messages left before your daily limit.
-            </div>
-          )}
-          {remaining === 0 && (
-            <div className="text-red-600 text-center mb-2">
-              You have reached your daily message limit. Please wait until your
-              quota resets.
-            </div>
-          )}
-          <PromptInput
-            value={input}
-            onSubmit={handleSubmit}
-            className="w-full  max-w-(--breakpoint-md)"
-          >
-            <PromptInputTextarea
-              onChange={handleInputChange}
-              placeholder="Ask me anything..."
-              //disabled={promptDisabled}
-            />
-            <PromptInputActions className="justify-between  pt-2">
-              <div className="flex align-items-center gap-2">
-                <PromptInputAction tooltip="Select model">
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[200px] justify-between"
-                      >
-                        {value
-                          ? models.find((model) => model.value === value)?.label
-                          : "Select Model"}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[400px]  p-0">
-                      <Command>
-                        <CommandInput
-                          placeholder="Search framework..."
-                          className="h-9"
-                        />
-                        <CommandList>
-                          <CommandEmpty>No framework found.</CommandEmpty>
-                          <CommandGroup>
-                            {models.map((model) => (
-                              <CommandItem
-                                key={model.value}
-                                value={model.value}
-                                className={cn(
-                                  "ml-auto",
-                                  "flex flex-row justify-between items-center",
-                                  value === model.value
-                                    ? "bg-accent"
-                                    : "bg-none"
-                                )}
-                                onSelect={(currentValue) => {
-                                  setValue(
-                                    currentValue === value ? "" : currentValue
-                                  );
-                                  setOpen(false);
-                                  setSelectedModel(currentValue);
-                                }}
-                              >
-                                <div className="inline-flex gap-2 items-center">
-                                  <svg
-                                    className="size-4 text-color-heading"
-                                    viewBox={model.svg.viewbox}
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                  >
-                                    <title>{model.svg?.title}</title>
-                                    <path d={model.svg?.path}></path>
-                                  </svg>
-                                  <p className="text-base">{model.label}</p>{" "}
-                                </div>
-                                <div className="space-x-2 my-3 inline-flex">
-                                  {model.usecase.map((usecase) => {
-                                    const config = useCaseConfig[usecase];
-                                    if (!config) return null; // Handle cases where a use case might not have a config
-
-                                    return (
-                                      <Tooltip>
-                                        <TooltipTrigger>
-                                          <Badge
-                                            key={usecase}
-                                            className={`flex items-center rounded-sm p-1 gap-1 ${config.color}`}
-                                          >
-                                            {config.icon && (
-                                              <span className="h-4 rounded-none w-4">
-                                                {config.icon}
-                                              </span>
-                                            )}
-                                          </Badge>
-                                        </TooltipTrigger>
-                                        <TooltipContent key={usecase}>
-                                          {config.tooltip}
-                                        </TooltipContent>
-                                      </Tooltip>
+      </div>
+      {/* Prompt input always at bottom */}
+      <div className="w-full flex justify-center sticky bottom-0 bg-background z-50  border-border py-3 px-2">
+        <div className="w-full max-w-[800px] mx-auto">
+          <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
+            {remaining <= 5 && remaining > 0 && (
+              <div className="text-yellow-600 text-center mb-2">
+                {remaining} messages left before your daily limit is reached.
+              </div>
+            )}
+            {remaining === 0 && (
+              <div className="text-red-600 text-center mb-2">
+                You have reached your daily message limit. Please wait until
+                your quota resets.
+              </div>
+            )}
+            <PromptInput
+              value={input}
+              onSubmit={handleSubmit}
+              className="w-full max-w-(--breakpoint-md)"
+            >
+              <PromptInputTextarea
+                onChange={handleInputChange}
+                placeholder="Ask me anything..."
+                disabled={promptDisabled}
+              />
+              <PromptInputActions className="justify-between pt-2">
+                <div className="flex align-items-center gap-2">
+                  <PromptInputAction tooltip="Select model">
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-[200px] justify-between"
+                        >
+                          {value
+                            ? models.find((model) => model.value === value)
+                                ?.label
+                            : "Select Model"}
+                          <ChevronsUpDown className="opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px]  p-0">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search framework..."
+                            className="h-9"
+                          />
+                          <CommandList>
+                            <CommandEmpty>No framework found.</CommandEmpty>
+                            <CommandGroup>
+                              {models.map((model) => (
+                                <CommandItem
+                                  key={model.value}
+                                  value={model.value}
+                                  className={cn(
+                                    "ml-auto",
+                                    "flex flex-row justify-between items-center",
+                                    value === model.value
+                                      ? "bg-accent"
+                                      : "bg-none"
+                                  )}
+                                  onSelect={(currentValue) => {
+                                    setValue(
+                                      currentValue === value ? "" : currentValue
                                     );
-                                  })}
-                                </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </PromptInputAction>
+                                    setOpen(false);
+                                    setSelectedModel(currentValue);
+                                  }}
+                                >
+                                  <div className="inline-flex gap-2 items-center">
+                                    <svg
+                                      className="size-4 text-color-heading"
+                                      viewBox={model.svg.viewbox}
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="currentColor"
+                                    >
+                                      <title>{model.svg?.title}</title>
+                                      <path d={model.svg?.path}></path>
+                                    </svg>
+                                    <p className="text-base">{model.label}</p>{" "}
+                                  </div>
+                                  <div className="space-x-2 my-1.5 inline-flex">
+                                    {model.usecase.map((usecase) => {
+                                      const config = useCaseConfig[usecase];
+                                      if (!config) return null;
+                                      return (
+                                        <Tooltip key={usecase}>
+                                          <TooltipTrigger>
+                                            <Badge
+                                              className={`flex items-center rounded-sm p-1 gap-1 ${config.color}`}
+                                            >
+                                              {config.icon && (
+                                                <span className="h-4 rounded-none w-4">
+                                                  {config.icon}
+                                                </span>
+                                              )}
+                                            </Badge>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            {config.tooltip}
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      );
+                                    })}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </PromptInputAction>
+
+                  <PromptInputAction
+                    tooltip={
+                      !session ? "Please login to use Search Web" : "Search Web"
+                    }
+                  >
+                    <Button
+                      onClick={() => {
+                        setSearchEnabled((prevSearchEnabled) => {
+                          const newState = !prevSearchEnabled;
+                          if (newState) {
+                            toast.success("Web search enabled");
+                          } else {
+                            toast.info("Web search disabled");
+                          }
+                          return newState;
+                        });
+                      }}
+                      variant={
+                        searchEnabled === true ? "destructive" : "secondary"
+                      }
+                    >
+                      <Globe></Globe>Search
+                    </Button>
+                  </PromptInputAction>
+                </div>
+
                 <PromptInputAction
-                  tooltip={
-                    !session ? "Please login to use Web Search" : "Search Web"
-                  }
+                  tooltip={isStreaming ? "Processing..." : "Send message"}
                 >
                   <Button
+                    variant="default"
+                    size="icon"
+                    className="h-8 w-8 rounded-full"
                     onClick={() => {
-                      setSearchEnabled((prevSearchEnabled) => {
-                        const newState = !prevSearchEnabled;
-                        if (newState) {
-                          toast.success("Web search enabled");
-                        } else {
-                          toast.info("Web search disabled");
-                        }
-                        return newState;
-                      });
+                      if (!promptDisabled) handleSubmit();
                     }}
-                    variant={searchEnabled === true ? "default" : "outline"}
+                    disabled={promptDisabled}
                   >
-                    <Globe></Globe>Search
+                    {isLoading ? (
+                      <Square className="size-5 fill-current" />
+                    ) : (
+                      <ArrowUp className="size-5" />
+                    )}
                   </Button>
                 </PromptInputAction>
-              </div>
-
-              <PromptInputAction
-                tooltip={isStreaming ? "Processing..." : "Send message"}
-              >
-                <Button
-                  variant="default"
-                  size="icon"
-                  className="h-8 w-8 rounded-full"
-                  onClick={() => {
-                    handleSubmit();
-                  }}
-                  disabled={promptDisabled}
-                >
-                  {isLoading ? (
-                    <Square className="size-5 fill-current" />
-                  ) : (
-                    <ArrowUp className="size-5" />
-                  )}
-                </Button>
-              </PromptInputAction>
-            </PromptInputActions>
-          </PromptInput>
+              </PromptInputActions>
+            </PromptInput>
+          </div>
         </div>
       </div>
     </main>
@@ -1201,7 +1315,20 @@ function FullChatApp() {
   const router = useRouter();
 
   // No need to fetch chats directly; useChatContext provides the data
-
+  const handleDeleteChat = async (id: string) => {
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
+      toast.success("Chat Deleted");
+    } catch (error) {
+      console.error("Error loading chat messages:", error);
+      toast.error("Error loading chat messages");
+    }
+  };
   // Handle chat selection
   const handleSelectChat = async (id: string) => {
     try {
@@ -1239,7 +1366,7 @@ function FullChatApp() {
     <SidebarProvider>
       <ChatSidebar
         onSelectChat={handleSelectChat}
-        onDeleteChat={() => {}}
+        onDeleteChat={handleDeleteChat}
         chats={chats}
         loadingChats={loadingChats}
         errorChats={errorChats}
