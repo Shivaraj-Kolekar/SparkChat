@@ -103,7 +103,7 @@ export default function SignUpForm({
                     await signIn.social(
                       {
                         provider: "google",
-                        callbackURL: `${process.env.NEXT_PUBLIC_CLIENT_URL}`,
+                        callbackURL: `${process.env.NEXT_PUBLIC_SERVER_URL}`,
                       },
                       {
                         onRequest: (ctx: any) => {
@@ -149,7 +149,7 @@ export default function SignUpForm({
                     await signIn.social(
                       {
                         provider: "github",
-                        callbackURL: `${process.env.NEXT_PUBLIC_CLIENT_URL}`,
+                        callbackURL: `${process.env.NEXT_PUBLIC_SERVER_URL}`,
                       },
                       {
                         onRequest: (ctx: any) => {
