@@ -24,6 +24,14 @@ export const auth = betterAuth({
     schema: schema,
   }),
   trustedOrigins: getTrustedOrigins(),
+  secret:
+    process.env.BETTER_AUTH_SECRET || "fallback-secret-change-in-production",
+  cookies: {
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    httpOnly: true,
+    domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined,
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
