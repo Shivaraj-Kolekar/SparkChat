@@ -1,17 +1,11 @@
 "use client";
 import { useChat, type Message } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
+
 import {
-  ArrowRight,
   Brain,
-  BrainIcon,
-  Calculator,
-  Calendar,
-  Check,
   ChevronsUpDown,
   Copy,
-  CreditCard,
   Eye,
   FileText,
   Globe,
@@ -22,12 +16,8 @@ import {
   Plus,
   PlusIcon,
   Search,
-  Send,
-  Settings,
   Settings2,
-  Smile,
   Text,
-  User,
   X,
   Zap,
   Sparkles,
@@ -50,7 +40,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandShortcut,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -77,28 +66,17 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarProvider,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useState } from "react";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
-import {
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { suggestionGroups } from "@/components/suggestions";
-import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
-import { db } from "../../../server/src/db";
-import { chats as chattable } from "../../../server/src/db/schema/auth";
+
 import {
   Dialog,
   DialogClose,
@@ -110,18 +88,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import type { ChatType, MessageType } from "@/types/chat-types";
-import UserMenu from "@/components/user-menu";
 import Link from "next/link";
 import { useChatContext } from "@/contexts/ChatContext";
 import Sparkchat from "@/components/sparkchat";
 import { ModeToggle } from "@/components/mode-toggle";
 import Image from "next/image";
-import HotkeyDemo from "@/components/HotkeyDemo";
 import { useHotkeys } from "react-hotkeys-hook";
-import { CommandSeparator } from "cmdk";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -546,13 +520,25 @@ function AIPage({
   router: any; // Use the router type from useRouter
 }) {
   const { refreshChats } = useChatContext();
-  const [selectedModel, setSelectedModel] = useState(() => {
-    const savedModel = localStorage.getItem("selectedModel");
-    return savedModel || "gemini-2.0-flash"; // default model if none saved
-  });
+  const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash"); // default model
+
   useEffect(() => {
-    localStorage.setItem("selectedModel", selectedModel);
+    // Only access localStorage in the browser
+    if (typeof window !== "undefined") {
+      const savedModel = localStorage.getItem("selectedModel");
+      if (savedModel) {
+        setSelectedModel(savedModel);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only save to localStorage in the browser
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selectedModel", selectedModel);
+    }
   }, [selectedModel]);
+
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
   const streamIntervalRef = useRef<NodeJS.Timeout | null>(null);

@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const session = await auth.api.getSession(req);
-    if (!session) {
+    if (!session?.session?.userId) {
       return new Response("Unauthorized", {
         status: 401,
       });
@@ -44,9 +44,9 @@ export async function GET(req: NextRequest) {
       .where(eq(chatTable.userId, session.session.userId));
     return NextResponse.json({ result, success: true });
   } catch (error) {
-    console.log(error);
+    console.error("Error in GET /api/chat:", error);
     return NextResponse.json(
-      { error: "Failed to retrive chats" },
+      { error: "Failed to retrieve chats" },
       { status: 500 }
     );
   }

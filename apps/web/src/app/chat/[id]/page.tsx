@@ -1,12 +1,9 @@
 "use client";
 import { useChat, type Message } from "@ai-sdk/react";
-import { redirect, useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
+
 import {
-  ArrowRight,
   Brain,
-  BrainIcon,
-  Check,
   ChevronsUpDown,
   Copy,
   Eye,
@@ -19,7 +16,6 @@ import {
   Plus,
   PlusIcon,
   Search,
-  Send,
   Settings2,
   Text,
   X,
@@ -65,22 +61,15 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarProvider,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useState } from "react";
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
-import {
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
+
 import { authClient } from "@/lib/auth-client";
 import { suggestionGroups } from "@/components/suggestions";
 import {
@@ -93,14 +82,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+
 import { toast } from "sonner";
-import type { ChatType, MessageType } from "@/types/chat-types";
-import UserMenu from "@/components/user-menu";
+import type { MessageType } from "@/types/chat-types";
 import Link from "next/link";
 import React from "react";
 import { useChatContext } from "@/contexts/ChatContext";
-import { ResponseStream } from "@/components/ui/response-stream";
 import {
   Reasoning,
   ReasoningTrigger,
@@ -108,7 +95,7 @@ import {
 } from "@/components/ui/reasoning";
 import Sparkchat from "@/components/sparkchat";
 import { ModeToggle } from "@/components/mode-toggle";
-import Settings from "@/app/settings/page";
+
 import Image from "next/image";
 import { useHotkeys } from "react-hotkeys-hook";
 import { CommandDialog } from "@/components/ui/command";
@@ -1196,8 +1183,8 @@ function AIPage({
     </main>
   );
 }
-function FullChatApp({ params }: { params: { id: string } }) {
-  const chatId = params.id;
+function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
+  const [chatId, setChatId] = useState<string | null>(null);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [currentMessages, setCurrentMessages] = useState<MessageType[]>([]);
   const [modelValue, setModelValue] = useState<string>("llama3.2");
@@ -1232,9 +1219,16 @@ function FullChatApp({ params }: { params: { id: string } }) {
     }
   };
 
+  // Handle params as Promise
   useEffect(() => {
-    loadChatMessages(chatId);
-  }, [chatId]);
+    const getParams = async () => {
+      const resolvedParams = await params;
+      const id = resolvedParams.id;
+      setChatId(id);
+      await loadChatMessages(id);
+    };
+    getParams();
+  }, [params]);
 
   const handleSelectChat = (id: string) => {
     setCurrentChatId(id);
