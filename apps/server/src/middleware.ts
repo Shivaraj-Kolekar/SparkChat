@@ -8,12 +8,13 @@ export async function middleware(request: Request) {
   res.headers.append("Access-Control-Allow-Credentials", "true");
   res.headers.append(
     "Access-Control-Allow-Origin",
-    process.env.CORS_ORIGIN || ""
+    "https://spark-chat-app.vercel.app"
   );
   res.headers.append(
     "Access-Control-Allow-Methods",
     "GET,POST,PUT,DELETE,OPTIONS"
   );
+
   res.headers.append(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, Cookie, X-Requested-With"
