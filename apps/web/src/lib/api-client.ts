@@ -7,11 +7,17 @@ export const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000, // 10 second timeout
 });
 
 // Add request interceptor to ensure cookies are sent
 apiClient.interceptors.request.use(
   (config) => {
+    // Log request details in development
+    if (process.env.NODE_ENV === "development") {
+      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    }
+
     // Ensure credentials are included
     config.withCredentials = true;
 
@@ -23,6 +29,7 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error("API Request Error:", error);
     return Promise.reject(error);
   }
 );
@@ -30,15 +37,46 @@ apiClient.interceptors.request.use(
 // Add response interceptor to handle auth errors
 apiClient.interceptors.response.use(
   (response) => {
+    // Log successful responses in development
+    if (process.env.NODE_ENV === "development") {
+      console.log(`API Response: ${response.status} ${response.config.url}`);
+    }
     return response;
   },
   (error) => {
+    // Enhanced error logging
+    console.error("API Response Error:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      method: error.config?.method,
+      message: error.message,
+      data: error.response?.data,
+    });
+
     if (error.response?.status === 401) {
       // Handle unauthorized - redirect to login
       if (typeof window !== "undefined") {
+        console.log("Unauthorized access, redirecting to login");
         window.location.href = "/login";
       }
     }
+
+    // Handle network errors
+    if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
+      console.error("API request timed out");
+    }
+
+    // Handle connection errors
+    if (
+      error.code === "ERR_NETWORK" ||
+      error.message.includes("Network Error")
+    ) {
+      console.error(
+        "Network error - check if server is running and accessible"
+      );
+    }
+
     return Promise.reject(error);
   }
 );

@@ -8,35 +8,61 @@ export function DebugEnv() {
   const [session, setSession] = useState<any>(null);
   const [serverSession, setServerSession] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
+      const errorLog: string[] = [];
+
       try {
         // Get environment variables
         const envData: Record<string, string> = {};
         if (typeof window !== "undefined") {
           envData.NEXT_PUBLIC_SERVER_URL =
             process.env.NEXT_PUBLIC_SERVER_URL || "Not set";
+
+          // Check if critical env vars are missing
+          if (!process.env.NEXT_PUBLIC_SERVER_URL) {
+            errorLog.push("NEXT_PUBLIC_SERVER_URL is not set");
+          }
         }
 
         // Get client session data
-        const sessionData = await authClient.getSession();
+        let sessionData = null;
+        try {
+          sessionData = await authClient.getSession();
+        } catch (error) {
+          errorLog.push(`Client session error: ${error}`);
+        }
 
         // Test server session using the centralized API client
         let serverSessionData = null;
         try {
           const response = await api.get("/test-session");
           serverSessionData = response.data;
-        } catch (error) {
-          console.error("Error testing server session:", error);
-          serverSessionData = { error: "Failed to connect to server" };
+        } catch (error: any) {
+          const errorMsg = error.response?.status
+            ? `Server session error: ${error.response.status} - ${error.response.statusText}`
+            : `Server connection error: ${error.message}`;
+          errorLog.push(errorMsg);
+          serverSessionData = { error: errorMsg };
+        }
+
+        // Test basic API connectivity
+        try {
+          const healthCheck = await api.get("/api/ai");
+          console.log("Health check response:", healthCheck.status);
+        } catch (error: any) {
+          errorLog.push(`API health check failed: ${error.message}`);
         }
 
         setEnvVars(envData);
         setSession(sessionData);
         setServerSession(serverSessionData);
-      } catch (error) {
-        console.error("Error fetching debug data:", error);
+        setErrors(errorLog);
+      } catch (error: any) {
+        errorLog.push(`General error: ${error.message}`);
+        setErrors(errorLog);
       } finally {
         setIsLoading(false);
       }
@@ -56,7 +82,7 @@ export function DebugEnv() {
       <div className="mb-2">
         <strong>Environment Variables:</strong>
         {Object.entries(envVars).map(([key, value]) => (
-          <div key={key}>
+          <div key={key} className={value === "Not set" ? "text-red-400" : ""}>
             {key}: {value}
           </div>
         ))}
@@ -99,6 +125,17 @@ export function DebugEnv() {
           <div className="text-red-400">Error: {serverSession.error}</div>
         )}
       </div>
+
+      {errors.length > 0 && (
+        <div className="mb-2">
+          <strong className="text-red-400">Errors Found:</strong>
+          {errors.map((error, index) => (
+            <div key={index} className="text-red-400 text-xs">
+              • {error}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="mb-2">
         <strong>Client Session Data:</strong>
