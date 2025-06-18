@@ -103,7 +103,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Loader from "@/components/loader";
-import { DebugEnv } from "@/components/debug-env";
 
 function ChatSidebar({
   onSelectChat,
@@ -661,7 +660,7 @@ function AIPage({
     },
     onFinish: async (message) => {
       // Store the AI's response
-      const stored = await storeMessage(message, currentChatId as string); // Use currentChatId from state
+      const stored = await storeMessage(message, chatId as string); // Use currentChatId from state
       if (!stored) {
         toast.error(
           "AI response was not saved. The chat history may be incomplete."
@@ -1351,7 +1350,6 @@ function FullChatApp() {
 
   return (
     <SidebarProvider>
-      <DebugEnv />
       <ChatSidebar
         onSelectChat={handleSelectChat}
         onDeleteChat={handleDeleteChat}
