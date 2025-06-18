@@ -42,7 +42,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { api } from "@/lib/api-client";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Square } from "lucide-react";
 import {
@@ -160,7 +160,12 @@ function ChatSidebar({
   }, [state]);
   const handleDeleteChat = async (id: string) => {
     try {
-      await api.delete(`/chat/${id}`);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
       refreshChats();
       toast.success("Chat Deleted");
     } catch (error) {
@@ -481,26 +486,22 @@ function AIPage({
   const [isInitialMessage, setIsInitialMessage] = useState(false);
   const fetchMessages = async (chatId: string) => {
     try {
-      const chatResponse = await api.get(`/chat/${chatId}`);
-      if (chatResponse.data.success) {
-        const transformedMessages = chatResponse.data.messages.map(
-          (msg: any) => ({
-            id: msg.id,
-            content: msg.content,
-            role: msg.role,
-            chatId: msg.chatId,
-            timestamp: msg.created_at,
-          })
-        );
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${chatId}`,
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        const transformedMessages = response.data.messages.map((msg: any) => ({
+          id: msg.id,
+          content: msg.content,
+          role: msg.role,
+          chatId: msg.chatId,
+          timestamp: msg.created_at,
+        }));
         setCurrentMessages(transformedMessages);
-      } else {
-        toast.error("Failed to load chat messages");
-        setCurrentMessages([]);
       }
     } catch (error) {
-      console.error("Error loading chat messages:", error);
-      toast.error("Error loading chat messages");
-      setCurrentMessages([]);
+      console.error("Error fetching messages:", error);
     }
   };
   const [searchEnabled, setSearchEnabled] = useState(false);
@@ -630,13 +631,19 @@ function AIPage({
       }
 
       setIsLoading(true);
-      const response = await api.post("/messages", {
-        message: {
-          content: message.content,
-          role: message.role,
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/messages`,
+        {
+          message: {
+            content: message.content,
+            role: message.role,
+          },
+          chatId: currentChatId,
         },
-        chatId: currentChatId,
-      });
+        {
+          withCredentials: true,
+        }
+      );
 
       if (!response.data.success) {
         throw new Error("Failed to store message");
@@ -1210,17 +1217,18 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   const loadChatMessages = async (id: string) => {
     try {
       setCurrentChatId(id);
-      const chatResponse = await api.get(`/chat/${id}`);
-      if (chatResponse.data.success) {
-        const transformedMessages = chatResponse.data.messages.map(
-          (msg: any) => ({
-            id: msg.id,
-            content: msg.content,
-            role: msg.role,
-            chatId: msg.chatId,
-            timestamp: msg.created_at,
-          })
-        );
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        const transformedMessages = response.data.messages.map((msg: any) => ({
+          id: msg.id,
+          content: msg.content,
+          role: msg.role,
+          chatId: msg.chatId,
+          timestamp: msg.created_at,
+        }));
         setCurrentMessages(transformedMessages);
       } else {
         toast.error("Failed to load chat messages");

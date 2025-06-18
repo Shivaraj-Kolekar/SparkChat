@@ -47,7 +47,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { api } from "@/lib/api-client";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Square } from "lucide-react";
 import {
@@ -137,7 +137,12 @@ function ChatSidebar({
   const fetchChats = async () => {
     setIsLoadingChats(true);
     try {
-      const response = await api.get("/chat");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
+        {
+          withCredentials: true,
+        }
+      );
       if (response.data.success && Array.isArray(response.data.result)) {
         setChatList(response.data.result);
         console.log("Fetched chats:", response.data.result);
@@ -164,9 +169,15 @@ function ChatSidebar({
         return;
       }
 
-      await api.post("/chat", {
-        title,
-      });
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
+        {
+          title,
+        },
+        {
+          withCredentials: true,
+        }
+      );
       fetchChats(); // Refresh the chat list
       toast.success("New chat created");
       setTitle(""); // Clear the input
@@ -178,7 +189,12 @@ function ChatSidebar({
 
   const handleDeleteChat = async (id: string) => {
     try {
-      await api.delete(`/chat/${id}`);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
       fetchChats();
       toast.success("Chat Deleted");
     } catch (error) {
@@ -578,13 +594,19 @@ function AIPage({
       }
 
       setIsLoading(true);
-      const response = await api.post("/messages", {
-        message: {
-          content: message.content,
-          role: message.role,
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/messages`,
+        {
+          message: {
+            content: message.content,
+            role: message.role,
+          },
+          chatId: currentChatId, // Use the passed chatId
         },
-        chatId: currentChatId, // Use the passed chatId
-      });
+        {
+          withCredentials: true,
+        }
+      );
 
       if (!response.data.success) {
         throw new Error("Failed to store message");
@@ -652,17 +674,29 @@ function AIPage({
   // Fetch remaining messages after each send
   const fetchRemaining = async () => {
     try {
-      const response = await api.get("/ai");
-      const data = response.data;
-      setRemaining(data.remaining);
-      setRateLimitReset(data.resetAt);
-      if (data.remaining === 0) {
-        setPromptDisabled(true);
-        toast.error(
-          "No more messages are available. Please wait until your quota resets."
-        );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/ai`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRemaining(data.remaining);
+        setRateLimitReset(data.resetAt);
+        if (data.remaining === 0) {
+          setPromptDisabled(true);
+          toast.error(
+            "No more messages are available. Please wait until your quota resets."
+          );
+        } else {
+          setPromptDisabled(false);
+        }
       } else {
-        setPromptDisabled(false);
+        console.error(
+          "Failed to fetch remaining messages:",
+          res.status,
+          res.statusText
+        );
       }
     } catch (e) {
       console.error("Error fetching remaining messages:", e);
@@ -681,14 +715,21 @@ function AIPage({
     try {
       // If no chat is selected, create a new one with the message as title
       if (!chatId) {
-        const response = await api.post("/chat", { title: chatTitle });
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
+          { title: chatTitle },
+          { withCredentials: true }
+        );
         await refreshChats();
         if (!response.data.success) {
           throw new Error("Failed to create new chat");
         }
 
         // Get the new chat ID from the response
-        const chatsResponse = await api.get("/chat");
+        const chatsResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
+          { withCredentials: true }
+        );
 
         if (
           chatsResponse.data.success &&
@@ -1263,7 +1304,12 @@ function FullChatApp() {
   // No need to fetch chats directly; useChatContext provides the data
   const handleDeleteChat = async (id: string) => {
     try {
-      await api.delete(`/chat/${id}`);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
       toast.success("Chat Deleted");
     } catch (error) {
       console.error("Error loading chat messages:", error);
@@ -1274,7 +1320,12 @@ function FullChatApp() {
   const handleSelectChat = async (id: string) => {
     try {
       setCurrentChatId(id);
-      const response = await api.get(`/chat/${id}`);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
+        {
+          withCredentials: true,
+        }
+      );
       if (response.data.success) {
         // Transform the messages to match the Message type
         const transformedMessages = response.data.messages.map((msg: any) => ({
