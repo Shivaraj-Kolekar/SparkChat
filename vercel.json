@@ -1,15 +1,11 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "apps/web/.next",
+  "installCommand": "npm install",
   "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
+  "outputDirectory": "apps/server/.next",
+  "functions": {
+    "apps/server/.next/server/**/*.js": {
+      "maxDuration": 30
     }
-  ]
+  }
 }

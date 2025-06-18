@@ -17,7 +17,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SparkChat",
-  description: "SparkChat",
+  description: "A personalized AI chat application with advanced features",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/sparkchat-fav.png", sizes: "192x192", type: "image/png" },
+      { url: "/sparkchat-favv.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/sparkchat-fav.png",
+  },
+  themeColor: "#000000",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SparkChat",
+  },
 };
 
 export default function RootLayout({
@@ -27,6 +42,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="application-name" content="SparkChat" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="SparkChat" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#000000" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

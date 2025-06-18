@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["better-auth"],
-  },
+  serverExternalPackages: ["better-auth"],
+  output: "standalone",
 };
 
 export default nextConfig;
