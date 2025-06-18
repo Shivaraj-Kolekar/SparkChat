@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
+    "build:server": "cd apps/server && npm run build",
+    "build:web": "cd apps/web && npm run build",
     "check-types": "turbo check-types",
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",
