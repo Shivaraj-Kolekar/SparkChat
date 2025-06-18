@@ -32,16 +32,6 @@ export const auth = betterAuth({
     httpOnly: true,
     // Remove domain restriction for now to debug
   },
-  callbacks: {
-    onSignIn: async ({ user, account, profile }: any) => {
-      console.log("User signed in:", user.email);
-      return true;
-    },
-    onSession: async ({ session, user }: any) => {
-      console.log("Session created for user:", user.email);
-      return session;
-    },
-  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,

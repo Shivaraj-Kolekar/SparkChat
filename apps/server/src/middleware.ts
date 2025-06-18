@@ -24,17 +24,6 @@ export async function middleware(request: Request) {
     return res;
   }
 
-  // Handle Better Auth session
-  try {
-    const session = await auth.api.getSession(request);
-    if (session) {
-      // Add session info to headers for debugging
-      res.headers.append("X-Session-User", session.user?.name || "unknown");
-    }
-  } catch (error) {
-    console.error("Middleware session error:", error);
-  }
-
   return res;
 }
 

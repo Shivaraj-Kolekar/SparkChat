@@ -146,19 +146,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  console.log("AI GET route called");
-  console.log("Request headers:", Object.fromEntries(req.headers.entries()));
-
   // Get user session
   const session = await auth.api.getSession(req);
-  console.log("AI route session:", session);
-
   if (!session || !session.session?.userId) {
-    console.log("No valid session in AI route");
     return new Response("Unauthorized", { status: 401 });
   }
-
-  console.log("Valid session found for user:", session.user?.name);
   const userId = session.session.userId;
   const now = new Date();
 
