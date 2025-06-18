@@ -103,7 +103,7 @@ export default function SignUpForm({
                     await signIn.social(
                       {
                         provider: "google",
-                        callbackURL: "https://spark-chat-app.vercel.app",
+                        callbackURL: process.env.NEXT_PUBLIC_CLIENT_URL,
                       },
                       {
                         onRequest: (ctx: any) => {
@@ -149,7 +149,7 @@ export default function SignUpForm({
                     await signIn.social(
                       {
                         provider: "github",
-                        callbackURL: "https://spark-chat-app.vercel.app",
+                        callbackURL: process.env.NEXT_PUBLIC_CLIENT_URL,
                       },
                       {
                         onRequest: (ctx: any) => {

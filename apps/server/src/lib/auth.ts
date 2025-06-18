@@ -5,7 +5,7 @@ import * as schema from "../db/schema/auth";
 
 // Parse CORS origins from environment variable
 const getTrustedOrigins = () => {
-  const corsOrigin = "https://spark-chat-app.vercel.app";
+  const corsOrigin = process.env.CORS_ORIGIN;
   if (!corsOrigin) {
     console.warn("CORS_ORIGIN not set - authentication may not work properly");
     return [];
