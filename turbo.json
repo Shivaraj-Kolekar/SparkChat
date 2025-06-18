@@ -32,19 +32,19 @@
     "db:generate": {
       "cache": false,
       "persistent": true
-    }
-  },
-  "env": [
-    "DATABASE_URL",
-    "DATABASE_URL_POOLER",
-    "CORS_ORIGIN",
-    "BETTER_AUTH_SECRET",
-    "BETTER_AUTH_URL",
-    "GOOGLE_GENERATIVE_AI_API_KEY",
-    "GOOGLE_CLIENT_ID",
-    "GOOGLE_CLIENT_SECRET",
-    "GROQ_API_KEY",
-    "GITHUB_CLIENT_ID",
-    "GITHUB_CLIENT_SECRET"
-  ]
+    },
+    "env": [
+      "DATABASE_URL",
+      "DATABASE_URL_POOLER",
+      "CORS_ORIGIN",
+      "BETTER_AUTH_SECRET",
+      "BETTER_AUTH_URL",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
+      "GROQ_API_KEY",
+      "GITHUB_CLIENT_ID",
+      "GITHUB_CLIENT_SECRET"
+    ]
+  }
 }
