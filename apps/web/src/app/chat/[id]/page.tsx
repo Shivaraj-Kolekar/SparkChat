@@ -117,7 +117,7 @@ function ChatSidebar({
   onDeleteChat: (title: string) => void;
 }) {
   const { chats, refreshChats, loadingChats, errorChats } = useChatContext();
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const [showAdditionalButtons, setShowAdditionalButtons] = useState(false);
   const [animateSearch, setAnimateSearch] = useState(false);
   const [animatePlus, setAnimatePlus] = useState(false);
@@ -910,6 +910,17 @@ function AIPage({
     fetchRemaining();
   }, []);
 
+  // Check if session is loading
+  if (session === undefined) {
+    return <div>Loading...</div>;
+  }
+
+  // Check if user is authenticated
+  if (!session?.user) {
+    router.push("/login");
+    return <div>Redirecting to login...</div>;
+  }
+
   return (
     <main className="flex h-screen flex-col overflow-hidden">
       <div className="flex h-13 flex-row">
@@ -1200,7 +1211,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   const [currentMessages, setCurrentMessages] = useState<MessageType[]>([]);
   const [modelValue, setModelValue] = useState<string>("llama3.2");
   const router = useRouter();
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
   // Load messages for the current chat ID
   const loadChatMessages = async (id: string) => {

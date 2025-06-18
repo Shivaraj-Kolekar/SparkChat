@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 
-export function middleware() {
+export async function middleware(request: Request) {
   const res = NextResponse.next();
 
+  // Handle CORS
   res.headers.append("Access-Control-Allow-Credentials", "true");
   res.headers.append(
     "Access-Control-Allow-Origin",
@@ -14,8 +16,13 @@ export function middleware() {
   );
   res.headers.append(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
+    "Content-Type, Authorization, Cookie"
   );
+
+  // Handle preflight requests
+  if (request.method === "OPTIONS") {
+    return res;
+  }
 
   return res;
 }
