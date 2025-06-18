@@ -103,6 +103,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Loader from "@/components/loader";
+import { DebugEnv } from "@/components/debug-env";
 
 function ChatSidebar({
   onSelectChat,
@@ -1350,6 +1351,7 @@ function FullChatApp() {
 
   return (
     <SidebarProvider>
+      <DebugEnv />
       <ChatSidebar
         onSelectChat={handleSelectChat}
         onDeleteChat={handleDeleteChat}
