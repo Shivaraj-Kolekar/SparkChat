@@ -177,7 +177,7 @@ function ChatSidebar({
     toast.success("CTRL+K pressed");
   });
   return (
-    <div>
+    <div className="h-40">
       {" "}
       <CommandDialog open={isCmndDialogOpen} onOpenChange={setIsCmndDialogOpen}>
         {/* CommandDialog automatically includes a way to close itself usually */}
@@ -318,7 +318,7 @@ function ChatSidebar({
             </div>
           </div>
         </SidebarHeader>
-        <SidebarContent className="pt-4">
+        <SidebarContent className="pt-2">
           <div className="px-4">
             <Link
               className="mb-4 bg-primary justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
@@ -910,7 +910,7 @@ function AIPage({
   }, []);
 
   return (
-    <main className="flex h-screen flex-col overflow-hidden">
+    <main className="flex h-screen flex-col bg-background overflow-hidden">
       <div className="flex h-13 flex-row">
         <div className="h-2 bg-background w-full"></div>
         <header className="bg-transparent opacity-100 z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">

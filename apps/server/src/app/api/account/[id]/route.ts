@@ -5,6 +5,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { invalidateUserPreferencesCache } from "@/lib/cache";
+import { users } from "@clerk/clerk-sdk-node";
 
 export const DELETE = withCORS(
   async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
@@ -31,6 +32,20 @@ export const DELETE = withCORS(
 
       // Invalidate cache for this user
       invalidateUserPreferencesCache(userId);
+
+      // Delete user from Clerk first
+      try {
+        await users.deleteUser(userId);
+      } catch (error) {
+        console.error("Error deleting user from Clerk:", error);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to delete user from Clerk. Account not deleted.",
+          },
+          { status: 500 }
+        );
+      }
 
       // Delete the user (this will cascade delete sessions, accounts, rate limits, messages, and chats)
       const deletedUser = await db

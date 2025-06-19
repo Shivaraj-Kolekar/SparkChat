@@ -57,7 +57,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { SignOutButton, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { api } from "@/lib/api-client";
 
 // Create form schema
@@ -153,7 +153,7 @@ export default function Settings() {
 
   // Fetch preferences when component mounts
   useEffect(() => {
-    if (user && !isLoaded) {
+    if (user && isLoaded) {
       fetchPreferences();
     }
   }, [user, isLoaded]);
@@ -403,11 +403,7 @@ export default function Settings() {
           <h2 className="text-lg font-normal text-center">
             {user?.primaryEmailAddress?.emailAddress}
           </h2>
-          <SignOutButton>
-            <div className="bg-destructive px-4 py-2 rounded-full cursor-pointer">
-              <SignOutButton></SignOutButton>
-            </div>
-          </SignOutButton>
+
           <Card className=" mt-6 shadow-lg w-full rounded-xl">
             <CardHeader>
               <CardTitle>
@@ -464,7 +460,7 @@ export default function Settings() {
             <TabsTrigger value="contact-us">Contact us</TabsTrigger>
           </TabsList>
           <TabsContent value="account">
-            <div className="mt-8 border bg-secondary rounded-lg p-6">
+            {/* <div className="mt-8 border bg-secondary rounded-lg p-6">
               <h2 className="text-lg font-semibold  mb-2">Danger Zone</h2>
 
               <Dialog>
@@ -503,7 +499,7 @@ export default function Settings() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-            </div>
+            </div> */}
             {/* Message Usage Section */}
             <Card className="mt-6 shadow-lg rounded-xl">
               <CardHeader>

@@ -9,6 +9,7 @@ import { rateLimit } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { getUserPreferences } from "@/lib/cache";
 import { withCORS } from "@/lib/cors";
+import { getClerkUser } from "@/lib/auth";
 
 export const maxDuration = 30;
 
@@ -51,6 +52,18 @@ export const POST = withCORS(async (req: NextRequest) => {
   const { userId } = getAuth(req);
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  // Fetch Clerk user for name
+  let userName = "User";
+  try {
+    const clerkUser = await getClerkUser(req);
+    if (clerkUser) {
+      userName = clerkUser.firstName || clerkUser.username || "User";
+    }
+  } catch (e) {
+    // Fallback to default
+    userName = "User";
   }
 
   // Check rate limit
@@ -133,7 +146,7 @@ export const POST = withCORS(async (req: NextRequest) => {
   // Create personalized system prompt
   const personalizedSystemPrompt = createPersonalizedSystemPrompt(
     userPreferences,
-    "User" // Clerk: replace with actual user name if needed
+    userName
   );
 
   const result = streamText({
