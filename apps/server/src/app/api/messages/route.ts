@@ -6,13 +6,15 @@ import {
 } from "../../../db/schema/auth";
 import { v4 as uuidv4 } from "uuid";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+import { getClerkSession, getClerkUser } from "@/lib/auth";
+import { withCORS } from "@/lib/cors";
 
-export async function POST(req: NextRequest) {
+export const POST = withCORS(async (req: NextRequest) => {
   try {
     const { message, chatId } = await req.json();
-    const session = await auth.api.getSession(req);
-    if (!session) {
+    const session = getClerkSession(req);
+    const user = await getClerkUser(req);
+    if (!session.userId || !user) {
       return new Response("Unauthorized", {
         status: 401,
       });
@@ -37,7 +39,7 @@ export async function POST(req: NextRequest) {
         id: id,
         title: message.content,
         created_at: new Date(),
-        userId: session.session.userId,
+        userId: user.id,
       });
     }
 
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
       chatId: !chatId ? id : chatId,
       role: message.role,
       content: message.content,
-      userId: session.session.userId,
+      userId: user.id,
       created_at: new Date(),
     });
 
@@ -58,4 +60,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

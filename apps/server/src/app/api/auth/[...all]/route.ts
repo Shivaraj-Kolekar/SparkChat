@@ -1,4 +1,1 @@
-import { auth } from "@/lib/auth";
-import { toNextJsHandler } from "better-auth/next-js";
-
-export const { GET, POST } = toNextJsHandler(auth.handler);
+// Clerk handles authentication endpoints via its own frontend components and API. No implementation needed here.

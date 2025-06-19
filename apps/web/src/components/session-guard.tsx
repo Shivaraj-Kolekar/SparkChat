@@ -1,8 +1,8 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Loader from "./loader";
 
 interface SessionGuardProps {
@@ -16,51 +16,18 @@ export default function SessionGuard({
   requireAuth = true,
   redirectTo = "/login",
 }: SessionGuardProps) {
-  const { data: session, isPending } = authClient.useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
-    // Only redirect if we're not already redirecting and session is definitely null
-    if (!isPending && session === null && requireAuth && !hasRedirected) {
-      setHasRedirected(true);
+    if (requireAuth && isLoaded && !user) {
       router.push(redirectTo);
     }
-  }, [session, isPending, requireAuth, redirectTo, router, hasRedirected]);
+  }, [requireAuth, isLoaded, user, redirectTo, router]);
 
-  // Show loading while session is being determined
-  if (isPending) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader />
-      </div>
-    );
+  if (requireAuth && !user) {
+    return <Loader />;
   }
 
-  // If auth is required and no session, show loading while redirecting
-  if (requireAuth && session === null) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader />
-          <p className="mt-2">Redirecting to login...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If auth is required and session exists but no user, show loading
-  if (requireAuth && session && !session.user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader />
-          <p className="mt-2">Loading session...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Render children if all checks pass
   return <>{children}</>;
 }

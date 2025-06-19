@@ -1,54 +1,34 @@
-import { auth } from "@/lib/auth";
+import { withCORS } from "@/lib/cors";
+import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { NextRequest } from "next/server";
 
-export async function GET(req: NextRequest) {
-  console.log("Test session route called");
-  console.log("Request URL:", req.url);
-  console.log("Request headers:", Object.fromEntries(req.headers.entries()));
+export const GET = withCORS(async (req: NextRequest) => {
+  const session = getClerkSession(req);
+  const user = await getClerkUser(req);
 
-  try {
-    const session = await auth.api.getSession(req);
-    console.log("Session result:", session);
-
-    if (!session || !session.session?.userId) {
-      console.log("No valid session found");
-      return new Response(
-        JSON.stringify({
-          authenticated: false,
-          message: "No valid session found",
-        }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    console.log("Valid session found for user:", session.user?.name);
-    return new Response(
-      JSON.stringify({
-        authenticated: true,
-        user: session.user,
-        sessionId: session.session.id,
-        userId: session.session.userId,
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  } catch (error) {
-    console.error("Session test error:", error);
+  if (!session.userId || !user) {
     return new Response(
       JSON.stringify({
         authenticated: false,
-        error: "Session test failed",
-        details: error instanceof Error ? error.message : "Unknown error",
+        message: "No valid session found",
       }),
       {
-        status: 500,
+        status: 401,
         headers: { "Content-Type": "application/json" },
       }
     );
   }
-}
+
+  return new Response(
+    JSON.stringify({
+      authenticated: true,
+      user,
+      sessionId: session.sessionId,
+      userId: session.userId,
+    }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+});

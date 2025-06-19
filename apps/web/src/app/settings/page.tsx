@@ -1,5 +1,4 @@
 "use client";
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type JSX } from "react";
 import { Button } from "@/components/ui/button";
@@ -59,11 +58,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useUser } from "@clerk/nextjs";
+
 // Create form schema
 
 export default function Settings() {
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
+  const { user, isLoaded } = useUser();
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
   const [existingPreferences, setExistingPreferences] = useState<any>(null);
@@ -163,10 +164,10 @@ export default function Settings() {
 
   // Fetch preferences when component mounts
   useEffect(() => {
-    if (session && !isPending) {
+    if (user && !isLoaded) {
       fetchPreferences();
     }
-  }, [session, isPending]);
+  }, [user, isLoaded]);
 
   // Update form values when preferences are loaded
   useEffect(() => {
@@ -342,12 +343,12 @@ export default function Settings() {
   };
 
   useEffect(() => {
-    if (!session && !isPending) {
+    if (!user && !isLoaded) {
       router.push("/login");
     }
     // Load saved settings here
     // loadSettings();
-  }, [session, isPending]);
+  }, [user, isLoaded]);
 
   useEffect(() => {
     async function fetchUsage() {
@@ -387,7 +388,7 @@ export default function Settings() {
     }
   };
 
-  if (isPending) {
+  if (!user && !isLoaded) {
     return <div>Loading...</div>;
   }
   return (
@@ -407,29 +408,23 @@ export default function Settings() {
         <div className="flex min-w-[300] space-y-2 justify-start   items-center  flex-col">
           <Image
             className="rounded-full "
-            src={session?.user.image ? session?.user.image : "/sparkchat.png"}
+            src={user?.imageUrl ? user?.imageUrl : "/sparkchat.png"}
             alt="user-profile"
             width={180}
             height={180}
           />
           <h1 className="text-4xl text-center font-semibold">
-            {session?.user.name}
+            {user?.fullName || user?.username}
           </h1>
           <h2 className="text-lg font-normal text-center">
-            {session?.user.email}
+            {user?.primaryEmailAddress?.emailAddress}
           </h2>
 
           <Button
             variant="destructive"
             className=""
             onClick={() => {
-              authClient.signOut({
-                fetchOptions: {
-                  onSuccess: () => {
-                    router.push("/");
-                  },
-                },
-              });
+              // Implement sign out logic using Clerk
             }}
           >
             Sign Out
@@ -520,9 +515,7 @@ export default function Settings() {
                       variant="destructive"
                       className="bg-red-600 hover:bg-red-700 text-white"
                       onClick={() => {
-                        if (session?.user?.id) {
-                          handleDeleteAccount(session.user.id);
-                        }
+                        // Implement delete account logic using Clerk
                       }}
                     >
                       Delete Account

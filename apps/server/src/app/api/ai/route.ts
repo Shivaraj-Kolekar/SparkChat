@@ -1,3 +1,5 @@
+import { getAuth } from "@clerk/nextjs/server";
+import { NextRequest } from "next/server";
 import { db } from "@/db";
 import { streamText } from "ai";
 import { groq } from "@ai-sdk/groq";
@@ -5,9 +7,8 @@ import { messages, userInfo } from "@/db/schema/auth";
 import { google } from "@ai-sdk/google";
 import { rateLimit } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
-import { NextRequest } from "next/server";
 import { getUserPreferences } from "@/lib/cache";
+import { withCORS } from "@/lib/cors";
 
 export const maxDuration = 30;
 
@@ -45,13 +46,12 @@ function createPersonalizedSystemPrompt(
   return systemPrompt;
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withCORS(async (req: NextRequest) => {
   // Get user session
-  const session = await auth.api.getSession(req);
-  if (!session || !session.session?.userId) {
+  const { userId } = getAuth(req);
+  if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const userId = session.session.userId;
 
   // Check rate limit
   const now = new Date();
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
   // Create personalized system prompt
   const personalizedSystemPrompt = createPersonalizedSystemPrompt(
     userPreferences,
-    session.user?.name || "User"
+    "User" // Clerk: replace with actual user name if needed
   );
 
   const result = streamText({
@@ -143,15 +143,14 @@ export async function POST(req: NextRequest) {
   });
 
   return result.toDataStreamResponse();
-}
+});
 
-export async function GET(req: NextRequest) {
+export const GET = withCORS(async (req: NextRequest) => {
   // Get user session
-  const session = await auth.api.getSession(req);
-  if (!session || !session.session?.userId) {
+  const { userId } = getAuth(req);
+  if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const userId = session.session.userId;
   const now = new Date();
 
   // Try to find an existing rate limit record for today
@@ -188,4 +187,4 @@ export async function GET(req: NextRequest) {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
-}
+});

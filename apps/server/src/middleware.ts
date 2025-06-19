@@ -1,33 +1,24 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import type { NextRequest, NextFetchEvent } from "next/server";
 
-export async function middleware(request: Request) {
-  const res = NextResponse.next();
+const ALLOWED_ORIGIN =
+  process.env.ALLOWED_ORIGIN || "https://spark-chat-app.vercel.app";
 
-  // Handle CORS
-  res.headers.append("Access-Control-Allow-Credentials", "true");
-  res.headers.append(
-    "Access-Control-Allow-Origin",
-    process.env.CORS_ORIGIN || "*"
-  );
-  res.headers.append(
-    "Access-Control-Allow-Methods",
-    "GET,POST,PUT,DELETE,OPTIONS"
-  );
-
-  res.headers.append(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Cookie, X-Requested-With"
-  );
-
-  // Handle preflight requests
-  if (request.method === "OPTIONS") {
-    return res;
+export default function middleware(req: NextRequest, event: NextFetchEvent) {
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Credentials": "true",
+      },
+    });
   }
-
-  return res;
+  return clerkMiddleware()(req, event);
 }
 
 export const config = {
-  matcher: "/:path*",
+  matcher: ["/((?!_next|static|favicon.ico).*)"],
 };

@@ -2,22 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { userInfo } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+import { getClerkSession, getClerkUser, ensureUserInDb } from "@/lib/auth";
 import { invalidateUserPreferencesCache } from "@/lib/cache";
+import { withCORS } from "@/lib/cors";
 
 // GET - Fetch user preferences
-export async function GET(req: NextRequest) {
+export const GET = withCORS(async (req: NextRequest) => {
   try {
-    const session = await auth.api.getSession(req);
-
-    if (!session) {
+    const session = getClerkSession(req);
+    const user = await getClerkUser(req);
+    if (!session.userId || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const existingPreferences = await db
       .select()
       .from(userInfo)
-      .where(eq(userInfo.userId, session.user.id))
+      .where(eq(userInfo.userId, user.id))
       .limit(1);
 
     if (existingPreferences.length === 0) {
@@ -39,24 +40,25 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 // POST - Create or update user preferences
-export async function POST(req: NextRequest) {
+export const POST = withCORS(async (req: NextRequest) => {
   try {
-    const session = await auth.api.getSession(req);
-
-    if (!session) {
+    const session = getClerkSession(req);
+    const user = await getClerkUser(req);
+    if (!session.userId || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    // Ensure user exists in DB with all Clerk details
+    await ensureUserInDb(user);
     const { name, profession, description, traits } = await req.json();
 
     // Check if user already has preferences
     const existingPreferences = await db
       .select()
       .from(userInfo)
-      .where(eq(userInfo.userId, session.user.id))
+      .where(eq(userInfo.userId, user.id))
       .limit(1);
 
     let result;
@@ -72,14 +74,14 @@ export async function POST(req: NextRequest) {
             description || existingPreferences[0].user_description,
           updatedAt: new Date(),
         })
-        .where(eq(userInfo.userId, session.user.id))
+        .where(eq(userInfo.userId, user.id))
         .returning();
     } else {
       // Create new preferences
       result = await db
         .insert(userInfo)
         .values({
-          userId: session.user.id,
+          userId: user.id,
           name: name || "",
           profession: profession || "",
           traits: traits || "",
@@ -89,7 +91,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Invalidate cache to ensure AI API uses updated preferences
-    invalidateUserPreferencesCache(session.user.id);
+    invalidateUserPreferencesCache(user.id);
 
     return NextResponse.json({
       success: true,
@@ -106,4 +108,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

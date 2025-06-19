@@ -1,6 +1,7 @@
 "use client";
 import { useChat, type Message } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 import {
   Brain,
@@ -74,7 +75,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
 import { suggestionGroups } from "@/components/suggestions";
 
 import {
@@ -159,11 +159,11 @@ function ChatSidebar({
     fetchChats();
   }, []);
 
-  const { data: session } = authClient.useSession();
+  const { user, isLoaded } = useUser();
 
   const submit = async (title: string) => {
     try {
-      if (!session) {
+      if (!isLoaded) {
         toast.error("Please login first");
         return;
       }
@@ -483,10 +483,12 @@ function ChatSidebar({
             )}
           </SidebarGroup>
           <SidebarFooter className="justify-end">
-            <Link href={session ? "/settings" : "/login"}>
+            <Link href="/settings">
               <div className="text-center bg-accent px-4 py-3 rounded-md">
-                {session ? (
-                  <h1>{session?.user.name}</h1>
+                {isLoaded && user ? (
+                  <h1>
+                    {user.firstName} {user.lastName}
+                  </h1>
                 ) : (
                   <span className="flex items-center space-x-2">
                     <LogInIcon size={20} />
@@ -521,6 +523,7 @@ function AIPage({
 }) {
   const { refreshChats } = useChatContext();
   const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash"); // default model
+  const { user, isLoaded } = useUser();
 
   useEffect(() => {
     // Only access localStorage in the browser
@@ -565,7 +568,6 @@ function AIPage({
   const showCategorySuggestions = activeCategory !== "";
   // const { models, isLoading, error } = trpc.getOllamaModels.useQuery();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     return () => {
@@ -587,7 +589,7 @@ function AIPage({
         return false;
       }
 
-      if (!session) {
+      if (!user) {
         toast.error("Please login first");
         return false;
       }
@@ -705,7 +707,7 @@ function AIPage({
   // Call fetchRemaining after each message is sent
   let chatId = currentChatId;
   const handleSubmit = async (e?: React.FormEvent) => {
-    if (!session) {
+    if (!user) {
       toast.error("Please login first");
       return;
     }
@@ -950,7 +952,7 @@ function AIPage({
                   <div className="text-left space-y-4 sm:space-y-6">
                     <h1 className="text-2xl text-center sm:text-lg md:text-xl font-bold text-foreground leading-tight">
                       How can I help you
-                      {session?.user?.name ? `, ${session.user.name}` : ""}?
+                      {user?.firstName ? `, ${user.firstName}` : ""}?
                     </h1>
 
                     {/* Category Buttons */}
@@ -1239,7 +1241,7 @@ function AIPage({
 
                   <PromptInputAction
                     tooltip={
-                      !session ? "Please login to use Search Web" : "Search Web"
+                      !user ? "Please login to use Search Web" : "Search Web"
                     }
                   >
                     <Button

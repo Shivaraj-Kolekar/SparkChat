@@ -1,45 +1,39 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../db";
-import * as schema from "../db/schema/auth";
+import { getAuth } from "@clerk/nextjs/server";
+import { users } from "@clerk/clerk-sdk-node";
+import type { NextRequest } from "next/server";
+import { db } from "@/db";
+import { user as userTable } from "@/db/schema/auth";
+import { eq } from "drizzle-orm";
 
-// Parse CORS origins from environment variable
-const getTrustedOrigins = () => {
-  const corsOrigin = process.env.CORS_ORIGIN;
-  if (!corsOrigin) {
-    console.warn("CORS_ORIGIN not set - authentication may not work properly");
-    return [];
+export async function getClerkUser(req: NextRequest) {
+  const { userId } = getAuth(req);
+  if (!userId) return null;
+  return await users.getUser(userId);
+}
+export function getClerkSession(req: NextRequest) {
+  return getAuth(req);
+}
+
+export async function ensureUserInDb(clerkUser: any) {
+  const exists = await db
+    .select()
+    .from(userTable)
+    .where(eq(userTable.id, clerkUser.id));
+  if (exists.length === 0) {
+    await db.insert(userTable).values({
+      id: clerkUser.id,
+      name:
+        clerkUser.firstName && clerkUser.lastName
+          ? `${clerkUser.firstName} ${clerkUser.lastName}`
+          : clerkUser.username ||
+            clerkUser.emailAddresses?.[0]?.emailAddress ||
+            "Unknown",
+      email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+      emailVerified:
+        clerkUser.emailAddresses?.[0]?.verification?.status === "verified",
+      image: clerkUser.imageUrl || "",
+      createdAt: new Date(clerkUser.createdAt),
+      updatedAt: new Date(),
+    });
   }
-
-  // Support multiple origins separated by commas
-  return corsOrigin
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-};
-
-export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema: schema,
-  }),
-  trustedOrigins: getTrustedOrigins(),
-  secret:
-    process.env.BETTER_AUTH_SECRET || "fallback-secret-change-in-production",
-  cookies: {
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    httpOnly: true,
-    // Remove domain restriction for now to debug
-  },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    },
-  },
-});
+}

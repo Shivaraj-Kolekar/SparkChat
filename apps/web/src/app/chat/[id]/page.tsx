@@ -1,6 +1,7 @@
 "use client";
 import { useChat, type Message } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 import {
   Brain,
@@ -70,7 +71,6 @@ import {
 } from "@/components/ui/sidebar";
 import { useState } from "react";
 
-import { authClient } from "@/lib/auth-client";
 import { suggestionGroups } from "@/components/suggestions";
 import {
   Dialog,
@@ -117,7 +117,7 @@ function ChatSidebar({
   onDeleteChat: (title: string) => void;
 }) {
   const { chats, refreshChats, loadingChats, errorChats } = useChatContext();
-  const { data: session } = authClient.useSession();
+  const { user, isLoaded } = useUser();
   const [showAdditionalButtons, setShowAdditionalButtons] = useState(false);
   const [animateSearch, setAnimateSearch] = useState(false);
   const [animatePlus, setAnimatePlus] = useState(false);
@@ -429,8 +429,10 @@ function ChatSidebar({
           <SidebarFooter className="justify-end">
             <Link href="/settings">
               <div className="text-center bg-accent px-4 py-3 rounded-md">
-                {session ? (
-                  <h1>{session?.user.name}</h1>
+                {isLoaded && user ? (
+                  <h1>
+                    {user.firstName} {user.lastName}
+                  </h1>
                 ) : (
                   <span className="flex items-center space-x-2">
                     <LogInIcon size={20} />
@@ -452,15 +454,14 @@ function AIPage({
   setCurrentMessages,
   modelValue,
   router,
-  session,
 }: {
   currentChatId: string | null;
   currentMessages: MessageType[];
   setCurrentMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
   modelValue: string;
   router: any;
-  session: any;
 }) {
+  const { user, isLoaded } = useUser();
   const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash"); // default model
 
   useEffect(() => {
@@ -625,7 +626,7 @@ function AIPage({
         return false;
       }
 
-      if (!session) {
+      if (!user) {
         toast.error("Please login first");
         return false;
       }
@@ -883,7 +884,7 @@ function AIPage({
 
   // Call fetchRemaining after each message is sent
   const handleSubmit = async (e?: React.FormEvent) => {
-    if (!session) {
+    if (!user) {
       toast.error("Please login first");
       return;
     }
@@ -1145,7 +1146,7 @@ function AIPage({
                 </PromptInputAction>
                 <PromptInputAction
                   tooltip={
-                    !session ? "Please login to use Search Web" : "Search Web"
+                    !user ? "Please login to use Search Web" : "Search Web"
                   }
                 >
                   {WebSearchModels.includes(selectedModel) && (
@@ -1200,7 +1201,6 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   const [currentMessages, setCurrentMessages] = useState<MessageType[]>([]);
   const [modelValue, setModelValue] = useState<string>("llama3.2");
   const router = useRouter();
-  const { data: session } = authClient.useSession();
 
   // Load messages for the current chat ID
   const loadChatMessages = async (id: string) => {
@@ -1272,7 +1272,6 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
           setCurrentMessages={setCurrentMessages}
           modelValue={modelValue}
           router={router}
-          session={session}
         />
       </SidebarInset>
     </SidebarProvider>
