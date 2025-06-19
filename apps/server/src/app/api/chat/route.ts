@@ -13,7 +13,7 @@ export const POST = withCORS(async (req: NextRequest) => {
     const { title } = await req.json();
     const session = getClerkSession(req);
     const user = await getClerkUser(req);
-    if (!session.userId || !user) {
+    if (!user) {
       return new Response("Unauthorized", {
         status: 401,
       });
