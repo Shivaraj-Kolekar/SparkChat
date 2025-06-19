@@ -334,6 +334,7 @@ function ChatSidebar({
             </Link>
           </div>
           <SidebarGroup className="h-full">
+            <h1 className="pl-2 text-primary">Recent Chats</h1>
             {chats.length === 0 ? (
               <SidebarMenu>
                 <p>Loading chats</p>

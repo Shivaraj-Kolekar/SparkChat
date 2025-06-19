@@ -388,6 +388,7 @@ function ChatSidebar({
             </Link>
           </div>
           <SidebarGroup className="h-full">
+            <h1 className="pl-2 text-primary">Recent Chats</h1>
             {isLoadingChats ? (
               <SidebarMenu>
                 <p className="text-center">Loading chats...</p>

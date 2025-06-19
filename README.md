@@ -16,7 +16,7 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **Node.js** - Runtime environment
 - **Drizzle** - TypeScript-first ORM
 - **PostgreSQL** - Database engine
-- **Authentication** - Email & password authentication with Better Auth
+- **Authentication** - Google and Github authentication with Clerk
 - **Turborepo** - Optimized monorepo build system
 - **AI Integration** - Support for multiple AI models (Gemini, Groq, Ollama)
 - **Real-time Chat** - Interactive chat interface with streaming responses
@@ -148,9 +148,9 @@ DATABASE_URL_POOLER="postgresql://username:password@your-neon-host:5432/sparkcha
 # CORS Configuration
 CORS_ORIGIN="http://localhost:3001"
 
-# Better Auth Configuration
-BETTER_AUTH_SECRET="your-super-secret-auth-key-change-this-in-production"
-BETTER_AUTH_URL="http://localhost:3000"
+# Clerk Auth Configuration
+CLERK_SECRET_KEY="your-clerk-secret-key"
+CLERK_PUBLISHABLE_KEY="your-clerk-frontend-api-key"
 
 # Google OAuth (Optional - for social login)
 GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
@@ -311,18 +311,18 @@ SparkChat/
 │   ├── web/                 # Frontend application (Next.js)
 │   │   ├── src/
 │   │   │   ├── app/         # Next.js app router pages
-│   │   │   ├── components/  # React components
-│   │   │   ├── lib/         # Utility functions
-│   │   │   └── types/       # TypeScript type definitions
-│   │   └── public/          # Static assets
-│   └── server/              # Backend API (Next.js)
-│       ├── src/
-│       │   ├── app/         # API routes
-│       │   ├── db/          # Database schema and migrations
-│       │   ├── lib/         # Server utilities
-│       │   └── routers/     # tRPC routers
-│       └── drizzle.config.ts
-├── packages/                # Shared packages
+│   │   │   │   ├── components/  # React components
+│   │   │   │   ├── lib/         # Utility functions
+│   │   │   │   └── types/       # TypeScript type definitions
+│   │   │   └── public/          # Static assets
+│   │   └── server/              # Backend API (Next.js)
+│   │       ├── src/
+│   │       │   ├── app/         # API routes
+│   │       │   ├── db/          # Database schema and migrations
+│   │       │   ├── lib/         # Server utilities
+│   │       │   └── routers/     # tRPC routers
+│   │       └── drizzle.config.ts
+│   └── packages/                # Shared packages
 └── turbo.json              # Turborepo configuration
 ```
 
@@ -350,9 +350,9 @@ SparkChat/
 
 2. **Authentication Issues**
 
-   - Verify `BETTER_AUTH_SECRET` is set
+   - Verify `CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY` are set
    - Check `CORS_ORIGIN` includes your frontend URL
-   - Ensure OAuth redirect URIs are correct
+   - Ensure Clerk dashboard redirect URIs are correct
 
 3. **AI API Errors**
 
@@ -388,5 +388,5 @@ Make sure to update these for production:
 
 - `NODE_ENV="production"`
 - `CORS_ORIGIN` with your production domain
-- `BETTER_AUTH_SECRET` with a strong secret
-- `BETTER_AUTH_URL` with your production server URL
+- `CLERK_SECRET_KEY` with your Clerk secret key
+- `CLERK_PUBLISHABLE_KEY` with your Clerk frontend API key
