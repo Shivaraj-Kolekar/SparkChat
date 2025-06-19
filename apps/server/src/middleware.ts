@@ -1,8 +1,7 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import type { NextRequest, NextFetchEvent } from "next/server";
 
-const ALLOWED_ORIGIN =
-  process.env.ALLOWED_ORIGIN || "https://sparkchat.dpdns.org";
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
 
 export default function middleware(req: NextRequest, event: NextFetchEvent) {
   if (req.method === "OPTIONS") {

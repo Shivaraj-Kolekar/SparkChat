@@ -43,7 +43,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import axios from "axios";
+import { api, getClerkToken } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Square } from "lucide-react";
 import {
@@ -160,12 +160,7 @@ function ChatSidebar({
   }, [state]);
   const handleDeleteChat = async (id: string) => {
     try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
-        {
-          withCredentials: true,
-        }
-      );
+      await api.delete(`/chat/${id}`);
       refreshChats();
       toast.success("Chat Deleted");
     } catch (error) {
@@ -487,10 +482,7 @@ function AIPage({
   const [isInitialMessage, setIsInitialMessage] = useState(false);
   const fetchMessages = async (chatId: string) => {
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${chatId}`,
-        { withCredentials: true }
-      );
+      const response = await api.get(`/chat/${chatId}`);
       if (response.data.success) {
         const transformedMessages = response.data.messages.map((msg: any) => ({
           id: msg.id,
@@ -632,19 +624,13 @@ function AIPage({
       }
 
       setIsLoading(true);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/messages`,
-        {
-          message: {
-            content: message.content,
-            role: message.role,
-          },
-          chatId: currentChatId,
+      const response = await api.post("/messages", {
+        message: {
+          content: message.content,
+          role: message.role,
         },
-        {
-          withCredentials: true,
-        }
-      );
+        chatId: currentChatId,
+      });
 
       if (!response.data.success) {
         throw new Error("Failed to store message");
@@ -862,9 +848,11 @@ function AIPage({
   // Fetch remaining messages after each send
   const fetchRemaining = async () => {
     try {
+      const token = await getClerkToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/ai`, {
         method: "GET",
         credentials: "include",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       if (res.ok) {
         const data = await res.json();
@@ -1206,10 +1194,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   const loadChatMessages = async (id: string) => {
     try {
       setCurrentChatId(id);
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${id}`,
-        { withCredentials: true }
-      );
+      const response = await api.get(`/chat/${id}`);
       if (response.data.success) {
         const transformedMessages = response.data.messages.map((msg: any) => ({
           id: msg.id,

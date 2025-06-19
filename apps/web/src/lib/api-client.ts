@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { AxiosRequestHeaders } from "axios";
 
 // Create a configured axios instance for API calls
 export const apiClient = axios.create({
@@ -10,9 +11,26 @@ export const apiClient = axios.create({
   timeout: 10000, // 10 second timeout
 });
 
-// Add request interceptor to ensure cookies are sent
+// Utility to get Clerk token outside React components
+export async function getClerkToken() {
+  if (typeof window === "undefined") return null;
+  // Clerk loads on window as Clerk, or via window.__clerk
+  const w = window as typeof window & { Clerk?: any; __clerk?: any };
+  const clerk = w.Clerk || w.__clerk;
+  if (clerk && clerk.session) {
+    try {
+      // getToken() returns a promise
+      return await clerk.session.getToken();
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+}
+
+// Add request interceptor to ensure cookies are sent and add Authorization header
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // Log request details in development
     if (process.env.NODE_ENV === "development") {
       console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
@@ -21,9 +39,15 @@ apiClient.interceptors.request.use(
     // Ensure credentials are included
     config.withCredentials = true;
 
-    // Add any additional headers if needed
+    // Add Authorization header with Clerk token if available
     if (typeof window !== "undefined") {
-      // Add any client-side headers here if needed
+      const token = await getClerkToken();
+      if (token) {
+        if (!config.headers) config.headers = {} as AxiosRequestHeaders;
+        (config.headers as Record<string, string>)[
+          "Authorization"
+        ] = `Bearer ${token}`;
+      }
     }
 
     return config;

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "@/lib/api-client";
 import type { ChatType } from "@/types/chat-types";
 import { createContext } from "react";
 
@@ -22,10 +22,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const refreshChats = async () => {
     try {
       setLoadingChats(true);
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat`,
-        { withCredentials: true }
-      );
+      const response = await api.get("/chat", { withCredentials: true });
       if (response.data.success && Array.isArray(response.data.result)) {
         setChats(response.data.result);
       }
