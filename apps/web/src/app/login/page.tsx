@@ -1,15 +1,17 @@
 "use client";
-
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
-import { useState } from "react";
+import { SignIn } from "@clerk/nextjs";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
-  const [showSignIn, setShowSignIn] = useState(false);
-
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background flex-col gap-6">
+      <Link href="/">
+        <Button variant="outline" className="mb-2">
+          Back to Home
+        </Button>
+      </Link>
+      <SignIn afterSignInUrl="/" />
+    </div>
   );
 }

@@ -57,7 +57,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useUser } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@clerk/nextjs";
 import { api } from "@/lib/api-client";
 
 // Create form schema
@@ -403,16 +403,11 @@ export default function Settings() {
           <h2 className="text-lg font-normal text-center">
             {user?.primaryEmailAddress?.emailAddress}
           </h2>
-
-          <Button
-            variant="destructive"
-            className=""
-            onClick={() => {
-              // Implement sign out logic using Clerk
-            }}
-          >
-            Sign Out
-          </Button>
+          <SignOutButton>
+            <div className="bg-destructive px-4 py-2 rounded-full cursor-pointer">
+              <SignOutButton></SignOutButton>
+            </div>
+          </SignOutButton>
           <Card className=" mt-6 shadow-lg w-full rounded-xl">
             <CardHeader>
               <CardTitle>
@@ -476,6 +471,7 @@ export default function Settings() {
                 <DialogTrigger>
                   <Button
                     variant="destructive"
+                    // onClick={() => handleDeleteAccount}
                     className="bg-red-600 hover:bg-red-700 text-white"
                   >
                     Delete Account

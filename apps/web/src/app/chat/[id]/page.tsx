@@ -346,7 +346,7 @@ function ChatSidebar({
                         isActive={chat.id === selectedChatId}
                       >
                         <Link
-                          className="absolute inset-0 flex items-center pr-10"
+                          className="absolute inset-0 flex items-center pl-2 pr-10"
                           href={`/chat/${chat.id}`}
                         >
                           <div
@@ -422,20 +422,23 @@ function ChatSidebar({
             )}
           </SidebarGroup>
           <SidebarFooter className="justify-end">
-            <Link href="/settings">
-              <div className="text-center bg-accent px-4 py-3 rounded-md">
-                {isLoaded && user ? (
+            <div className="text-center bg-accent px-4 py-3 rounded-md">
+              {isLoaded && user ? (
+                <Link href="/settings">
+                  {" "}
                   <h1>
                     {user.firstName} {user.lastName}
                   </h1>
-                ) : (
+                </Link>
+              ) : (
+                <Link href="/login">
                   <span className="flex items-center space-x-2">
                     <LogInIcon size={20} />
                     <h1 className="font-medium">Login</h1>
                   </span>
-                )}
-              </div>
-            </Link>
+                </Link>
+              )}
+            </div>
           </SidebarFooter>
         </SidebarContent>
       </Sidebar>
@@ -910,7 +913,7 @@ function AIPage({
     <main className="flex h-screen flex-col overflow-hidden">
       <div className="flex h-13 flex-row">
         <div className="h-2 bg-background w-full"></div>
-        <header className="bg-background z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
+        <header className="bg-transparent opacity-100 z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
           <div className="flex flex-row gap-2 items-center">
             <Link href="/settings">
               <Button variant={"outline"}>
@@ -924,7 +927,7 @@ function AIPage({
       <hr></hr>
       <div className="grid max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto pb-4">
         {" "}
-        <div className="overflow-y-auto space-y-4 pb-4">
+        <div className="overflow-y-auto h-full space-y-4 pb-4">
           <ChatContainerRoot className="flex-1">
             <ChatContainerContent className="space-y-4 py-4">
               {messages.length === 0 ? (
@@ -1028,163 +1031,172 @@ function AIPage({
             </ChatContainerContent>
           </ChatContainerRoot>
         </div>
-        <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
-          {remaining <= 5 && remaining > 0 && (
-            <div className="text-yellow-600 text-center mb-2">
-              {remaining} messages left before your daily limit is reached.
-            </div>
-          )}
-          {remaining === 0 && (
-            <div className="text-red-600 text-center mb-2">
-              You have reached your daily message limit. Please wait until your
-              quota resets.
-            </div>
-          )}
-          <PromptInput
-            value={input}
-            onSubmit={handleSubmit}
-            className="w-full max-w-(--breakpoint-md)"
-          >
-            <PromptInputTextarea
-              onChange={handleInputChange}
-              placeholder="Ask me anything..."
-              disabled={promptDisabled}
-            />
-            <PromptInputActions className="justify-between pt-2">
-              <div className="flex align-items-center gap-2">
-                <PromptInputAction tooltip="Select model">
-                  <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-[200px] justify-between"
-                      >
-                        {value
-                          ? models.find((model) => model.value === value)?.label
-                          : "Select Model"}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[400px]  p-0">
-                      <Command>
-                        <CommandInput
-                          placeholder="Search framework..."
-                          className="h-9"
-                        />
-                        <CommandList>
-                          <CommandEmpty>No framework found.</CommandEmpty>
-                          <CommandGroup>
-                            {models.map((model) => (
-                              <CommandItem
-                                key={model.value}
-                                value={model.value}
-                                className={cn(
-                                  "ml-auto",
-                                  "flex flex-row justify-between items-center",
-                                  value === model.value
-                                    ? "bg-accent"
-                                    : "bg-none"
-                                )}
-                                onSelect={(currentValue) => {
-                                  setValue(
-                                    currentValue === value ? "" : currentValue
-                                  );
-                                  setOpen(false);
-                                  setSelectedModel(currentValue);
-                                }}
-                              >
-                                <div className="inline-flex gap-2 items-center">
-                                  <svg
-                                    className="size-4 text-color-heading"
-                                    viewBox={model.svg.viewbox}
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="currentColor"
-                                  >
-                                    <title>{model.svg?.title}</title>
-                                    <path d={model.svg?.path}></path>
-                                  </svg>
-                                  <p className="text-base">{model.label}</p>{" "}
-                                </div>
-                                <div className="space-x-2 my-1.5 inline-flex">
-                                  {model.usecase.map((usecase) => {
-                                    const config = useCaseConfig[usecase];
-                                    if (!config) return null;
-                                    return (
-                                      <Tooltip key={usecase}>
-                                        <TooltipTrigger>
-                                          <Badge
-                                            className={`flex items-center rounded-sm p-1 gap-1 ${config.color}`}
-                                          >
-                                            {config.icon && (
-                                              <span className="h-4 rounded-none w-4">
-                                                {config.icon}
-                                              </span>
-                                            )}
-                                          </Badge>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          {config.tooltip}
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    );
-                                  })}
-                                </div>
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </PromptInputAction>
-                <PromptInputAction
-                  tooltip={
-                    !user ? "Please login to use Search Web" : "Search Web"
-                  }
-                >
-                  {WebSearchModels.includes(selectedModel) && (
-                    <Button
-                      onClick={() => {
-                        setSearchEnabled((prevSearchEnabled) => {
-                          const newState = !prevSearchEnabled;
-                          if (newState) {
-                            toast.success("Web search enabled");
-                          } else {
-                            toast.info("Web search disabled");
-                          }
-                          return newState;
-                        });
-                      }}
-                      variant={searchEnabled === true ? "default" : "secondary"}
-                    >
-                      <Globe></Globe>Search
-                    </Button>
-                  )}
-                </PromptInputAction>
-              </div>
-              <PromptInputAction
-                tooltip={isLoading ? "Processing..." : "Send message"}
+        <div className="w-full flex justify-center sticky bottom-0 bg-background z-50  border-border py-3 px-2">
+          <div className="w-full max-w-[800px] mx-auto">
+            <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
+              {remaining <= 5 && remaining > 0 && (
+                <div className="text-yellow-600 text-center mb-2">
+                  {remaining} messages left before your daily limit is reached.
+                </div>
+              )}
+              {remaining === 0 && (
+                <div className="text-red-600 text-center mb-2">
+                  You have reached your daily message limit. Please wait until
+                  your quota resets.
+                </div>
+              )}
+              <PromptInput
+                value={input}
+                onSubmit={handleSubmit}
+                className="w-full max-w-(--breakpoint-md)"
               >
-                <Button
-                  variant="default"
-                  size="icon"
-                  className="h-8 w-8 rounded-full"
-                  onClick={() => {
-                    if (!promptDisabled) handleSubmit();
-                  }}
+                <PromptInputTextarea
+                  onChange={handleInputChange}
+                  placeholder="Ask me anything..."
                   disabled={promptDisabled}
-                >
-                  {isLoading ? (
-                    <Square className="size-5 fill-current" />
-                  ) : (
-                    <ArrowUp className="size-5" />
-                  )}
-                </Button>
-              </PromptInputAction>
-            </PromptInputActions>
-          </PromptInput>
+                />
+                <PromptInputActions className="justify-between pt-2">
+                  <div className="flex align-items-center gap-2">
+                    <PromptInputAction tooltip="Select model">
+                      <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-[200px] justify-between"
+                          >
+                            {value
+                              ? models.find((model) => model.value === value)
+                                  ?.label
+                              : "Select Model"}
+                            <ChevronsUpDown className="opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[400px]  p-0">
+                          <Command>
+                            <CommandInput
+                              placeholder="Search framework..."
+                              className="h-9"
+                            />
+                            <CommandList>
+                              <CommandEmpty>No framework found.</CommandEmpty>
+                              <CommandGroup>
+                                {models.map((model) => (
+                                  <CommandItem
+                                    key={model.value}
+                                    value={model.value}
+                                    className={cn(
+                                      "ml-auto",
+                                      "flex flex-row justify-between items-center",
+                                      value === model.value
+                                        ? "bg-accent"
+                                        : "bg-none"
+                                    )}
+                                    onSelect={(currentValue) => {
+                                      setValue(
+                                        currentValue === value
+                                          ? ""
+                                          : currentValue
+                                      );
+                                      setOpen(false);
+                                      setSelectedModel(currentValue);
+                                    }}
+                                  >
+                                    <div className="inline-flex gap-2 items-center">
+                                      <svg
+                                        className="size-4 text-color-heading"
+                                        viewBox={model.svg.viewbox}
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="currentColor"
+                                      >
+                                        <title>{model.svg?.title}</title>
+                                        <path d={model.svg?.path}></path>
+                                      </svg>
+                                      <p className="text-base">{model.label}</p>{" "}
+                                    </div>
+                                    <div className="space-x-2 my-1.5 inline-flex">
+                                      {model.usecase.map((usecase) => {
+                                        const config = useCaseConfig[usecase];
+                                        if (!config) return null;
+                                        return (
+                                          <Tooltip key={usecase}>
+                                            <TooltipTrigger>
+                                              <Badge
+                                                className={`flex items-center rounded-sm p-1 gap-1 ${config.color}`}
+                                              >
+                                                {config.icon && (
+                                                  <span className="h-4 rounded-none w-4">
+                                                    {config.icon}
+                                                  </span>
+                                                )}
+                                              </Badge>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              {config.tooltip}
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        );
+                                      })}
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </PromptInputAction>
+                    <PromptInputAction
+                      tooltip={
+                        !user ? "Please login to use Search Web" : "Search Web"
+                      }
+                    >
+                      {WebSearchModels.includes(selectedModel) && (
+                        <Button
+                          onClick={() => {
+                            setSearchEnabled((prevSearchEnabled) => {
+                              const newState = !prevSearchEnabled;
+                              if (newState) {
+                                toast.success("Web search enabled");
+                              } else {
+                                toast.info("Web search disabled");
+                              }
+                              return newState;
+                            });
+                          }}
+                          variant={
+                            searchEnabled === true ? "default" : "secondary"
+                          }
+                        >
+                          <Globe></Globe>Search
+                        </Button>
+                      )}
+                    </PromptInputAction>
+                  </div>
+                  <PromptInputAction
+                    tooltip={isLoading ? "Processing..." : "Send message"}
+                  >
+                    <Button
+                      variant="default"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      onClick={() => {
+                        if (!promptDisabled) handleSubmit();
+                      }}
+                      disabled={promptDisabled}
+                    >
+                      {isLoading ? (
+                        <Square className="size-5 fill-current" />
+                      ) : (
+                        <ArrowUp className="size-5" />
+                      )}
+                    </Button>
+                  </PromptInputAction>
+                </PromptInputActions>
+              </PromptInput>
+            </div>
+          </div>
         </div>
       </div>
     </main>

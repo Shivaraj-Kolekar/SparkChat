@@ -18,7 +18,7 @@ export default function Header() {
           <Button>Back to Chat</Button>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex justify-center items-center gap-2">
           <ModeToggle />
           <UserMenu />
         </div>

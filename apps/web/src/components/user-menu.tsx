@@ -19,9 +19,9 @@ export default function UserMenu() {
   if (!isLoaded) return null;
 
   return (
-    <div>
+    <div className="border-2 dark:border-accent border-accent-foreground p-1 flex items-center rounded-full">
       <UserButton afterSignOutUrl="/login" />
-      <span>{user?.fullName || user?.username}</span>
+      {/* <span>{user?.fullName || user?.username}</span> */}
     </div>
   );
 }

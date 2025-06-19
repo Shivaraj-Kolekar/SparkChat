@@ -414,7 +414,7 @@ function ChatSidebar({
                           e.stopPropagation();
                           onSelectChat(chat.id);
                         }}
-                        className="absolute inset-0 flex items-center pr-10"
+                        className="absolute inset-0 flex items-center pl-2 pr-10"
                       >
                         <div className="relative flex-grow min-w-0">
                           <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
@@ -468,20 +468,23 @@ function ChatSidebar({
             )}
           </SidebarGroup>
           <SidebarFooter className="justify-end">
-            <Link href="/settings">
-              <div className="text-center bg-accent px-4 py-3 rounded-md">
-                {isLoaded && user ? (
+            <div className="text-center bg-accent px-4 py-3 rounded-md">
+              {isLoaded && user ? (
+                <Link href="/settings">
+                  {" "}
                   <h1>
                     {user.firstName} {user.lastName}
                   </h1>
-                ) : (
+                </Link>
+              ) : (
+                <Link href="/login">
                   <span className="flex items-center space-x-2">
                     <LogInIcon size={20} />
                     <h1 className="font-medium">Login</h1>
                   </span>
-                )}
-              </div>
-            </Link>
+                </Link>
+              )}
+            </div>
           </SidebarFooter>
         </SidebarContent>
       </Sidebar>
@@ -637,7 +640,6 @@ function AIPage({
   } = useChat({
     api: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/ai`,
     credentials: "include",
-
     fetch: customFetch,
     initialMessages: currentMessages.map((msg) => ({
       ...msg,
