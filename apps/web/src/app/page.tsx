@@ -151,10 +151,6 @@ function ChatSidebar({
     }
   };
 
-  useEffect(() => {
-    fetchChats();
-  }, []);
-
   const { user, isLoaded } = useUser();
 
   const submit = async (title: string) => {
@@ -228,7 +224,11 @@ function ChatSidebar({
     setIsCmndDialogOpen(true);
     // toast.success("CTRL+K pressed");
   });
-
+  useEffect(() => {
+    if (isLoaded && user) {
+      fetchChats();
+    }
+  }, [isLoaded, user]);
   const buttonContainerWidthClass = state === "collapsed" ? "w-28" : "w-7"; // Adjust w-28 as needed for 3 buttons
   return (
     <div className="h-40">

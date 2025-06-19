@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import Sparkchat from "@/components/sparkchat";
 
 export default function LoginPage() {
   return (
@@ -21,8 +22,9 @@ export default function LoginPage() {
           height={72}
           className="rounded-full shadow"
         />
-        <h1 className="text-3xl font-bold text-primary ">
-          Welcome to SparkChat
+        <h1 className="text-2xl gap-1.5 inline-flex font-bold ">
+          <p>Welcome to</p>
+          <Sparkchat />
         </h1>
         <p className="text-muted-foreground  text-center max-w-xs">
           Sign in or sign up to start chatting with your personalized AI
