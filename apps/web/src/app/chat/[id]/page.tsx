@@ -169,7 +169,9 @@ function ChatSidebar({
     }
   };
   useEffect(() => {
-    refreshChats();
+    if (isLoaded && user) {
+      refreshChats();
+    }
   }, []);
   const router = useRouter();
 

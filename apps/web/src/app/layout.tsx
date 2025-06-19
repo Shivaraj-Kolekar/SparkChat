@@ -5,7 +5,7 @@ import Providers from "@/components/providers";
 import Header from "@/components/header";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { ClerkProvider } from "@clerk/nextjs";
-
+import { Analytics } from "@vercel/analytics/next";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -59,6 +59,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <Analytics />
           <Providers>
             <ChatProvider>
               <div className="grid grid-rows-[auto_1fr] h-svh">{children}</div>
