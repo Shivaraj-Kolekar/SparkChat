@@ -160,7 +160,7 @@ function ChatSidebar({
   }, [state]);
   const handleDeleteChat = async (id: string) => {
     try {
-      await api.delete(`/chat/${id}`);
+      await api.delete(`/api/chat/${id}`);
       refreshChats();
       toast.success("Chat Deleted");
     } catch (error) {
@@ -168,13 +168,16 @@ function ChatSidebar({
       toast.error("Error loading chat messages");
     }
   };
+  useEffect(() => {
+    refreshChats();
+  }, []);
   const router = useRouter();
 
   const buttonContainerWidthClass = state === "collapsed" ? "w-28" : "w-7"; // Adjust w-28 as needed for 3 buttons
   useHotkeys("ctrl+k", (event) => {
     event.preventDefault(); //
     setIsCmndDialogOpen(true);
-    toast.success("CTRL+K pressed");
+    // toast.success("CTRL+K pressed");
   });
   return (
     <div className="h-40">
@@ -1253,13 +1256,13 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   useHotkeys("ctrl+shift+o", (event) => {
     event.preventDefault(); //
     router.replace("/");
-    toast.success("CTRL+O pressed");
+    // toast.success("CTRL+O pressed");
   });
   useHotkeys("ctrl+b", (event) => {
     const { toggleSidebar } = useSidebar();
     event.preventDefault(); //
     toggleSidebar();
-    toast.success("CTRL+B pressed");
+    // toast.success("CTRL+B pressed");
   });
 
   return (

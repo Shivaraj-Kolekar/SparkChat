@@ -226,7 +226,7 @@ function ChatSidebar({
   useHotkeys("ctrl+k", (event) => {
     event.preventDefault(); //
     setIsCmndDialogOpen(true);
-    toast.success("CTRL+K pressed");
+    // toast.success("CTRL+K pressed");
   });
 
   const buttonContainerWidthClass = state === "collapsed" ? "w-28" : "w-7"; // Adjust w-28 as needed for 3 buttons
