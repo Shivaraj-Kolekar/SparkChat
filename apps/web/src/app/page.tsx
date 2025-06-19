@@ -621,6 +621,12 @@ function AIPage({
     }
   };
 
+  const customFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const token = await getClerkToken();
+    const headers = new Headers(init?.headers || {});
+    if (token) headers.set("Authorization", `Bearer ${token}`);
+    return fetch(input, { ...init, headers });
+  };
   // Configure chat with current messages
   const {
     messages,
@@ -631,6 +637,8 @@ function AIPage({
   } = useChat({
     api: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/ai`,
     credentials: "include",
+
+    fetch: customFetch,
     initialMessages: currentMessages.map((msg) => ({
       ...msg,
       id: String(msg.id ?? ""),
