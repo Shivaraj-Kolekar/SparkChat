@@ -930,7 +930,7 @@ function AIPage({
       <hr></hr>
       <div className="grid max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto pb-4">
         {" "}
-        <div className="overflow-y-auto h-full space-y-4 pb-4">
+        <div className="overflow-y-auto  space-y-4 pb-4">
           <ChatContainerRoot className="flex-1">
             <ChatContainerContent className="space-y-4 py-4">
               {messages.length === 0 ? (
@@ -1034,7 +1034,7 @@ function AIPage({
             </ChatContainerContent>
           </ChatContainerRoot>
         </div>
-        <div className="w-full flex justify-center sticky bottom-0 bg-background z-50  border-border py-3 px-2">
+        <div className="w-full flex justify-center overflow-hidden sticky bottom-0 bg-background z-50  border-border py-3 px-2">
           <div className="w-full max-w-[800px] mx-auto">
             <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
               {remaining <= 5 && remaining > 0 && (
