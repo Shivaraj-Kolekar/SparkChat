@@ -35,7 +35,7 @@ export function withCORS(
 
 function corsHeaders() {
   return {
-    "Access-Control-Allow-Origin": "https://spark-chat-app.vercel.app",
+    "Access-Control-Allow-Origin": "https://sparkchat.dpdns.org/",
     "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
     "Access-Control-Allow-Headers":
       "Content-Type, Authorization, Cookie, X-Requested-With",
