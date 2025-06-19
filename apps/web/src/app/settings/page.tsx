@@ -91,7 +91,7 @@ export default function Settings() {
   const fetchPreferences = async () => {
     try {
       setIsLoadingPreferences(true);
-      const response = await api.get("/preferences");
+      const response = await api.get("/api/preferences");
 
       if (response.data.success && response.data.data) {
         setExistingPreferences(response.data.data);
@@ -122,7 +122,7 @@ export default function Settings() {
     onSubmit: async ({ value }) => {
       try {
         setIsSaving(true);
-        const response = await api.post("/preferences", {
+        const response = await api.post("/api/preferences", {
           name: value.name,
           profession: value.profession,
           traits: value.traits,

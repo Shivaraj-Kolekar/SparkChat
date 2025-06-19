@@ -22,7 +22,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const refreshChats = async () => {
     try {
       setLoadingChats(true);
-      const response = await api.get("/chat", { withCredentials: true });
+      const response = await api.get("/api/chat", { withCredentials: true });
       if (response.data.success && Array.isArray(response.data.result)) {
         setChats(response.data.result);
       }

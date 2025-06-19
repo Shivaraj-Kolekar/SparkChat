@@ -482,7 +482,7 @@ function AIPage({
   const [isInitialMessage, setIsInitialMessage] = useState(false);
   const fetchMessages = async (chatId: string) => {
     try {
-      const response = await api.get(`/chat/${chatId}`);
+      const response = await api.get(`/api/chat/${chatId}`);
       if (response.data.success) {
         const transformedMessages = response.data.messages.map((msg: any) => ({
           id: msg.id,
@@ -624,7 +624,7 @@ function AIPage({
       }
 
       setIsLoading(true);
-      const response = await api.post("/messages", {
+      const response = await api.post("/api/messages", {
         message: {
           content: message.content,
           role: message.role,
@@ -1194,7 +1194,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   const loadChatMessages = async (id: string) => {
     try {
       setCurrentChatId(id);
-      const response = await api.get(`/chat/${id}`);
+      const response = await api.get(`/api/chat/${id}`);
       if (response.data.success) {
         const transformedMessages = response.data.messages.map((msg: any) => ({
           id: msg.id,

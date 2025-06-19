@@ -137,7 +137,7 @@ function ChatSidebar({
   const fetchChats = async () => {
     setIsLoadingChats(true);
     try {
-      const response = await api.get("/chat");
+      const response = await api.get("/api/chat");
       if (response.data.success && Array.isArray(response.data.result)) {
         setChatList(response.data.result);
         console.log("Fetched chats:", response.data.result);
@@ -164,7 +164,7 @@ function ChatSidebar({
         return;
       }
 
-      await api.post("/chat", {
+      await api.post("/api/chat", {
         title,
       });
       fetchChats(); // Refresh the chat list
@@ -580,7 +580,7 @@ function AIPage({
       }
 
       setIsLoading(true);
-      const response = await api.post("/messages", {
+      const response = await api.post("/api/messages", {
         message: {
           content: message.content,
           role: message.role,
@@ -698,7 +698,7 @@ function AIPage({
       // If no chat is selected, create a new one with the message as title
       if (!chatId) {
         const response = await api.post(
-          "/chat",
+          "/api/chat",
           { title: chatTitle },
           { withCredentials: true }
         );
@@ -708,7 +708,9 @@ function AIPage({
         }
 
         // Get the new chat ID from the response
-        const chatsResponse = await api.get("/chat", { withCredentials: true });
+        const chatsResponse = await api.get("/api/chat", {
+          withCredentials: true,
+        });
 
         if (
           chatsResponse.data.success &&
@@ -1294,7 +1296,7 @@ function FullChatApp() {
   const handleSelectChat = async (id: string) => {
     try {
       setCurrentChatId(id);
-      const response = await api.get(`/chat/${id}`);
+      const response = await api.get(`/api/chat/${id}`);
       if (response.data.success) {
         // Transform the messages to match the Message type
         const transformedMessages = response.data.messages.map((msg: any) => ({
