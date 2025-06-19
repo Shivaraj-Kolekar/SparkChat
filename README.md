@@ -72,10 +72,10 @@ SparkChat supports a wide range of AI models with different capabilities:
 
 ### 🔐 Authentication & Security
 
-- **Better Auth Integration** - Secure authentication with multiple providers
+- **Clerk Integration** - Secure authentication with Clerk (email/password, Google, GitHub, and more)
 - **Google OAuth** - Sign in with Google account
 - **GitHub OAuth** - Sign in with GitHub account
-- **Session Management** - Secure session handling with cookies
+- **Session Management** - Secure session handling with cookies and Clerk tokens
 - **User Account Management** - Profile settings and account deletion
 
 ### 💬 Chat & Conversation Features
@@ -230,7 +230,13 @@ The API server will be running at [http://localhost:3000](http://localhost:3000)
 
 ### OAuth Setup (Optional)
 
-#### Google OAuth
+#### Clerk Social Login
+
+1. In the Clerk dashboard, enable Google, GitHub, or other providers under **Social Connections**.
+2. Follow Clerk's instructions to set up OAuth credentials for each provider.
+3. Clerk will handle the OAuth flow and user management automatically.
+
+#### Google OAuth (Legacy/Custom)
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing one
@@ -246,6 +252,56 @@ The API server will be running at [http://localhost:3000](http://localhost:3000)
 3. Set Homepage URL: `http://localhost:3001`
 4. Set Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
 5. Copy Client ID and Secret to your `.env` file
+
+## Clerk Authentication Setup
+
+SparkChat uses [Clerk](https://clerk.com/) for authentication, supporting email/password, social logins, and secure session management.
+
+### 1. Create a Clerk Project
+
+- Go to [Clerk Dashboard](https://dashboard.clerk.com/) and create a new project.
+- Add your app's frontend and backend URLs in the Clerk dashboard (e.g., `http://localhost:3001` for web, `http://localhost:3000` for API).
+- Configure allowed redirect URLs for sign-in, sign-up, and SSO callbacks.
+
+### 2. Get Clerk API Keys
+
+- In the Clerk dashboard, go to **API Keys**.
+- Copy the **Frontend API** and **Secret Key**.
+
+### 3. Set Environment Variables
+
+#### Web Environment (`apps/web/.env`):
+
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-frontend-api-key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/login
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/
+```
+
+#### Server Environment (`apps/server/.env`):
+
+```
+CLERK_SECRET_KEY=your-clerk-secret-key
+CLERK_PUBLISHABLE_KEY=your-clerk-frontend-api-key
+```
+
+### 4. Configure Clerk in Your App
+
+- The app is already set up to use Clerk's React components (`<SignIn />`, `<SignUp />`, `<UserButton />`, etc.).
+- The backend uses Clerk's server SDK to verify sessions and manage users.
+- Clerk's theme will match your app's dark/light mode automatically.
+
+### 5. Social Login (Google, GitHub, etc.)
+
+- Enable social providers in the Clerk dashboard under **Social Connections**.
+- Add any required OAuth credentials in Clerk and your `.env` files as needed.
+
+### 6. Custom Domains (Production)
+
+- Add your production domains in the Clerk dashboard for both frontend and backend.
+- Update all Clerk-related environment variables to use your production keys and URLs.
 
 ## Project Structure
 

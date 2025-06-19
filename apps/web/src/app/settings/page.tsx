@@ -186,7 +186,7 @@ export default function Settings() {
   const [enableSearch, setEnableSearch] = useState(true);
   const handleDeleteAccount = async (id: string) => {
     try {
-      await api.delete(`/account/${id}`);
+      await api.delete(`/api/account/${id}`);
 
       toast.success("Account Deleted");
       router.push("/login");

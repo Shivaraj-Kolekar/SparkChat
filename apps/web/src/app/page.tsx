@@ -178,7 +178,7 @@ function ChatSidebar({
 
   const handleDeleteChat = async (id: string) => {
     try {
-      await api.delete(`/chat/${id}`);
+      await api.delete(`/api/chat/${id}`);
       fetchChats();
       toast.success("Chat Deleted");
     } catch (error) {
@@ -1295,7 +1295,7 @@ function FullChatApp() {
   // No need to fetch chats directly; useChatContext provides the data
   const handleDeleteChat = async (id: string) => {
     try {
-      await api.delete(`/chat/${id}`);
+      await api.delete(`/api/chat/${id}`);
       toast.success("Chat Deleted");
     } catch (error) {
       console.error("Error loading chat messages:", error);
