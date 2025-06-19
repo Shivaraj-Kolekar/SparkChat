@@ -58,7 +58,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useUser } from "@clerk/nextjs";
-import { api } from "@/lib/api-client";
+import { api, getClerkToken } from "@/lib/api-client";
 
 // Create form schema
 
@@ -338,10 +338,12 @@ export default function Settings() {
     async function fetchUsage() {
       try {
         setLoadingUsage(true);
+        const token = await getClerkToken();
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_SERVER_URL}/api/ai`,
           {
             method: "GET",
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
             credentials: "include",
           }
         );
