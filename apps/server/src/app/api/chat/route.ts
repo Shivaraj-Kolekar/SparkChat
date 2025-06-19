@@ -2,10 +2,12 @@ import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/db";
 import { chats as chatTable } from "@/db/schema/auth";
 import { v4 as uuidv4 } from "uuid";
-import { getClerkSession, getClerkUser, ensureUserInDb } from "@/lib/auth";
+import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { withCORS } from "@/lib/cors";
 import { user as userTable } from "@/db/schema/auth";
+import { ensureUserInDb } from "@/lib/ensureUserInDb";
+
 export const POST = withCORS(async (req: NextRequest) => {
   try {
     const { title } = await req.json();

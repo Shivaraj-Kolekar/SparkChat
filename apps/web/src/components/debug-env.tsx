@@ -1,5 +1,4 @@
 "use client";
-import { authClient } from "@/lib/auth-client";
 import { api } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 
@@ -29,11 +28,6 @@ export function DebugEnv() {
 
         // Get client session data
         let sessionData = null;
-        try {
-          sessionData = await authClient.getSession();
-        } catch (error) {
-          errorLog.push(`Client session error: ${error}`);
-        }
 
         // Test server session using the centralized API client
         let serverSessionData = null;

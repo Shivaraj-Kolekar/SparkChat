@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { userInfo } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
-import { getClerkSession, getClerkUser, ensureUserInDb } from "@/lib/auth";
+import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { invalidateUserPreferencesCache } from "@/lib/cache";
 import { withCORS } from "@/lib/cors";
+import { ensureUserInDb } from "@/lib/ensureUserInDb";
 
 // GET - Fetch user preferences
 export const GET = withCORS(async (req: NextRequest) => {
