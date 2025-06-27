@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { chats as chatTable } from "@/db/schema/auth";
 import { v4 as uuidv4 } from "uuid";
 import { getClerkSession, getClerkUser } from "@/lib/auth";
-import { eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { withCORS } from "@/lib/cors";
 import { user as userTable } from "@/db/schema/auth";
 import { ensureUserInDb } from "@/lib/ensureUserInDb";
@@ -19,13 +19,14 @@ export const POST = withCORS(async (req: NextRequest) => {
       });
     }
     await ensureUserInDb(user);
+    const newChatId = uuidv4();
     await db.insert(chatTable).values({
-      id: uuidv4(),
+      id: newChatId,
       title: title,
       created_at: new Date(),
       userId: user.id,
     });
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, result: { id: newChatId } });
   } catch (error) {
     console.log(error);
     return NextResponse.json(
@@ -48,6 +49,7 @@ export const GET = withCORS(async (req: NextRequest) => {
       .select()
       .from(chatTable)
       .where(eq(chatTable.userId, user.id));
+    // .orderBy(desc(chatTable.created_at));
     return NextResponse.json({ result, success: true });
   } catch (error) {
     console.error("Error in GET /api/chat:", error);

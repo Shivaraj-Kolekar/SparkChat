@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type JSX } from "react";
+import React, { useEffect, useState, type JSX } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,8 +39,11 @@ import {
   Linkedin,
   Code,
   User,
+  Sun,
+  Moon,
 } from "lucide-react";
 import Header from "@/components/header";
+import type Theme from "next-themes";
 import { Textarea } from "@/components/ui/textarea";
 import { register } from "module";
 import { z } from "zod";
@@ -59,6 +62,15 @@ import {
 } from "@/components/ui/dialog";
 import { useUser } from "@clerk/nextjs";
 import { api, getClerkToken } from "@/lib/api-client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useTheme } from "next-themes";
+import { handleClientScriptLoad } from "next/script";
+import { useThemeStore } from "@/store/themeStore";
 
 // Create form schema
 
@@ -179,7 +191,7 @@ export default function Settings() {
   const [defaultModel, setDefaultModel] = useState("gemini");
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(2000);
-
+  // const [mode, setMode] = useState("light");
   // Chat Settings
   const [autoSave, setAutoSave] = useState(true);
   const [streamMessages, setStreamMessages] = useState(true);
@@ -333,7 +345,30 @@ export default function Settings() {
     // Load saved settings here
     // loadSettings();
   }, [user, isLoaded]);
+  // const { setTheme } = useTheme();
+  // // Theme and mode state
+  // const [themeState, setThemeState] = useState({
+  //   mode: "light",
+  //   theme: "light",
+  // });
 
+  // // Handler for mode (light/dark)
+  // const handleModeChange = (mode: "light" | "dark") => {
+  //   setThemeState((prev) => ({ ...prev, mode }));
+  //   setTheme(mode);
+  // };
+
+  // // Handler for theme (custom themes)
+  // const handleThemeChange = (theme: string) => {
+  //   setThemeState((prev) => ({ ...prev, theme }));
+  //   setTheme(theme);
+  // };
+  const { setTheme, systemTheme } = useTheme();
+  const { baseTheme, mode, setBaseTheme, setMode } = useThemeStore();
+
+  React.useEffect(() => {
+    setTheme(`${baseTheme}-${mode}`);
+  }, [baseTheme, mode, setTheme]);
   useEffect(() => {
     async function fetchUsage() {
       try {
@@ -417,10 +452,8 @@ export default function Settings() {
                 <div className="flex justify-between items-center">
                   <span>Search</span>
                   <span>
-                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box">
-                      Ctrl
-                    </kbd>
-                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box ml-1">
+                    <kbd className="bg-accent p-2 rounded-sm kbd-box">Ctrl</kbd>
+                    <kbd className="bg-accent p-2 rounded-sm kbd-box ml-1">
                       K
                     </kbd>
                   </span>
@@ -428,13 +461,11 @@ export default function Settings() {
                 <div className="flex justify-between items-center">
                   <span>New Chat</span>
                   <span>
-                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box">
-                      Ctrl
-                    </kbd>
-                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box ml-1">
+                    <kbd className="bg-accent p-2 rounded-sm kbd-box">Ctrl</kbd>
+                    <kbd className="bg-accent p-2 rounded-sm kbd-box ml-1">
                       Shift
                     </kbd>
-                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box ml-1">
+                    <kbd className="bg-accent p-2 rounded-sm kbd-box ml-1">
                       O
                     </kbd>
                   </span>
@@ -442,10 +473,8 @@ export default function Settings() {
                 <div className="flex justify-between items-center">
                   <span>Toggle Sidebar</span>
                   <span>
-                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box">
-                      Ctrl
-                    </kbd>
-                    <kbd className="dark:bg-slate-900  bg-slate-200 p-2 rounded-sm kbd-box ml-1">
+                    <kbd className="bg-accent p-2 rounded-sm kbd-box">Ctrl</kbd>
+                    <kbd className="bg-accent p-2 rounded-sm kbd-box ml-1">
                       B
                     </kbd>
                   </span>
@@ -457,51 +486,12 @@ export default function Settings() {
         <Tabs defaultValue="account" className="w-full">
           <TabsList>
             <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="customization">Customization</TabsTrigger>
+            <TabsTrigger value="customization">Personalize</TabsTrigger>
+            <TabsTrigger value="appearance">Appearance</TabsTrigger>
             <TabsTrigger value="models">Models</TabsTrigger>
             <TabsTrigger value="contact-us">Contact us</TabsTrigger>
           </TabsList>
           <TabsContent value="account">
-            {/* <div className="mt-8 border bg-secondary rounded-lg p-6">
-              <h2 className="text-lg font-semibold  mb-2">Danger Zone</h2>
-
-              <Dialog>
-                <DialogTrigger>
-                  <Button
-                    variant="destructive"
-                    // onClick={() => handleDeleteAccount}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Delete Account
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      Are you sure you want to Delete your account ?
-                    </DialogTitle>
-                  </DialogHeader>
-                  <p className="text-destructive mb-4">
-                    Deleting your account is irreversible. All your data will be
-                    lost.
-                  </p>
-                  <DialogFooter className="space-x-1.5">
-                    <DialogClose className="h-9 px-4 py-2 has-[>svg]:px-3 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50">
-                      Cancel
-                    </DialogClose>
-                    <Button
-                      variant="destructive"
-                      className="bg-red-600 hover:bg-red-700 text-white"
-                      onClick={() => {
-                        // Implement delete account logic using Clerk
-                      }}
-                    >
-                      Delete Account
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div> */}
             {/* Message Usage Section */}
             <Card className="mt-6 shadow-lg rounded-xl">
               <CardHeader>
@@ -675,6 +665,81 @@ export default function Settings() {
 
             {/* Chat Settings */}
           </TabsContent>{" "}
+          <TabsContent value="appearance">
+            <div className="grid grid-cols-2 gap-3 mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    <h1 className="text-center text-xl">Mode</h1>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col md:flex-row gap-3">
+                  <Button
+                    variant="outline"
+                    className="py-8 "
+                    onClick={() => setMode("light")}
+                  >
+                    <Sun />
+                    Light
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="py-8 "
+                    onClick={() => setMode("dark")}
+                  >
+                    <Moon />
+                    Dark
+                  </Button>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    <h1 className="text-center text-xl">Theme</h1>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="mt-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="w-full">
+                      <Button variant={"outline"} className="w-full py-6">
+                        Select Theme
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-full">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setBaseTheme("amethyst");
+                        }}
+                      >
+                        Amethyst
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setBaseTheme("tangerine");
+                        }}
+                      >
+                        Tangerine
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setBaseTheme("graphite");
+                        }}
+                      >
+                        Graphite
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setBaseTheme("t3");
+                        }}
+                      >
+                        T3 Chat
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
           <TabsContent className="" value="models">
             <div className="mt-8 space-y-3">
               {models.map((model) => (

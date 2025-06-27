@@ -11,7 +11,7 @@ import { withCORS } from "@/lib/cors";
 
 export const POST = withCORS(async (req: NextRequest) => {
   try {
-    const { message, chatId } = await req.json();
+    const { message, chatId, model } = await req.json();
     const session = getClerkSession(req);
     const user = await getClerkUser(req);
     if (!session.userId || !user) {
@@ -42,7 +42,7 @@ export const POST = withCORS(async (req: NextRequest) => {
         userId: user.id,
       });
     }
-
+    console.log(model);
     await db.insert(messagesTable).values({
       id: uuidv4(),
       chatId: !chatId ? id : chatId,
@@ -50,6 +50,7 @@ export const POST = withCORS(async (req: NextRequest) => {
       content: message.content,
       userId: user.id,
       created_at: new Date(),
+      model: model,
     });
 
     return NextResponse.json({ success: true });

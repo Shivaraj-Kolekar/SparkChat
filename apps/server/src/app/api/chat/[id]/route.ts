@@ -13,13 +13,26 @@ export const GET = withCORS(
     try {
       const params = await context.params;
       const chatId = params.id;
+      const chat = await db
+        .select()
+        .from(chatTable)
+        .where(eq(chatTable.id, chatId));
       const { userId } = getAuth(req);
+      let messages;
+      if (chat.length > 0 && chat[0].public === true) {
+        messages = await db
+          .select()
+          .from(messagesTable)
+          .where(and(eq(messagesTable.chatId, chatId)))
+          .orderBy(asc(messagesTable.created_at));
+      }
       if (!userId) {
         return new Response("Unauthorized", {
           status: 401,
         });
       }
-      const messages = await db
+
+      messages = await db
         .select()
         .from(messagesTable)
         .where(
@@ -33,6 +46,31 @@ export const GET = withCORS(
       return NextResponse.json({
         success: true,
         messages,
+      });
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to fetch messages",
+        },
+        { status: 500 }
+      );
+    }
+  }
+);
+
+export const PUT = withCORS(
+  async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
+    try {
+      const params = await context.params;
+      const chatId = params.id;
+
+      const { userId } = getAuth(req);
+      const chat = await db.update(chatTable).set({ public: true });
+      return NextResponse.json({
+        success: true,
+        chat,
       });
     } catch (error) {
       console.error("Error fetching messages:", error);

@@ -1,6 +1,6 @@
 import { SignIn, useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import Loader from "./loader";
+import Loader from "../loader";
 
 export default function SignInForm({
   onSwitchToSignUp,

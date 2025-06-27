@@ -104,406 +104,26 @@ import {
 } from "@/components/ui/tooltip";
 import Loader from "@/components/loader";
 import { api, getClerkToken } from "@/lib/api-client";
+import { useQuery } from "@tanstack/react-query";
+import { ChatSidebar } from "@/components/layout/chatSideBar";
+import { useChatStore } from "@/store/chatStore";
+import { useModelStore } from "@/store/modelStore";
 
-function ChatSidebar({
-  onSelectChat,
-  onDeleteChat,
-  chats,
-  loadingChats,
-  errorChats,
-  selectedChatId,
-}: {
-  onSelectChat: (chatId: string) => void;
-  onDeleteChat: (title: string) => void;
-  chats: ChatType[];
-  loadingChats: boolean;
-  errorChats: string | null;
-  selectedChatId: string | null;
-}) {
-  interface Chat {
-    id: string;
-    title: string;
-    created_at: number;
-  }
-
-  const [chatList, setChatList] = useState<Chat[]>([]);
-  const [title, setTitle] = useState("");
-  const [showAdditionalButtons, setShowAdditionalButtons] = useState(false);
-  const [animateSearch, setAnimateSearch] = useState(false);
-  const [animatePlus, setAnimatePlus] = useState(false);
-  const [isCmndDialogOpen, setIsCmndDialogOpen] = useState(false);
-  const [isLoadingChats, setIsLoadingChats] = useState(false);
-
-  const fetchChats = async () => {
-    setIsLoadingChats(true);
-    try {
-      const response = await api.get("/api/chat");
-      if (response.data.success && Array.isArray(response.data.result)) {
-        setChatList(response.data.result);
-        console.log("Fetched chats:", response.data.result);
-      } else {
-        console.error("Invalid chat data format:", response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching chats:", error);
-    } finally {
-      setIsLoadingChats(false);
-    }
-  };
-
-  const { user, isLoaded } = useUser();
-
-  const submit = async (title: string) => {
-    try {
-      if (!isLoaded) {
-        toast.error("Please login first");
-        return;
-      }
-
-      await api.post("/api/chat", {
-        title,
-      });
-      fetchChats(); // Refresh the chat list
-      toast.success("New chat created");
-      setTitle(""); // Clear the input
-    } catch (error) {
-      console.error("Error creating chat:", error);
-      toast.error("Error occurred in chat creation");
-    }
-  };
-
-  const handleDeleteChat = async (id: string) => {
-    try {
-      await api.delete(`/api/chat/${id}`);
-      fetchChats();
-      toast.success("Chat Deleted");
-    } catch (error) {
-      console.error("Error loading chat messages:", error);
-      toast.error("Error loading chat messages");
-    }
-  };
-
-  const { toggleSidebar, state } = useSidebar();
-  useEffect(() => {
-    if (state === "collapsed") {
-      // When closing the sidebar, prepare to show and animate buttons
-      setShowAdditionalButtons(true); // Make them visible (opacity 0 initially)
-
-      // Animate search button after a small delay
-      const searchTimeout = setTimeout(() => {
-        setAnimateSearch(true);
-      }, 50); // Small delay for the search button to start animating
-
-      // Animate plus button after another delay
-      const plusTimeout = setTimeout(() => {
-        setAnimatePlus(true);
-      }, 200); // Delay for plus button to follow search
-
-      return () => {
-        clearTimeout(searchTimeout);
-        clearTimeout(plusTimeout);
-        // Reset states if sidebar opens before animation completes
-        setAnimateSearch(false);
-        setAnimatePlus(false);
-      };
-    } else {
-      // When opening the sidebar, immediately hide and reset animation states
-      setAnimateSearch(false);
-      setAnimatePlus(false);
-      // Give a tiny moment for the opacity/transform to reset before hiding the container
-      const hideTimeout = setTimeout(() => {
-        setShowAdditionalButtons(false);
-        setIsCmndDialogOpen(false);
-      }, 300); // Match this with your longest transition duration
-
-      return () => clearTimeout(hideTimeout);
-    }
-  }, [state]);
-  useHotkeys("ctrl+k", (event) => {
-    event.preventDefault(); //
-    setIsCmndDialogOpen(true);
-    // toast.success("CTRL+K pressed");
-  });
-  useEffect(() => {
-    if (isLoaded && user) {
-      fetchChats();
-    }
-  }, [isLoaded, user]);
-  const buttonContainerWidthClass = state === "collapsed" ? "w-28" : "w-7"; // Adjust w-28 as needed for 3 buttons
-  return (
-    <div className="h-40">
-      <div>
-        {" "}
-        <CommandDialog
-          open={isCmndDialogOpen}
-          onOpenChange={setIsCmndDialogOpen}
-        >
-          {/* CommandDialog automatically includes a way to close itself usually */}
-          <Command className="rounded-lg border shadow-md md:min-w-[450px]">
-            <CommandInput placeholder="Search your chats" />
-            <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup heading="Recent Chats">
-                {Array.isArray(chatList) &&
-                  chatList.map((chat) => (
-                    <Link
-                      key={chat.id}
-                      href={`/chat/${chat.id}`}
-                      onClick={(e) => {
-                        e.stopPropagation(); // Stop propagation for the button click
-                        onSelectChat(chat.id); // Ensure chat selection happens
-                      }}
-                    >
-                      <CommandItem
-                        key={chat.id} // Use a unique ID for the key prop
-                        onSelect={() => {
-                          // Handle selection, e.g., navigate to chat or select it
-                          console.log("Selected chat:", chat.title);
-                          setIsCmndDialogOpen(false); // Close dialog on select
-                        }}
-                      >
-                        {chat.title}
-                      </CommandItem>
-                    </Link>
-                  ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </CommandDialog>
-        <div>
-          {" "}
-          {state === "collapsed" ? (
-            <div
-              className={cn(
-                "fixed top-2 left-4 z-50 flex flex-row gap-2 items-center justify-center bg-sidebar/80 rounded-lg px-2 py-1 border  shadow-lg"
-              )}
-            >
-              {showAdditionalButtons && (
-                <Button
-                  data-sidebar="trigger"
-                  data-slot="sidebar-trigger"
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "size-6 rounded-md transition-all duration-300 ease-out",
-                    animateSearch
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 -translate-x-full"
-                  )}
-                  onClick={toggleSidebar}
-                >
-                  <PanelLeftIcon />
-                  <span className="sr-only">Toggle Sidebar</span>
-                </Button>
-              )}
-              {showAdditionalButtons && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "size-6 rounded-md transition-all duration-300 ease-out",
-                    animateSearch
-                      ? "opacity-100 translate-x-0"
-                      : "opacity-0 -translate-x-full"
-                  )}
-                  onClick={() => setIsCmndDialogOpen(true)}
-                >
-                  <Search />
-                  <span className="sr-only">Search Sidebar Chats</span>
-                </Button>
-              )}
-              {showAdditionalButtons && (
-                <Link href="/">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "size-6 rounded-md transition-all duration-300 ease-out",
-                      animateSearch
-                        ? "opacity-100 translate-x-0"
-                        : "opacity-0 -translate-x-full"
-                    )}
-                  >
-                    <Plus />
-                    <span className="sr-only">Add Chat</span>
-                  </Button>
-                </Link>
-              )}
-            </div>
-          ) : (
-            <div className="my-5 py-1 mx-2 rounded-sm">
-              <Button
-                data-sidebar="trigger"
-                data-slot="sidebar-trigger"
-                variant="ghost"
-                size="icon"
-                className={cn("size-7")}
-                onClick={toggleSidebar}
-              >
-                <PanelLeftIcon />
-                <span className="sr-only">Toggle Sidebar</span>
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-      <Sidebar>
-        <SidebarHeader className="flex flex-row items-center gap-2 pb-2">
-          {/* */}{" "}
-          <Button
-            data-sidebar="trigger"
-            data-slot="sidebar-trigger"
-            variant="ghost"
-            size="icon"
-            className={cn("size-7 ")}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleSidebar();
-            }}
-          >
-            <PanelLeftIcon />
-            <span className="sr-only">Toggle Sidebar</span>
-          </Button>
-          <div className="flex flex-row items-center  ">
-            <Image
-              className="rounded-sm "
-              src="/sparkchat.png"
-              alt="SparkChat"
-              height={48}
-              width={48}
-            />{" "}
-            <div className="text-lg font-base text-primary tracking-tight">
-              <Sparkchat />
-            </div>
-          </div>
-        </SidebarHeader>
-        <SidebarContent className="pt-2">
-          <div className="px-4">
-            <Link
-              className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
-              href="/"
-            >
-              <PlusIcon className="size-4" />
-              <span>New Chat</span>
-            </Link>
-          </div>
-          <SidebarGroup className="h-full">
-            <h1 className="pl-2 text-primary">Recent Chats</h1>
-            {isLoadingChats ? (
-              <SidebarMenu>
-                <p className="text-center">Loading chats...</p>
-                <Loader />
-              </SidebarMenu>
-            ) : chatList.length === 0 ? (
-              <SidebarMenu>
-                <p className="text-center">No chats found</p>
-              </SidebarMenu>
-            ) : (
-              <SidebarMenu className="px-2">
-                {Array.isArray(chatList) &&
-                  chatList.map((chat) => (
-                    <SidebarMenuButton
-                      key={chat.id}
-                      className="text-base my-0.5 px-2 py-3 relative group"
-                      onClick={() => onSelectChat(chat.id)}
-                      isActive={chat.id === selectedChatId}
-                    >
-                      {/* Title Container with Blur Effect */}
-                      <Link
-                        href={`/chat/${chat.id}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectChat(chat.id);
-                        }}
-                        className="absolute inset-0 flex items-center pl-2 pr-10"
-                      >
-                        <div className="relative flex-grow min-w-0">
-                          <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
-                            {chat.title}
-                          </span>
-                        </div>
-                      </Link>
-                      {/* Delete Button */}
-                      <div
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                          chat.id === selectedChatId ? "block" : ""
-                        }`}
-                      >
-                        <Dialog>
-                          <DialogTrigger>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 text-gray-500 hover:text-red-500"
-                            >
-                              <X className="h-4 w-4" />
-                              <span className="sr-only">Delete Chat</span>
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Delete Chat</DialogTitle>
-                            </DialogHeader>
-                            <DialogDescription>
-                              Are you sure you want to delete this chat ?
-                            </DialogDescription>
-                            <DialogFooter>
-                              <DialogClose>Close</DialogClose>
-                              <Button
-                                variant={"destructive"}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteChat(chat.id);
-                                  toast.success("Chat deleted");
-                                }}
-                              >
-                                Delete Chat
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </SidebarMenuButton>
-                  ))}
-              </SidebarMenu>
-            )}
-          </SidebarGroup>
-          <SidebarFooter className="justify-end">
-            <div className="text-center bg-accent px-4 py-3 rounded-md">
-              {isLoaded && user ? (
-                <Link href="/settings">
-                  {" "}
-                  <h1>
-                    {user.firstName} {user.lastName}
-                  </h1>
-                </Link>
-              ) : (
-                <Link href="/login">
-                  <span className="flex items-center space-x-2">
-                    <LogInIcon size={20} />
-                    <h1 className="font-medium">Login</h1>
-                  </span>
-                </Link>
-              )}
-            </div>
-          </SidebarFooter>
-        </SidebarContent>
-      </Sidebar>
-    </div>
-  );
-}
+// The ChatSidebar now uses React Query for fetching chats, so you can remove the `chats`, `loadingChats`, and `errorChats` props.
+// You still need `onSelectChat` and `selectedChatId` for interaction, but `onDeleteChat` is not used (deletion is handled internally).
+// Here is the refactored component:
 
 function AIPage({
-  currentChatId,
-  setCurrentChatId,
+  // currentChatId,
+  // setCurrentChatId,
   currentMessages,
   setCurrentMessages,
   modelValue,
   chats,
   router,
 }: {
-  currentChatId: string | null;
-  setCurrentChatId: React.Dispatch<React.SetStateAction<string | null>>;
+  // currentChatId: string | null;
+  // setCurrentChatId: React.Dispatch<React.SetStateAction<string | null>>;
   currentMessages: MessageType[];
   setCurrentMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
   modelValue: string;
@@ -511,26 +131,31 @@ function AIPage({
   router: any; // Use the router type from useRouter
 }) {
   const { refreshChats } = useChatContext();
-  const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash"); // default model
+  //const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash"); // default model
   const { user, isLoaded } = useUser();
+  const selectedChatId = useChatStore((state) => state.selectedChatId);
+  const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
+  const selectedModel = useModelStore((state) => state.selectedModel);
+  const setSelectedModel = useModelStore((state) => state.setSelectedModel);
+  // useEffect(() => {
+  //   // Only access localStorage in the browser
+  //   if (typeof window !== "undefined") {
+  //     const savedModel = localStorage.getItem("selectedModel");
+  //     if (savedModel) {
+  //       setSelectedModel(savedModel);
+  //     }
+  //   }
+  // }, []);
 
+  // useEffect(() => {
+  //   // Only save to localStorage in the browser
+  //   if (typeof window !== "undefined") {
+  //     localStorage.setItem("selectedModel", selectedModel);
+  //   }
+  // }, [selectedModel]);
   useEffect(() => {
-    // Only access localStorage in the browser
-    if (typeof window !== "undefined") {
-      const savedModel = localStorage.getItem("selectedModel");
-      if (savedModel) {
-        setSelectedModel(savedModel);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    // Only save to localStorage in the browser
-    if (typeof window !== "undefined") {
-      localStorage.setItem("selectedModel", selectedModel);
-    }
+    console.log("Selected Model: ", selectedModel);
   }, [selectedModel]);
-
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
   const streamIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -547,7 +172,8 @@ function AIPage({
   const [rateLimitReset, setRateLimitReset] = useState("");
   const [promptDisabled, setPromptDisabled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [creatingChat, setCreatingChat] = useState(false);
   // Get suggestions based on active category
   const activeCategoryData = suggestionGroups.find(
     (group) => group.label === activeCategory
@@ -568,56 +194,46 @@ function AIPage({
 
   const storeMessage = async (
     message: Message,
-    currentChatId: string, // Changed from currentChatId to chatId (local scope)
+    chatId: string,
+    model?: string,
     retryCount = 0
   ) => {
     try {
-      if (!currentChatId) {
-        // Check against the passed chatId
+      if (!chatId) {
         toast.error("No chat id found for message storage.");
         return false;
       }
-
       if (!user) {
         toast.error("Please login first");
         return false;
       }
-
       setIsLoading(true);
       const response = await api.post("/api/messages", {
         message: {
           content: message.content,
           role: message.role,
         },
-        chatId: currentChatId, // Use the passed chatId
+        chatId,
+        selectedModel,
       });
-
       if (!response.data.success) {
         throw new Error("Failed to store message");
       }
-
-      // Update the current messages list
       setCurrentMessages((prev) => [
         ...prev,
         {
           ...message,
-          chatId: currentChatId, // Use the passed chatId
+          chatId,
           id: typeof message.id === "string" ? Number(message.id) : message.id,
           timestamp: Date.now(),
         } as MessageType,
       ]);
-
-      return true; // Indicate successful storage
+      return true;
     } catch (error) {
-      console.error("Error storing message:", error);
-
-      // Retry logic for failed requests (max 3 attempts)
       if (retryCount < 3) {
-        console.log(`Retrying message storage attempt ${retryCount + 1}`);
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retry
-        return storeMessage(message, currentChatId, retryCount + 1); // Pass the correct chatId
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return storeMessage(message, chatId, model, retryCount + 1);
       }
-
       toast.error("Failed to save message after multiple attempts");
       return false;
     } finally {
@@ -631,7 +247,30 @@ function AIPage({
     if (token) headers.set("Authorization", `Bearer ${token}`);
     return fetch(input, { ...init, headers });
   };
-  // Configure chat with current messages
+
+  const chatIdRef = useRef<string | null>(selectedChatId);
+  useEffect(() => {
+    chatIdRef.current = selectedChatId;
+  }, [selectedChatId]);
+  const actuallySendMessage = async (
+    messageText: string,
+    chatId: string,
+    e?: React.FormEvent
+  ) => {
+    const userMessage = {
+      content: messageText,
+      role: "user" as const,
+      id: Date.now().toString(),
+    };
+    // 1. Store user message
+    const stored = await storeMessage(userMessage, chatId);
+    if (!stored) {
+      toast.error("Failed to save your message");
+      return;
+    }
+    // 2. Trigger AI response (originalHandleSubmit will use the correct chat context)
+    originalHandleSubmit(e);
+  };
   const {
     messages,
     reload,
@@ -651,8 +290,9 @@ function AIPage({
       searchEnabled: searchEnabled,
     },
     onFinish: async (message) => {
-      // Store the AI's response
-      const stored = await storeMessage(message, chatId as string); // Use currentChatId from state
+      // Store the AI's response using the latest chatId
+      const latestChatId = chatIdRef.current;
+      const stored = await storeMessage(message, latestChatId as string);
       if (!stored) {
         toast.error(
           "AI response was not saved. The chat history may be incomplete."
@@ -661,7 +301,12 @@ function AIPage({
       // fetchRemaining(); // Re-added fetchRemaining here
     },
   });
-
+  useEffect(() => {
+    if (selectedChatId && pendingMessage) {
+      actuallySendMessage(pendingMessage, selectedChatId);
+      setPendingMessage(null);
+    }
+  }, [selectedChatId, pendingMessage]);
   // Fetch remaining messages after each send
   const fetchRemaining = async () => {
     try {
@@ -697,65 +342,43 @@ function AIPage({
   };
 
   // Call fetchRemaining after each message is sent
-  let chatId = currentChatId;
+  let chatId = selectedChatId;
   const handleSubmit = async (e?: React.FormEvent) => {
+    if (creatingChat) return; // Prevent double submit
     if (!user) {
       toast.error("Please login first");
       return;
     }
     const chatTitle = input.slice(0, 30) + (input.length > 30 ? "..." : "");
-    setChatTitle(chatTitle);
-    try {
-      // If no chat is selected, create a new one with the message as title
-      if (!chatId) {
-        const response = await api.post(
-          "/api/chat",
-          { title: chatTitle },
-          { withCredentials: true }
-        );
-        await refreshChats();
-        if (!response.data.success) {
-          throw new Error("Failed to create new chat");
-        }
 
-        // Get the new chat ID from the response
-        const chatsResponse = await api.get("/api/chat", {
-          withCredentials: true,
-        });
-
-        if (
-          chatsResponse.data.success &&
-          Array.isArray(chatsResponse.data.result)
-        ) {
-          // Find the newly created chat (it will be the most recent one)
-          const newChat =
-            chatsResponse.data.result[chatsResponse.data.result.length - 1];
-          chatId = newChat.id;
-          setCurrentChatId(chatId);
-          router.push(`/chat/${chatId}`);
-        } else {
-          throw new Error("Failed to get new chat ID");
-        }
-      }
-
-      // Store the user message with the new or existing chat ID
-      const userMessage = {
-        content: input,
-        role: "user" as const,
-        id: Date.now().toString(),
-      };
-
-      const stored = await storeMessage(userMessage, chatId as string);
-      if (!stored) {
-        toast.error("Failed to save your message");
+    if (!selectedChatId) {
+      setCreatingChat(true);
+      let response;
+      try {
+        response = await api.post("/api/chat", { title: chatTitle });
+        console.log("Chat creation response:", response.data);
+      } catch (err) {
+        toast.error("Failed to reach chat creation API.");
+        console.error("API error:", err);
+        setCreatingChat(false);
         return;
       }
-      originalHandleSubmit(e);
-      // Now proceed with the original submit
-    } catch (error) {
-      console.error("Error in handleSubmit:", error);
-      toast.error("Failed to process your message");
+      if (!response?.data?.success || !response.data.result?.id) {
+        toast.error("Failed to create new chat (no ID returned).");
+        setCreatingChat(false);
+        return;
+      }
+      const newChatId = response.data.result.id;
+      setSelectedChatId(newChatId);
+      console.log("Redirecting to /chat/" + newChatId);
+      router.push(`/chat/${newChatId}`);
+      setPendingMessage(input);
+      setCreatingChat(false);
+      return;
     }
+
+    // Existing chat flow
+    await actuallySendMessage(input, selectedChatId, e);
   };
   useEffect(() => {
     fetchRemaining();
@@ -934,9 +557,16 @@ function AIPage({
         </header>
       </div>
       <hr></hr>
-      <div className="flex-1 flex flex-col items-start justify-center w-full">
+      <div className="flex-1 flex flex-col items-start justify-center">
         <div className="flex flex-col items-start justify-center w-full max-w-[800px] mx-auto flex-1">
-          {messages.length === 0 ? (
+          {pendingMessage && selectedChatId ? (
+            <div className="w-full flex flex-col items-center justify-center min-h-[300px]">
+              <Loader />
+              <div className="mt-4 text-muted-foreground text-sm">
+                Redirecting to your new chat...
+              </div>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="w-full flex flex-col items-start justify-start">
               <div className="flex flex-col items-start justify-start w-full">
                 <div className="bg-background rounded-2xl px-2 py-4 sm:px-4 sm:py-4 mx-auto">
@@ -1048,7 +678,7 @@ function AIPage({
             </div>
           ) : (
             <div className="w-full flex flex-col items-start justify-center">
-              <ChatContainerRoot className="flex-1 w-full">
+              {/* <ChatContainerRoot className="flex-1 w-full">
                 <ChatContainerContent className="space-y-4 py-4 flex flex-col items-start justify-center">
                   {messages.map((message) => (
                     <MessageComponent
@@ -1063,7 +693,7 @@ function AIPage({
                         className={
                           message.role === "assistant"
                             ? "min-w-[95%] flex-1 sm:max-w-[75%] mx-auto"
-                            : "w-fit flex-1 sm:max-w-[75%]"
+                            : " flex-1 min-w-[25%] w-auto max-w-[50%] ml-auto"
                         }
                       >
                         {message.role === "assistant" ? (
@@ -1109,15 +739,15 @@ function AIPage({
                   ))}
                   <div ref={messagesEndRef} />
                 </ChatContainerContent>
-              </ChatContainerRoot>
+              </ChatContainerRoot> */}
             </div>
           )}
         </div>
       </div>
       {/* Prompt input always at bottom */}
-      <div className="w-full flex justify-center sticky bottom-0 bg-background z-50  border-border py-3 px-2">
+      <div className="w-full flex justify-center sticky bottom-0 bg-background z-50  border-border pt-3 px-2">
         <div className="w-full max-w-[800px] mx-auto">
-          <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
+          <div className="px-1.5 pt-1.5 max-w-(--breakpoint-md) rounded-b-none rounded-xl bg-accent">
             {remaining <= 5 && remaining > 0 && (
               <div className="text-yellow-600 text-center mb-2">
                 {remaining} messages left before your daily limit is reached.
@@ -1137,7 +767,7 @@ function AIPage({
               <PromptInputTextarea
                 onChange={handleInputChange}
                 placeholder="Ask me anything..."
-                disabled={promptDisabled}
+                disabled={promptDisabled || creatingChat}
               />
               <PromptInputActions className="justify-between pt-2">
                 <div className="flex align-items-center gap-2">
@@ -1164,7 +794,7 @@ function AIPage({
                             className="h-9"
                           />
                           <CommandList>
-                            <CommandEmpty>No framework found.</CommandEmpty>
+                            <CommandEmpty>No Models found.</CommandEmpty>
                             <CommandGroup>
                               {models.map((model) => (
                                 <CommandItem
@@ -1264,9 +894,9 @@ function AIPage({
                     size="icon"
                     className="h-8 w-8 rounded-full"
                     onClick={() => {
-                      if (!promptDisabled) handleSubmit();
+                      if (!promptDisabled && !creatingChat) handleSubmit();
                     }}
-                    disabled={promptDisabled}
+                    disabled={promptDisabled || creatingChat}
                   >
                     {isLoading ? (
                       <Square className="size-5 fill-current" />
@@ -1330,21 +960,11 @@ function FullChatApp() {
       setCurrentMessages([]);
     }
   };
-
   return (
     <SidebarProvider>
-      <ChatSidebar
-        onSelectChat={handleSelectChat}
-        onDeleteChat={handleDeleteChat}
-        chats={chats}
-        loadingChats={loadingChats}
-        errorChats={errorChats}
-        selectedChatId={currentChatId}
-      />
+      <ChatSidebar />
       <SidebarInset>
         <AIPage
-          currentChatId={currentChatId}
-          setCurrentChatId={setCurrentChatId}
           currentMessages={currentMessages}
           setCurrentMessages={setCurrentMessages}
           modelValue={modelValue}

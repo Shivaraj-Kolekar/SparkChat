@@ -1,0 +1,1 @@
+ALTER TABLE "chat" ALTER COLUMN "public" SET NOT NULL;

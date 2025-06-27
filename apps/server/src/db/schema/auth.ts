@@ -78,6 +78,7 @@ export const messages = pgTable("messages", {
   role: text("role", { enum: ["user", "assistant"] }).notNull(),
   content: text("content").notNull(),
   created_at: timestamp("created_at").notNull(),
+  model: text("model"),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -87,6 +88,7 @@ export const chats = pgTable("chat", {
   id: text("id").primaryKey(), // Unique ID for each chat session
   title: text("title").notNull(), // A short title for the chat
   created_at: timestamp("created_at").notNull(),
+  public: boolean("public").default(false).notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
