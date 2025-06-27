@@ -38,7 +38,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         {children}
         <ReactQueryDevtools />
       </QueryClientProvider>
-      <Toaster richColors />
+      <Toaster />
     </ThemeProvider>
   );
 }

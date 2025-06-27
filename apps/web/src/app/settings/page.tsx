@@ -665,77 +665,161 @@ export default function Settings() {
 
             {/* Chat Settings */}
           </TabsContent>{" "}
-          <TabsContent value="appearance">
-            <div className="grid grid-cols-2 gap-3 mt-6">
-              <Card>
+          <TabsContent className="w-auto lg:w-[50%]" value="appearance">
+            <div className="mt-8">
+              <Card className="shadow-lg border-2 border-border/60">
                 <CardHeader>
                   <CardTitle>
-                    <h1 className="text-center text-xl">Mode</h1>
+                    <h1 className="text-center text-2xl font-bold tracking-tight">
+                      Appearance
+                    </h1>
                   </CardTitle>
+                  <p className="text-center text-muted-foreground text-sm mt-1">
+                    Choose your preferred color mode and theme.
+                  </p>
                 </CardHeader>
-                <CardContent className="flex flex-col md:flex-row gap-3">
-                  <Button
-                    variant="outline"
-                    className="py-8 "
-                    onClick={() => setMode("light")}
-                  >
-                    <Sun />
-                    Light
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="py-8 "
-                    onClick={() => setMode("dark")}
-                  >
-                    <Moon />
-                    Dark
-                  </Button>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    <h1 className="text-center text-xl">Theme</h1>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="mt-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="w-full">
-                      <Button variant={"outline"} className="w-full py-6">
-                        Select Theme
+                <CardContent className="flex flex-col gap-8 mt-2">
+                  {/* Color Mode Section */}
+                  <div>
+                    <h2 className="text-lg font-semibold mb-2 text-center">
+                      Color Mode
+                    </h2>
+                    <div className="flex gap-4">
+                      <Button
+                        variant={mode === "light" ? "default" : "outline"}
+                        className={`flex-1 py-8 flex flex-col items-center gap-2 rounded-xl border transition-all duration-200 ${
+                          mode === "light"
+                            ? "border-primary bg-primary/90 text-white shadow"
+                            : "border-border bg-background hover:bg-accent"
+                        }`}
+                        onClick={() => setMode("light")}
+                      >
+                        <Sun className="w-6 h-6 mb-1" />
+                        <span className="font-medium">Light</span>
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-full">
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setBaseTheme("amethyst");
-                        }}
+                      <Button
+                        variant={mode === "dark" ? "default" : "outline"}
+                        className={`flex-1 py-8 flex flex-col items-center gap-2 rounded-xl border transition-all duration-200 ${
+                          mode === "dark"
+                            ? "border-primary bg-primary/90 text-white shadow"
+                            : "border-border bg-background hover:bg-accent"
+                        }`}
+                        onClick={() => setMode("dark")}
                       >
-                        Amethyst
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setBaseTheme("tangerine");
-                        }}
-                      >
-                        Tangerine
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setBaseTheme("graphite");
-                        }}
-                      >
-                        Graphite
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setBaseTheme("t3");
-                        }}
-                      >
-                        T3 Chat
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        <Moon className="w-6 h-6 mb-1" />
+                        <span className="font-medium">Dark</span>
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Theme Section */}
+                  <div>
+                    <h2 className="text-lg font-semibold mb-2 text-center">
+                      Theme
+                    </h2>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="w-full">
+                        <Button
+                          variant={"outline"}
+                          className="w-full py-5 rounded-xl font-semibold text-lg flex items-center justify-center gap-2"
+                        >
+                          <span>
+                            {baseTheme === "amethyst"
+                              ? "Amethyst"
+                              : baseTheme === "tangerine"
+                              ? "Tangerine"
+                              : baseTheme === "graphite"
+                              ? "Graphite"
+                              : baseTheme === "t3"
+                              ? "T3 Chat"
+                              : "Select Theme"}
+                          </span>
+                          <svg
+                            className="w-4 h-4 ml-2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="px-4 py-2 min-w-[180px]">
+                        <DropdownMenuItem
+                          className={`rounded-lg px-3 py-2 mb-1 font-medium ${
+                            baseTheme === "amethyst"
+                              ? "bg-primary/10 text-primary"
+                              : ""
+                          }`}
+                          onClick={() => setBaseTheme("amethyst")}
+                        >
+                          <span
+                            className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)",
+                            }}
+                          ></span>
+                          Amethyst
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className={`rounded-lg px-3 py-2 mb-1 font-medium ${
+                            baseTheme === "tangerine"
+                              ? "bg-primary/10 text-primary"
+                              : ""
+                          }`}
+                          onClick={() => setBaseTheme("tangerine")}
+                        >
+                          <span
+                            className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #fbbf24 0%, #f59e42 100%)",
+                            }}
+                          ></span>
+                          Tangerine
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className={`rounded-lg px-3 py-2 mb-1 font-medium ${
+                            baseTheme === "graphite"
+                              ? "bg-primary/10 text-primary"
+                              : ""
+                          }`}
+                          onClick={() => setBaseTheme("graphite")}
+                        >
+                          <span
+                            className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #6b7280 0%, #111827 100%)",
+                            }}
+                          ></span>
+                          Graphite
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className={`rounded-lg px-3 py-2 font-medium ${
+                            baseTheme === "t3"
+                              ? "bg-primary/10 text-primary"
+                              : ""
+                          }`}
+                          onClick={() => setBaseTheme("t3")}
+                        >
+                          <span
+                            className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #38bdf8 0%, #6366f1 100%)",
+                            }}
+                          ></span>
+                          T3 Chat
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </CardContent>
               </Card>
             </div>

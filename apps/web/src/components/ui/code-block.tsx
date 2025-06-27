@@ -1,5 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
+import { useThemeStore } from "@/store/themeStore";
 import { useTheme } from "next-themes";
 import React, { useEffect, useState } from "react";
 import { codeToHtml } from "shiki";
@@ -40,9 +41,10 @@ function CodeBlockCode({
 }: CodeBlockCodeProps) {
   const { theme } = useTheme();
   const [highlightedHtml, setHighlightedHtml] = useState<string | null>(null);
+  const { baseTheme, mode, setBaseTheme, setMode } = useThemeStore();
 
   const currentTheme =
-    propTheme || (theme === "light" ? "github-light" : "github-dark");
+    propTheme || (mode === "light" ? "github-light" : "github-dark");
 
   useEffect(() => {
     async function highlight() {
