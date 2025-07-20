@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat, type Message } from "@ai-sdk/react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 
 import {
@@ -135,6 +135,11 @@ function AIPage({
   const params = useParams();
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
   const selectedChatId = useChatStore((state) => state.selectedChatId);
+  const pendingPrompt = useChatStore((state) => state.pendingPrompt);
+  const pendingChatId = useChatStore((state) => state.pendingChatId);
+  const clearPending = useChatStore((state) => state.clearPending);
+  const searchParams = useSearchParams();
+  const initialPrompt = searchParams.get("initialPrompt");
 
   useEffect(() => {
     if (params?.id) {
@@ -167,7 +172,6 @@ function AIPage({
   const [pendingAssistantMessageId, setPendingAssistantMessageId] = useState<
     string | null
   >(null);
-  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const fetchMessages = async (chatId: string) => {
     try {
       const response = await api.get(`/api/chat/${chatId}`);
@@ -414,7 +418,7 @@ function AIPage({
       label: "Llama 4 Scout",
       value: "meta-llama/llama-4-scout-17b-16e-instruct",
       svg: {
-        path: "M27.651 112.136c0 9.775 2.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808-1.79 26.52-19.372 10.185-14.092 22.186-33.874 30.26-46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651.988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.99 3.597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.49 6.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.775 2.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
+        path: "M27.651 112.136c0 9.775 2.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808-1.79 26.52-19.372 10.185-14.092 22.186-33.874 30.26-46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651.988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.99 3.597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.49 6.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651.988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.99 3.597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.49 6.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.775 2.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
         title: "Meta",
         viewbox: "0 0 256 171 ",
       },
@@ -593,8 +597,11 @@ function AIPage({
     } catch {}
   };
 
+  // Move isInputEmpty definition just before the return so it's in scope for render
+  const isInputEmpty = !input || input.trim() === "";
   // Call fetchRemaining after each message is sent
   const handleSubmit = async (e?: React.FormEvent) => {
+    if (isInputEmpty) return;
     if (!user) {
       toast.error("Please login first");
       return;
@@ -621,7 +628,6 @@ function AIPage({
         const newChat = sortedChats[0];
         setSelectedChatId(newChat.id);
         router.push(`/chat/${newChat.id}`);
-        setPendingMessage(input); // Store the message to send after navigation
       } else {
         toast.error("Failed to get new chat ID");
       }
@@ -629,24 +635,79 @@ function AIPage({
     }
 
     // Existing chat flow
-    await actuallySendMessage(input, selectedChatId, e);
+    if (typeof selectedChatId === "string" && selectedChatId && typeof selectedModel === "string" && selectedModel) {
+      await actuallySendMessage(input, selectedChatId, e, selectedModel);
+    }
   };
 
   // useEffect to watch for chatId and pendingMessage
+  const hasSentInitialPrompt = useRef(false);
+  const shouldSendPendingPrompt = useRef(false);
+  const [creatingChat, setCreatingChat] = useState(false);
+
+  // Helper to check if chat exists (by checking if messages.length > 0)
+  const chatExists = !!messages && messages.length > 0;
+
+  // Step 1: If pendingPrompt, ensure chat exists, then set input value
   useEffect(() => {
-    if (selectedChatId && pendingMessage) {
-      actuallySendMessage(pendingMessage, selectedChatId);
-      setPendingMessage(null);
+    if (
+      initialPrompt &&
+      initialPrompt.trim() !== "" &&
+      messages.length === 0 &&
+      !isLoading &&
+      !promptDisabled &&
+      typeof selectedChatId === "string" && selectedChatId &&
+      typeof selectedModel === "string" && selectedModel
+    ) {
+      // Store the user message
+      const userMessage = {
+        content: initialPrompt,
+        role: "user" as const,
+        id: Date.now().toString(),
+      };
+      (async () => {
+        const model = selectedModel;
+        if (typeof selectedChatId !== "string" || !selectedChatId) return;
+        const chatId: string = selectedChatId;
+        if (!model) return;
+        const stored = await storeMessage(userMessage, chatId, model);
+        if (!stored) {
+          toast.error("Failed to save your message");
+          return;
+        }
+        // Trigger the AI API
+        const prompt: string | null = typeof initialPrompt === "string" ? initialPrompt : null;
+        if (!prompt) return;
+        await actuallySendMessage(prompt!, chatId, undefined, model);
+      })();
     }
-  }, [selectedChatId, pendingMessage]);
+  }, [initialPrompt, messages.length, isLoading, promptDisabled, selectedChatId, selectedModel]);
+
+  // Step 2: When input matches pendingPrompt, trigger AI API
+  useEffect(() => {
+    if (
+      shouldSendPendingPrompt.current &&
+      input === pendingPrompt &&
+      !isLoading &&
+      !promptDisabled &&
+      chatExists
+    ) {
+      originalHandleSubmit();
+      clearPending();
+      hasSentInitialPrompt.current = true;
+      shouldSendPendingPrompt.current = false;
+    }
+  }, [input, pendingPrompt, isLoading, promptDisabled, originalHandleSubmit, clearPending, chatExists]);
   const { state } = useSidebar(); // or your sidebar state
 
   // The actuallySendMessage function
   const actuallySendMessage = async (
     messageText: string,
     chatId: string,
-    e?: React.FormEvent
+    e?: React.FormEvent,
+    model?: string
   ) => {
+    if (!chatId || !(model || selectedModel)) return;
     const userMessage = {
       content: messageText,
       role: "user" as const,
@@ -657,8 +718,8 @@ function AIPage({
     setAiLoading(true);
     const stored = await storeMessage(
       userMessage,
-      selectedModel as string,
-      chatId
+      chatId,
+      model || selectedModel
     );
     if (!stored) {
       toast.error("Failed to save your message");
@@ -671,14 +732,14 @@ function AIPage({
   };
 
   return (
-    <main className="flex h-screen flex-col bg-background overflow-hidden">
+    <main className="flex h-screen flex-col bg-background ">
       <div className="flex h-13 flex-row">
         <div className="h-2 bg-background w-full"></div>
         <header className="bg-transparent opacity-100 z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
           <div className="flex flex-row gap-2 items-center">
             <Tooltip>
               <TooltipTrigger>
-                <Publiclinkdialog />
+                <Publiclinkdialog chatId={selectedChatId || ""} />
               </TooltipTrigger>
               <TooltipContent>Share Chat</TooltipContent>
             </Tooltip>
@@ -702,9 +763,9 @@ function AIPage({
         </header>
       </div>
       <hr></hr>
-      <div className="grid h-full max-w-(--breakpoint-md) grid-rows-[1fr_auto] overflow-hidden w-full mx-auto ">
+      <div className="grid h-full max-w-(--breakpoint-md) grid-rows-[1fr_auto]  w-full mx-auto ">
         {" "}
-        <div className="overflow-y-auto  space-y-4 pb-4">
+        <div className=" space-y-4 pb-4">
           <ChatContainerRoot className="flex-1">
             <ChatContainerContent className="space-y-4 py-4">
               {messages.length === 0 ? (
@@ -847,7 +908,7 @@ function AIPage({
                 <PromptInputTextarea
                   onChange={handleInputChange}
                   placeholder="Ask me anything..."
-                  disabled={promptDisabled}
+                  disabled={promptDisabled || isLoading}
                 />
                 <PromptInputActions className="justify-between pt-2">
                   <div className="flex align-items-center gap-2">
@@ -978,9 +1039,9 @@ function AIPage({
                       size="icon"
                       className="h-8 w-8 rounded-full"
                       onClick={() => {
-                        if (!promptDisabled) handleSubmit();
+                        if (!promptDisabled && !isLoading && input && input.trim() !== "") handleSubmit();
                       }}
-                      disabled={promptDisabled}
+                      disabled={promptDisabled || isLoading || !input || input.trim() === ""}
                     >
                       {isLoading ? (
                         <Square className="size-5 fill-current" />

@@ -13,25 +13,34 @@ export const GET = withCORS(
     try {
       const params = await context.params;
       const chatId = params.id;
-      const chat = await db
+      const chatArr = await db
         .select()
         .from(chatTable)
         .where(eq(chatTable.id, chatId));
+      const chat = chatArr[0];
+      if (!chat) {
+        return NextResponse.json({ success: false, error: "Chat not found" }, { status: 404 });
+      }
       const { userId } = getAuth(req);
       let messages;
-      if (chat.length > 0 && chat[0].public === true) {
+      // If public, allow anyone to fetch
+      if (chat.public === true) {
         messages = await db
           .select()
           .from(messagesTable)
           .where(and(eq(messagesTable.chatId, chatId)))
           .orderBy(asc(messagesTable.created_at));
-      }
-      if (!userId) {
-        return new Response("Unauthorized", {
-          status: 401,
+        return NextResponse.json({
+          success: true,
+          messages,
+          title: chat.title,
+          chat: { public: true },
         });
       }
-
+      // If not public, only allow owner
+      if (!userId || chat.userId !== userId) {
+        return NextResponse.json({ success: false, error: "Chat is not public" }, { status: 403 });
+      }
       messages = await db
         .select()
         .from(messagesTable)
@@ -42,10 +51,11 @@ export const GET = withCORS(
           )
         )
         .orderBy(asc(messagesTable.created_at));
-
       return NextResponse.json({
         success: true,
         messages,
+        title: chat.title,
+        chat: { public: chat.public },
       });
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -65,19 +75,30 @@ export const PUT = withCORS(
     try {
       const params = await context.params;
       const chatId = params.id;
-
       const { userId } = getAuth(req);
-      const chat = await db.update(chatTable).set({ public: true });
+      if (!userId) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      const chatArr = await db.select().from(chatTable).where(eq(chatTable.id, chatId));
+      const chat = chatArr[0];
+      if (!chat || chat.userId !== userId) {
+        return NextResponse.json({ success: false, error: "Not allowed" }, { status: 403 });
+      }
+      const body = await req.json();
+      const updated = await db
+        .update(chatTable)
+        .set({ public: !!body.public })
+        .where(eq(chatTable.id, chatId));
       return NextResponse.json({
         success: true,
-        chat,
+        chat: { id: chatId, public: !!body.public },
       });
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      console.error("Error updating chat public status:", error);
       return NextResponse.json(
         {
           success: false,
-          error: "Failed to fetch messages",
+          error: "Failed to update chat public status",
         },
         { status: 500 }
       );

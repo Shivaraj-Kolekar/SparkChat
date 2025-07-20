@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
       GITHUB_CLIENT_ID: !!process.env.GITHUB_CLIENT_ID,
       BETTER_AUTH_URL: !!process.env.BETTER_AUTH_URL,
     };
-
     return NextResponse.json({
       status: "ok",
       timestamp: new Date().toISOString(),
@@ -43,6 +42,4 @@ export async function GET(request: NextRequest) {
         timestamp: new Date().toISOString(),
       },
       { status: 500 }
-    );
-  }
-}
+    )}}

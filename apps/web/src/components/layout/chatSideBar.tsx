@@ -137,15 +137,7 @@ export function ChatSidebar() {
     }
   };
 
-  // Loading and error states
 
-  if (error) {
-    return (
-      <div className="h-40 flex items-center justify-center">
-        <p className="error">{(error as Error).message}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="h-40">
@@ -301,8 +293,16 @@ export function ChatSidebar() {
         </SidebarHeader>
         <SidebarGroupContent className="pt-2 h-full overflow-y-scroll">
           <SidebarGroup className=" overflow-y-hidden">
+
+
             <h1 className="pl-2 text-primary">Recent Chats</h1>
-            {chatList.length === 0 && isLoading ? (
+            {error ? (
+              <SidebarMenu>
+                <div className="h-40 flex items-center justify-center">
+                  <p className="error">{(error as Error).message}</p>
+                </div>
+              </SidebarMenu>
+            ) : chatList.length === 0 && isLoading ? (
               <SidebarMenu>
                 <div className="h-40 flex flex-col items-center justify-center">
                   <Loader />
