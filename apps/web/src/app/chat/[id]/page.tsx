@@ -667,18 +667,17 @@ function AIPage({
       };
       (async () => {
         const model = selectedModel;
-        if (typeof selectedChatId !== "string" || !selectedChatId) return;
-        const chatId: string = selectedChatId;
-        if (!model) return;
-        const stored = await storeMessage(userMessage, chatId, model);
+        if (typeof selectedChatId !== 'string' || !selectedChatId) return;
+        if (typeof model !== 'string' || !model) return;
+        if (typeof initialPrompt !== 'string' || !initialPrompt) return;
+        const prompt: string = initialPrompt;
+        const stored = await storeMessage(userMessage, selectedChatId, model);
         if (!stored) {
           toast.error("Failed to save your message");
           return;
         }
         // Trigger the AI API
-        const prompt: string | null = typeof initialPrompt === "string" ? initialPrompt : null;
-        if (!prompt) return;
-        await actuallySendMessage(prompt!, chatId, undefined, model);
+        await actuallySendMessage(prompt, selectedChatId, undefined, model);
       })();
     }
   }, [initialPrompt, messages.length, isLoading, promptDisabled, selectedChatId, selectedModel]);
@@ -713,13 +712,14 @@ function AIPage({
       role: "user" as const,
       id: Date.now().toString(),
     };
+
     const assistantMessageId = (Date.now() + 1).toString();
     setPendingAssistantMessageId(assistantMessageId);
     setAiLoading(true);
     const stored = await storeMessage(
       userMessage,
       chatId,
-      model || selectedModel
+      modelValue
     );
     if (!stored) {
       toast.error("Failed to save your message");
