@@ -137,6 +137,7 @@ function AIPage({
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
   const selectedModel = useModelStore((state) => state.selectedModel);
   const setSelectedModel = useModelStore((state) => state.setSelectedModel);
+    const clearSelectedChatId = useChatStore((state) => state.clearSelectedChatId);
   // useEffect(() => {
   //   // Only access localStorage in the browser
   //   if (typeof window !== "undefined") {
@@ -303,8 +304,12 @@ function AIPage({
   });
   useEffect(() => {
     if (selectedChatId && pendingMessage) {
-      actuallySendMessage(pendingMessage, selectedChatId);
-      setPendingMessage(null);
+      setIsLoading(true); // Show loader immediately for new chat
+      (async () => {
+        await actuallySendMessage(pendingMessage, selectedChatId);
+        setPendingMessage(null);
+        setIsLoading(false); // Hide loader after message is sent
+      })();
     }
   }, [selectedChatId, pendingMessage]);
   // Fetch remaining messages after each send
@@ -349,35 +354,36 @@ function AIPage({
       toast.error("Please login first");
       return;
     }
-    const chatTitle = input.slice(0, 30) + (input.length > 30 ? "..." : "");
-
     if (!selectedChatId) {
+      clearSelectedChatId(); // Clear any old chatId before creating a new chat
       setCreatingChat(true);
-      let response;
       try {
-        response = await api.post("/api/chat", { title: chatTitle });
-        console.log("Chat creation response:", response.data);
+        // 1. Create chat with prompt as title
+        const chatRes = await api.post("/api/chat", { title: input, created_at: new Date() });
+        if (!chatRes.data.success || !chatRes.data.result?.id) {
+          toast.error("Failed to create new chat.");
+          setCreatingChat(false);
+          return;
+        }
+        const newChatId = chatRes.data.result.id;
+        setSelectedChatId(newChatId);
+        // 2. Store the pending prompt in sessionStorage
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("initialPrompt", input);
+          sessionStorage.setItem("newChatId", newChatId);
+        }
+        // 3. Redirect to the new chat page
+        router.push(`/chat/${newChatId}`);
+        setPendingMessage(input); // Trigger AI message generation after redirect
+        setCreatingChat(false);
+        return;
       } catch (err) {
-        toast.error("Failed to reach chat creation API.");
-        console.error("API error:", err);
+        toast.error("Failed to create new chat.");
         setCreatingChat(false);
         return;
       }
-      if (!response?.data?.success || !response.data.result?.id) {
-        toast.error("Failed to create new chat (no ID returned).");
-        setCreatingChat(false);
-        return;
-      }
-      const newChatId = response.data.result.id;
-      setSelectedChatId(newChatId);
-      console.log("Redirecting to /chat/" + newChatId);
-      router.push(`/chat/${newChatId}`);
-      setPendingMessage(input);
-      setCreatingChat(false);
-      return;
     }
-
-    // Existing chat flow
+    // Existing chat flow: store user message, call AI API, store AI message
     await actuallySendMessage(input, selectedChatId, e);
   };
   useEffect(() => {

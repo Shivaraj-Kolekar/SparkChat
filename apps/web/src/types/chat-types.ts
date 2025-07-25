@@ -3,7 +3,15 @@ export type ChatType = {
   title: string
   createdAt: number
   updatedAt: number
+  
 }
+
+// Chat grouping types for sidebar sections
+export type ChatGroupType = {
+  todayChats: ChatType[];
+  last30Chats: ChatType[];
+  historyChats: ChatType[];
+};
 
 export type MessageType = {
   id?: number // Auto-incremented in DB, so optional for insert

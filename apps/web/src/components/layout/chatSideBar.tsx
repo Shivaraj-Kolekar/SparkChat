@@ -60,6 +60,10 @@ export function ChatSidebar() {
   const selectedChatId = useChatStore((state) => state.selectedChatId);
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
   // Fetch chats using React Query
+
+  
+  const clearSelectedChatId = useChatStore((state) => state.clearSelectedChatId);
+
   const getchats = async () => {
     const res = await api.get("/api/chat", {
       withcredentials: true,
@@ -286,8 +290,13 @@ export function ChatSidebar() {
               className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
               href="/"
             >
-              <PlusIcon className="size-4" />
+              <Button onClick={()=>{
+                clearSelectedChatId();
+
+              }}>
+                <PlusIcon className="size-4" />
               <span>New Chat</span>
+                </Button>
             </Link>
           </div>
         </SidebarHeader>
