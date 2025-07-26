@@ -34,6 +34,7 @@ import {
   Plus,
   PlusIcon,
   Search,
+  SearchIcon,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -49,6 +50,7 @@ import {
 } from "../ui/dialog";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useChatStore } from "@/store/chatStore";
+import { Badge } from "../ui/badge";
 
 export function ChatSidebar() {
   const [showAdditionalButtons, setShowAdditionalButtons] = useState(false);
@@ -61,8 +63,9 @@ export function ChatSidebar() {
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
   // Fetch chats using React Query
 
-  
-  const clearSelectedChatId = useChatStore((state) => state.clearSelectedChatId);
+  const clearSelectedChatId = useChatStore(
+    (state) => state.clearSelectedChatId
+  );
 
   const getchats = async () => {
     const res = await api.get("/api/chat", {
@@ -140,8 +143,6 @@ export function ChatSidebar() {
       toast.error("Error loading chat messages");
     }
   };
-
-
 
   return (
     <div className="h-40">
@@ -239,31 +240,12 @@ export function ChatSidebar() {
               )}
             </div>
           ) : (
-            <div className="my-5 py-1 mx-2 rounded-sm">
-              <Button
-                data-sidebar="trigger"
-                data-slot="sidebar-trigger"
-                variant="ghost"
-                size="icon"
-                className={cn("size-7")}
-                onClick={toggleSidebar}
-              >
-                <PanelLeftIcon />
-                <span className="sr-only">Toggle Sidebar</span>
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-      <Sidebar>
-        <SidebarHeader className="flex flex-col items-center  pb-2">
-          <span className="inline-flex items-center">
             <Button
               data-sidebar="trigger"
               data-slot="sidebar-trigger"
               variant="ghost"
               size="icon"
-              className={cn("size-7 ")}
+              className={cn("size-7 mx-0")}
               onClick={(e) => {
                 e.preventDefault();
                 toggleSidebar();
@@ -272,6 +254,26 @@ export function ChatSidebar() {
               <PanelLeftIcon />
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
+          )}
+        </div>
+      </div>
+      <Sidebar>
+        <SidebarHeader className="flex flex-col items-center  pb-2">
+          <span className="inline-flex items-center">
+            {/* <Button
+              data-sidebar="trigger"
+              data-slot="sidebar-trigger"
+              variant="ghost"
+              size="icon"
+              className={cn("size-7 mx-0")}
+              onClick={(e) => {
+                e.preventDefault();
+                toggleSidebar();
+              }}
+            >
+              <PanelLeftIcon />
+              <span className="sr-only">Toggle Sidebar</span>
+            </Button> */}
             <div className="flex flex-row items-center  ">
               <Image
                 className="rounded-sm "
@@ -285,26 +287,44 @@ export function ChatSidebar() {
               </div>
             </div>
           </span>
-          <div className="px-4 w-full">
-            <Link
-              className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
-              href="/"
-            >
-              <Button onClick={()=>{
+          <div className="px-4 space-y-2 w-full">
+            <Button
+              className="w-full"
+              onClick={() => {
                 clearSelectedChatId();
-
-              }}>
-                <PlusIcon className="size-4" />
-              <span>New Chat</span>
-                </Button>
-            </Link>
+              }}
+            >
+              {" "}
+              <Link
+                className="flex w-full justify-between"
+                // className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
+                href="/"
+              >
+                
+              
+                  {/* <PlusIcon className="size-4" /> */}
+                  <p>
+                    New Chat
+                    </p>
+                <Badge variant={'secondary'}>CTRL + O</Badge>
+              </Link>
+            </Button>
+            <Button
+              className="w-full flex justify-between"
+              onClick={() => {
+                setIsCmndDialogOpen(true);
+              }}
+            >
+            
+              Search Chats
+              <Badge variant={'secondary'}>CTRL + K</Badge>
+            </Button>
           </div>
         </SidebarHeader>
+        <hr className="my-2 border-accent dark:border-accent"></hr>
         <SidebarGroupContent className="pt-2 h-full overflow-y-scroll">
           <SidebarGroup className=" overflow-y-hidden">
-
-
-            <h1 className="pl-2 text-primary">Recent Chats</h1>
+            <h1 className="pl-4 text-base text-primary">Recent Chats</h1>
             {error ? (
               <SidebarMenu>
                 <div className="h-40 flex items-center justify-center">
@@ -387,7 +407,8 @@ export function ChatSidebar() {
               </SidebarMenu>
             )}
           </SidebarGroup>
-        </SidebarGroupContent>
+        </SidebarGroupContent>        <hr className="mt-2"></hr>
+
         <SidebarFooter className="justify-end">
           <div className="text-center bg-accent px-4 py-3 rounded-md">
             {isLoaded && user ? (

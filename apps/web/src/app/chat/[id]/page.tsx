@@ -730,13 +730,26 @@ function AIPage({
     await originalHandleSubmit(e);
     await fetchRemaining();
   };
-
+const {toggleSidebar} = useSidebar(); 
   return (
     <main className="flex h-screen flex-col bg-background ">
       <div className="flex h-13 flex-row">
         <div className="h-2 bg-background w-full"></div>
         <header className="bg-transparent opacity-100 z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
-          <div className="flex flex-row gap-2 items-center">
+          <Button
+              data-sidebar="trigger"
+              data-slot="sidebar-trigger"
+              variant="ghost"
+              size="icon"
+              className={cn("size-7 mx-0")}
+              onClick={(e) => {
+                e.preventDefault();
+                toggleSidebar();
+              }}
+            >
+              <PanelLeftIcon />
+              <span className="sr-only">Toggle Sidebar</span>
+            </Button><div className="flex flex-row gap-2 items-center">
             <Tooltip>
               <TooltipTrigger>
                 <Publiclinkdialog chatId={selectedChatId || ""} />
@@ -931,7 +944,7 @@ function AIPage({
                         <PopoverContent className="w-[400px]  p-0">
                           <Command>
                             <CommandInput
-                              placeholder="Search framework..."
+                              placeholder="Search model..."
                               className="h-9"
                             />
                             <CommandList>
@@ -1108,7 +1121,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
     router.push(`/chat/${id}`);
   };
 
-  useHotkeys("ctrl+shift+o", (event) => {
+  useHotkeys("ctrl+o", (event) => {
     event.preventDefault(); //
     router.replace("/");
     // toast.success("CTRL+O pressed");
