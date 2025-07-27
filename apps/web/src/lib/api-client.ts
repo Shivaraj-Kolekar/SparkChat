@@ -49,7 +49,7 @@ apiClient.interceptors.request.use(
         ] = `Bearer ${token}`
         console.log('Clerk token added to request headers')
       } else {
-        console.log('No Clerk token available for request')
+        console.warn('No Clerk token available for request. User may not be authenticated.')
       }
     }
 
@@ -57,6 +57,10 @@ apiClient.interceptors.request.use(
   },
   error => {
     console.error('API Request Error:', error)
+    if (error.response?.status === 401) {
+      // Optionally, trigger a re-auth or show a message
+      alert('Session expired or unauthorized. Please sign in again.');
+    }
     return Promise.reject(error)
   }
 )

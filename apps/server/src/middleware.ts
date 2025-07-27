@@ -1,7 +1,7 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import type { NextRequest, NextFetchEvent } from "next/server";
 
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
+const ALLOWED_ORIGIN = process.env.CORS_ORIGIN || process.env.ALLOWED_ORIGIN || "*";
 
 export default function middleware(req: NextRequest, event: NextFetchEvent) {
   if (req.method === "OPTIONS") {
@@ -15,7 +15,13 @@ export default function middleware(req: NextRequest, event: NextFetchEvent) {
       },
     });
   }
-  return clerkMiddleware()(req, event);
+  // Always set CORS headers for API routes
+  const res = clerkMiddleware()(req, event);
+  if (res instanceof Response) {
+    res.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+    res.headers.set("Access-Control-Allow-Credentials", "true");
+  }
+  return res;
 }
 
 export const config = {
