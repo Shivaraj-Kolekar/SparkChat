@@ -14,7 +14,7 @@ interface SessionGuardProps {
 export default function SessionGuard({
   children,
   requireAuth = true,
-  redirectTo = "/login",
+  redirectTo = "https://accounts.sparkchat.shivraj-kolekar.in/sign-in",
 }: SessionGuardProps) {
   const { user, isLoaded } = useUser();
   const router = useRouter();
