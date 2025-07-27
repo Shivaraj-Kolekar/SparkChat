@@ -288,6 +288,8 @@ export function ChatSidebar() {
             </div>
           </span>
           <div className="px-4 space-y-2 w-full">
+                    
+
             <Button
               className="w-full"
               onClick={() => {

@@ -825,7 +825,7 @@ export default function Settings() {
             </div>
           </TabsContent>
           <TabsContent className="" value="models">
-            <div className="mt-8 space-y-3">
+            <div className="mt-8  space-y-3">
               {models.map((model) => (
                 <Card className="drop-shadow-sm">
                   <CardHeader className="inline-flex gap-3 items-center">
@@ -841,9 +841,9 @@ export default function Settings() {
                     <CardTitle>{model.label}</CardTitle>
                   </CardHeader>
 
-                  <CardContent>
+                  <CardContent >
                     <p>{model.description}</p>
-                    <div className="space-x-2 my-3 inline-flex">
+                    <div className="space-x-2 my-3  inline-flex">
                       {model.usecase.map((usecase) => {
                         const config = useCaseConfig[usecase];
                         if (!config) return null; // Handle cases where a use case might not have a config
