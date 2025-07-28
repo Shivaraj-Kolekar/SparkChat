@@ -180,7 +180,7 @@ export function ChatSidebar() {
             </CommandList>
           </Command>
         </CommandDialog>
-        <div>
+        {/* <div>
           {state === "collapsed" ? (
             <div
               className={cn(
@@ -255,7 +255,7 @@ export function ChatSidebar() {
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
           )}
-        </div>
+        </div> */}
       </div>
       <Sidebar>
         <SidebarHeader className="flex flex-col items-center  pb-2">

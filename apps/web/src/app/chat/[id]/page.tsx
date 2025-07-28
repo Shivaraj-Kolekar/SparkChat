@@ -635,7 +635,12 @@ function AIPage({
     }
 
     // Existing chat flow
-    if (typeof selectedChatId === "string" && selectedChatId && typeof selectedModel === "string" && selectedModel) {
+    if (
+      typeof selectedChatId === "string" &&
+      selectedChatId &&
+      typeof selectedModel === "string" &&
+      selectedModel
+    ) {
       await actuallySendMessage(input, selectedChatId, e, selectedModel);
     }
   };
@@ -656,8 +661,10 @@ function AIPage({
       messages.length === 0 &&
       !isLoading &&
       !promptDisabled &&
-      typeof selectedChatId === "string" && selectedChatId &&
-      typeof selectedModel === "string" && selectedModel
+      typeof selectedChatId === "string" &&
+      selectedChatId &&
+      typeof selectedModel === "string" &&
+      selectedModel
     ) {
       // Store the user message
       const userMessage = {
@@ -667,9 +674,9 @@ function AIPage({
       };
       (async () => {
         const model = selectedModel;
-        if (typeof selectedChatId !== 'string' || !selectedChatId) return;
-        if (typeof model !== 'string' || !model) return;
-        if (typeof initialPrompt !== 'string' || !initialPrompt) return;
+        if (typeof selectedChatId !== "string" || !selectedChatId) return;
+        if (typeof model !== "string" || !model) return;
+        if (typeof initialPrompt !== "string" || !initialPrompt) return;
         const prompt: string = initialPrompt;
         const stored = await storeMessage(userMessage, selectedChatId, model);
         if (!stored) {
@@ -680,7 +687,14 @@ function AIPage({
         await actuallySendMessage(prompt, selectedChatId, undefined, model);
       })();
     }
-  }, [initialPrompt, messages.length, isLoading, promptDisabled, selectedChatId, selectedModel]);
+  }, [
+    initialPrompt,
+    messages.length,
+    isLoading,
+    promptDisabled,
+    selectedChatId,
+    selectedModel,
+  ]);
 
   // Step 2: When input matches pendingPrompt, trigger AI API
   useEffect(() => {
@@ -696,7 +710,15 @@ function AIPage({
       hasSentInitialPrompt.current = true;
       shouldSendPendingPrompt.current = false;
     }
-  }, [input, pendingPrompt, isLoading, promptDisabled, originalHandleSubmit, clearPending, chatExists]);
+  }, [
+    input,
+    pendingPrompt,
+    isLoading,
+    promptDisabled,
+    originalHandleSubmit,
+    clearPending,
+    chatExists,
+  ]);
   const { state } = useSidebar(); // or your sidebar state
 
   // The actuallySendMessage function
@@ -716,11 +738,7 @@ function AIPage({
     const assistantMessageId = (Date.now() + 1).toString();
     setPendingAssistantMessageId(assistantMessageId);
     setAiLoading(true);
-    const stored = await storeMessage(
-      userMessage,
-      chatId,
-      modelValue
-    );
+    const stored = await storeMessage(userMessage, chatId, modelValue);
     if (!stored) {
       toast.error("Failed to save your message");
       setAiLoading(false);
@@ -730,26 +748,28 @@ function AIPage({
     await originalHandleSubmit(e);
     await fetchRemaining();
   };
-const {toggleSidebar} = useSidebar(); 
+  const { toggleSidebar } = useSidebar();
   return (
     <main className="flex h-screen flex-col bg-background ">
-      <div className="flex h-13 flex-row">
-        <div className="h-2 bg-background w-full"></div>
-        <header className="bg-transparent opacity-100 z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
+      <div className="flex relative h-13 flex-row">
+        <div className="h-13  fixed border-b flex justify-start mb-2 items-center bg-background w-screen z-50 ">
+          
+       
+        <header className="bg-transparent  opacity-100 justify-end flex min-h-13 py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
           <Button
-              data-sidebar="trigger"
-              data-slot="sidebar-trigger"
-              variant="ghost"
-              size="icon"
-              className={cn("size-7 mx-0")}
-              onClick={(e) => {
-                e.preventDefault();
-                toggleSidebar();
-              }}
-            >
-              <PanelLeftIcon />
-              <span className="sr-only">Toggle Sidebar</span>
-            </Button><div className="flex flex-row gap-2 items-center">
+            data-sidebar="trigger"
+            data-slot="sidebar-trigger"
+            variant="outline"
+            className={cn("mx-0")}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSidebar();
+            }}
+          >
+            <PanelLeftIcon />
+            <span className="sr-only">Toggle Sidebar</span>
+          </Button>
+          <div className="flex flex-row gap-2 items-center">
             <Tooltip>
               <TooltipTrigger>
                 <Publiclinkdialog chatId={selectedChatId || ""} />
@@ -773,10 +793,10 @@ const {toggleSidebar} = useSidebar();
               <TooltipContent>Change Mode</TooltipContent>
             </Tooltip>
           </div>
-        </header>
+        </header> </div>
       </div>
       <hr></hr>
-      <div className="grid h-full max-w-(--breakpoint-md) grid-rows-[1fr_auto]  w-full mx-auto ">
+      <div className="grid h-full mt-12 max-w-(--breakpoint-md) grid-rows-[1fr_auto]   w-full mx-auto ">
         {" "}
         <div className=" space-y-4 pb-4">
           <ChatContainerRoot className="flex-1">
@@ -841,7 +861,7 @@ const {toggleSidebar} = useSidebar();
                               </>
                             );
                           })()}
-                          <MessageActions>
+                          <MessageActions className="mt-1 ">
                             <MessageAction tooltip="Copy response">
                               <Button
                                 variant="ghost"
@@ -867,6 +887,7 @@ const {toggleSidebar} = useSidebar();
                                 <RotateCcw />
                               </Button>
                             </MessageAction>
+
                             {/* <MessageContent>{value}</MessageContent> */}
                           </MessageActions>
                         </div>
@@ -900,8 +921,8 @@ const {toggleSidebar} = useSidebar();
             "sticky bottom-0 left-0 w-full z-50 bg-background  pt-3 px-2 transition-all duration-200"
           )}
         >
-          <div className="w-full max-w-[800px] mx-auto">
-            <div className="p-1 max-w-(--breakpoint-md) rounded-xl bg-accent">
+          <div className="w-full mb-2 max-w-[800px] mx-auto">
+            <div className="p-0.5 max-w-(--breakpoint-md) rounded-xl bg-accent">
               {remaining <= 5 && remaining > 0 && (
                 <div className="text-yellow-600 text-center mb-2">
                   {remaining} messages left before your daily limit is reached.
@@ -1035,7 +1056,7 @@ const {toggleSidebar} = useSidebar();
                                 });
                               }}
                               variant={
-                                searchEnabled === true ? "default" : "secondary"
+                                searchEnabled === true ? "outline" : "default"
                               }
                             >
                               <Globe></Globe>Search
@@ -1052,9 +1073,20 @@ const {toggleSidebar} = useSidebar();
                       size="icon"
                       className="h-8 w-8 rounded-full"
                       onClick={() => {
-                        if (!promptDisabled && !isLoading && input && input.trim() !== "") handleSubmit();
+                        if (
+                          !promptDisabled &&
+                          !isLoading &&
+                          input &&
+                          input.trim() !== ""
+                        )
+                          handleSubmit();
                       }}
-                      disabled={promptDisabled || isLoading || !input || input.trim() === ""}
+                      disabled={
+                        promptDisabled ||
+                        isLoading ||
+                        !input ||
+                        input.trim() === ""
+                      }
                     >
                       {isLoading ? (
                         <Square className="size-5 fill-current" />
@@ -1079,7 +1111,9 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   const [modelValue, setModelValue] = useState<string>("llama3.2");
   const router = useRouter();
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
-
+ const clearSelectedChatId = useChatStore(
+    (state) => state.clearSelectedChatId
+  );
   // Load messages for the current chat ID
   const loadChatMessages = async (id: string) => {
     try {
@@ -1123,6 +1157,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
 
   useHotkeys("ctrl+o", (event) => {
     event.preventDefault(); //
+    clearSelectedChatId()
     router.replace("/");
     // toast.success("CTRL+O pressed");
   });

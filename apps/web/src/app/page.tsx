@@ -137,7 +137,9 @@ function AIPage({
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
   const selectedModel = useModelStore((state) => state.selectedModel);
   const setSelectedModel = useModelStore((state) => state.setSelectedModel);
-    const clearSelectedChatId = useChatStore((state) => state.clearSelectedChatId);
+  const clearSelectedChatId = useChatStore(
+    (state) => state.clearSelectedChatId
+  );
   // useEffect(() => {
   //   // Only access localStorage in the browser
   //   if (typeof window !== "undefined") {
@@ -359,7 +361,10 @@ function AIPage({
       setCreatingChat(true);
       try {
         // 1. Create chat with prompt as title
-        const chatRes = await api.post("/api/chat", { title: input, created_at: new Date() });
+        const chatRes = await api.post("/api/chat", {
+          title: input,
+          created_at: new Date(),
+        });
         if (!chatRes.data.success || !chatRes.data.result?.id) {
           toast.error("Failed to create new chat.");
           setCreatingChat(false);
@@ -546,26 +551,30 @@ function AIPage({
   };
 
   const categories = ["Create", "Explore", "Code", "Learn"];
-const {toggleSidebar }= useSidebar()
+  const { toggleSidebar } = useSidebar();
   return (
     <main className="flex flex-col min-h-screen bg-background">
       <div className="flex h-13 flex-row">
-        <div className="h-2 bg-background w-full"></div>
-        <header className="bg-background z-10 justify-end flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
-          <Button
-              data-sidebar="trigger"
-              data-slot="sidebar-trigger"
-              variant="ghost"
-              size="icon"
-              className={cn("size-7 mx-0")}
-              onClick={(e) => {
-                e.preventDefault();
-                toggleSidebar();
-              }}
+        <div className="h-13  fixed border-b flex justify-start items-center bg-background w-screen z-50">
+        <header className="bg-background z-10 align-middle justify-between flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
+          <div>
+            
+            <Button
+            data-sidebar="trigger"
+            data-slot="sidebar-trigger"
+            variant="outline"
+            
+            className={cn("mx-0")}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSidebar();
+            }}
             >
-              <PanelLeftIcon />
-              <span className="sr-only">Toggle Sidebar</span>
-            </Button><div className="flex flex-row gap-2 items-center">
+            <PanelLeftIcon />
+            <span className="sr-only">Toggle Sidebar</span>
+          </Button>
+            </div>
+          <div className="flex flex-row gap-2 items-center">
             <Link href="/settings">
               <Button variant={"outline"}>
                 <Settings2></Settings2>
@@ -573,7 +582,7 @@ const {toggleSidebar }= useSidebar()
             </Link>
             <ModeToggle></ModeToggle>
           </div>
-        </header>
+        </header></div>
       </div>
       <hr></hr>
       <div className="flex-1 flex flex-col items-start justify-center">
@@ -766,7 +775,7 @@ const {toggleSidebar }= useSidebar()
       {/* Prompt input always at bottom */}
       <div className="w-full flex justify-center sticky bottom-0 bg-background z-50  border-border pt-3 px-2">
         <div className="w-full max-w-[800px] mb-2 mx-auto">
-          <div className="px-1.5 py-1.5 max-w-(--breakpoint-md)  rounded-xl bg-accent">
+          <div className="p-0.5 max-w-(--breakpoint-md)  rounded-xl bg-accent">
             {remaining <= 5 && remaining > 0 && (
               <div className="text-yellow-600 text-center mb-2">
                 {remaining} messages left before your daily limit is reached.
@@ -897,8 +906,8 @@ const {toggleSidebar }= useSidebar()
                         });
                       }}
                       variant={
-                        searchEnabled === true ? "destructive" : "secondary"
-                      }
+                                searchEnabled === true ? "outline" : "default"
+                              }
                     >
                       <Globe></Globe>Search
                     </Button>
