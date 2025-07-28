@@ -340,7 +340,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (!user && !isLoaded) {
-      router.push("https://accounts.sparkchat.shivraj-kolekar.in/sign-in");
+      router.push("https://accounts.sparkchat.shivraj-kolekar.in/sign-up");
     }
     // Load saved settings here
     // loadSettings();
