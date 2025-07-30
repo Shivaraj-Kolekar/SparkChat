@@ -1,10 +1,56 @@
 "use client";
 
 import { useChat, type Message } from "@ai-sdk/react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
 import {
+  ChatContainerContent,
+  ChatContainerRoot,
+} from "@/components/ui/chat-container";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Markdown } from "@/components/ui/markdown";
+import {
+  MessageAction,
+  MessageActions,
+  Message as MessageComponent,
+  MessageContent,
+} from "@/components/ui/message";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  PromptInput,
+  PromptInputAction,
+  PromptInputActions,
+  PromptInputTextarea,
+} from "@/components/ui/prompt-input";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarProvider,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { api, getClerkToken } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
+import {
+  ArrowUp,
   Brain,
   ChevronsUpDown,
   Copy,
@@ -20,58 +66,13 @@ import {
   RotateCcw,
   Search,
   Settings2,
+  Square,
   Text,
   X,
   Zap,
 } from "lucide-react";
-import { useRef, useEffect, type JSX } from "react";
-import {
-  PromptInput,
-  PromptInputAction,
-  PromptInputActions,
-  PromptInputTextarea,
-} from "@/components/ui/prompt-input";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { api, getClerkToken } from "@/lib/api-client";
-import { Button } from "@/components/ui/button";
-import { ArrowUp, Square } from "lucide-react";
-import {
-  ChatContainerContent,
-  ChatContainerRoot,
-} from "@/components/ui/chat-container";
-import { Markdown } from "@/components/ui/markdown";
-import {
-  Message as MessageComponent,
-  MessageAction,
-  MessageActions,
-  MessageContent,
-} from "@/components/ui/message";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarProvider,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import { useState } from "react";
+import { useEffect, useRef, useState, type JSX } from "react";
+import { useAiLoadingStore } from "@/store/aiLoadingStore";
 
 import { suggestionGroups } from "@/components/suggestions";
 import {
@@ -85,34 +86,35 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { toast } from "sonner";
+import { ModeToggle } from "@/components/mode-toggle";
+import Sparkchat from "@/components/sparkchat";
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from "@/components/ui/reasoning";
+import { useChatContext } from "@/contexts/ChatContext";
 import type { MessageType } from "@/types/chat-types";
 import Link from "next/link";
 import React from "react";
-import { useChatContext } from "@/contexts/ChatContext";
-import {
-  Reasoning,
-  ReasoningTrigger,
-  ReasoningContent,
-} from "@/components/ui/reasoning";
-import Sparkchat from "@/components/sparkchat";
-import { ModeToggle } from "@/components/mode-toggle";
+import { toast } from "sonner";
 
-import Image from "next/image";
-import { useHotkeys } from "react-hotkeys-hook";
+import { ChatSidebar } from "@/components/layout/chatSideBar";
+import Loader from "@/components/loader";
+import Publiclinkdialog from "@/components/public-link-dialog";
+import { Badge } from "@/components/ui/badge";
 import { CommandDialog } from "@/components/ui/command";
+import { ResponseStream } from "@/components/ui/response-stream";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
-import Loader from "@/components/loader";
-import { ResponseStream } from "@/components/ui/response-stream";
-import Publiclinkdialog from "@/components/public-link-dialog";
-import { ChatSidebar } from "@/components/layout/chatSideBar";
 import { useChatStore } from "@/store/chatStore";
 import { useModelStore } from "@/store/modelStore";
+import Image from "next/image";
+import { useHotkeys } from "react-hotkeys-hook";
+import { TextShimmer } from "../../../../components/motion-primitives/text-shimmer";
 
 function AIPage({
   // currentChatId,
@@ -164,7 +166,8 @@ function AIPage({
   //     localStorage.setItem("selectedModel", selectedModel);
   //   }
   // }, [selectedModel]);
-  const [aiLoading, setAiLoading] = useState(false);
+  const aiLoading = useAiLoadingStore((state) => state.aiLoading);
+  const setAiLoading = useAiLoadingStore((state) => state.setAiLoading);
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
@@ -234,6 +237,9 @@ function AIPage({
         selectedModel as string,
         latestChatId as string
       );
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("newChatLoading");
+      }
       setAiLoading(false);
       setPendingAssistantMessageId(null);
       if (!stored) {
@@ -395,7 +401,23 @@ function AIPage({
     if (selectedChatId) {
       fetchMessages(selectedChatId);
     }
-  }, [selectedChatId]);
+    // If new chat loading flag is set, show loader until assistant message is present
+    if (
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("newChatLoading") === "true"
+    ) {
+      // Only show loader if no assistant message yet
+      const hasAssistant = currentMessages.some(
+        (msg) => msg.role === "assistant"
+      );
+      if (!hasAssistant) {
+        setAiLoading(true);
+      } else {
+        setAiLoading(false);
+        sessionStorage.removeItem("newChatLoading");
+      }
+    }
+  }, [selectedChatId, currentMessages]);
   useEffect(() => {
     return () => {
       if (streamIntervalRef.current) {
@@ -753,47 +775,46 @@ function AIPage({
     <main className="flex h-screen flex-col bg-background ">
       <div className="flex relative h-13 flex-row">
         <div className="h-13  fixed border-b flex justify-start mb-2 items-center bg-background w-screen z-50 ">
-          
-       
-        <header className="bg-transparent  opacity-100 justify-end flex min-h-13 py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
-          <Button
-            data-sidebar="trigger"
-            data-slot="sidebar-trigger"
-            variant="outline"
-            className={cn("mx-0")}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleSidebar();
-            }}
-          >
-            <PanelLeftIcon />
-            <span className="sr-only">Toggle Sidebar</span>
-          </Button>
-          <div className="flex flex-row gap-2 items-center">
-            <Tooltip>
-              <TooltipTrigger>
-                <Publiclinkdialog chatId={selectedChatId || ""} />
-              </TooltipTrigger>
-              <TooltipContent>Share Chat</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <Link href="/settings">
-                  <Button variant={"outline"}>
-                    <Settings2></Settings2>
-                  </Button>
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>Settings</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <ModeToggle></ModeToggle>
-              </TooltipTrigger>
-              <TooltipContent>Change Mode</TooltipContent>
-            </Tooltip>
-          </div>
-        </header> </div>
+          <header className="bg-transparent  opacity-100 justify-end flex min-h-13 py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
+            <Button
+              data-sidebar="trigger"
+              data-slot="sidebar-trigger"
+              variant="outline"
+              className={cn("mx-0")}
+              onClick={(e) => {
+                e.preventDefault();
+                toggleSidebar();
+              }}
+            >
+              <PanelLeftIcon />
+              <span className="sr-only">Toggle Sidebar</span>
+            </Button>
+            <div className="flex flex-row gap-2 items-center">
+              <Tooltip>
+                <TooltipTrigger>
+                  <Publiclinkdialog chatId={selectedChatId || ""} />
+                </TooltipTrigger>
+                <TooltipContent>Share Chat</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Link href="/settings">
+                    <Button variant={"outline"}>
+                      <Settings2></Settings2>
+                    </Button>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Settings</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger>
+                  <ModeToggle></ModeToggle>
+                </TooltipTrigger>
+                <TooltipContent>Change Mode</TooltipContent>
+              </Tooltip>
+            </div>
+          </header>{" "}
+        </div>
       </div>
       <hr></hr>
       <div className="grid h-full mt-12 max-w-(--breakpoint-md) grid-rows-[1fr_auto]   w-full mx-auto ">
@@ -908,7 +929,9 @@ function AIPage({
                 (!messages.length ||
                   messages[messages.length - 1].role !== "assistant") && (
                   <MessageComponent className="justify-start">
-                    <Loader />
+                    <TextShimmer className="font-mono text-sm" duration={1}>
+                      Generating Response...
+                    </TextShimmer>
                   </MessageComponent>
                 )}
               <div ref={messagesEndRef} />
@@ -918,7 +941,7 @@ function AIPage({
         {/* promtp window */}
         <div
           className={cn(
-            "sticky bottom-0 left-0 w-full z-50 bg-background  pt-3 px-2 transition-all duration-200"
+            "sticky bottom-0 left-0 w-full z-50 bg-none   px-2 transition-all duration-200"
           )}
         >
           <div className="w-full mb-2 max-w-[800px] mx-auto">
@@ -1056,7 +1079,7 @@ function AIPage({
                                 });
                               }}
                               variant={
-                                searchEnabled === true ? "outline" : "default"
+                                searchEnabled === true ? "default" : "outline"
                               }
                             >
                               <Globe></Globe>Search
@@ -1111,7 +1134,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   const [modelValue, setModelValue] = useState<string>("llama3.2");
   const router = useRouter();
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
- const clearSelectedChatId = useChatStore(
+  const clearSelectedChatId = useChatStore(
     (state) => state.clearSelectedChatId
   );
   // Load messages for the current chat ID
@@ -1157,7 +1180,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
 
   useHotkeys("ctrl+o", (event) => {
     event.preventDefault(); //
-    clearSelectedChatId()
+    clearSelectedChatId();
     router.replace("/");
     // toast.success("CTRL+O pressed");
   });

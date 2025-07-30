@@ -462,7 +462,7 @@ export default function Settings() {
                   <span>New Chat</span>
                   <span>
                     <kbd className="bg-accent p-2 rounded-sm kbd-box">Ctrl</kbd>
-                    
+
                     <kbd className="bg-accent p-2 rounded-sm kbd-box ml-1">
                       O
                     </kbd>
@@ -839,7 +839,7 @@ export default function Settings() {
                     <CardTitle>{model.label}</CardTitle>
                   </CardHeader>
 
-                  <CardContent >
+                  <CardContent>
                     <p>{model.description}</p>
                     <div className="space-x-2 my-3  inline-flex">
                       {model.usecase.map((usecase) => {

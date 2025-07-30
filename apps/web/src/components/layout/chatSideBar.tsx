@@ -288,8 +288,6 @@ export function ChatSidebar() {
             </div>
           </span>
           <div className="px-4 space-y-2 w-full">
-                    
-
             <Button
               className="w-full"
               onClick={() => {
@@ -302,13 +300,9 @@ export function ChatSidebar() {
                 // className="mb-4 bg-primary  justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none h-9 px-4 py-2 has-[>svg]:px-3 disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive text-primary-foreground shadow-xs hover:bg-primary/90 flex w-full items-center gap-2"
                 href="/"
               >
-                
-              
-                  {/* <PlusIcon className="size-4" /> */}
-                  <p>
-                    New Chat
-                    </p>
-                <Badge variant={'secondary'}>CTRL + O</Badge>
+                {/* <PlusIcon className="size-4" /> */}
+                <p>New Chat</p>
+                <Badge variant={"secondary"}>CTRL + O</Badge>
               </Link>
             </Button>
             <Button
@@ -317,9 +311,8 @@ export function ChatSidebar() {
                 setIsCmndDialogOpen(true);
               }}
             >
-            
               Search Chats
-              <Badge variant={'secondary'}>CTRL + K</Badge>
+              <Badge variant={"secondary"}>CTRL + K</Badge>
             </Button>
           </div>
         </SidebarHeader>
@@ -409,8 +402,8 @@ export function ChatSidebar() {
               </SidebarMenu>
             )}
           </SidebarGroup>
-        </SidebarGroupContent>        <hr className="mt-2"></hr>
-
+        </SidebarGroupContent>{" "}
+        <hr className="mt-2"></hr>
         <SidebarFooter className="justify-end">
           <div className="text-center bg-accent px-4 py-3 rounded-md">
             {isLoaded && user ? (
@@ -420,7 +413,10 @@ export function ChatSidebar() {
                 </h1>
               </Link>
             ) : (
-              <a href="https://accounts.sparkchat.shivraj-kolekar.in/sign-up" className="flex items-center space-x-2">
+              <a
+                href="https://accounts.sparkchat.shivraj-kolekar.in/sign-up"
+                className="flex items-center space-x-2"
+              >
                 <LogInIcon size={20} />
                 <h1 className="font-medium">Login</h1>
               </a>

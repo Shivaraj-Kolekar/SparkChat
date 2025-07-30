@@ -108,6 +108,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChatSidebar } from "@/components/layout/chatSideBar";
 import { useChatStore } from "@/store/chatStore";
 import { useModelStore } from "@/store/modelStore";
+import { useAiLoadingStore } from "@/store/aiLoadingStore";
 
 // The ChatSidebar now uses React Query for fetching chats, so you can remove the `chats`, `loadingChats`, and `errorChats` props.
 // You still need `onSelectChat` and `selectedChatId` for interaction, but `onDeleteChat` is not used (deletion is handled internally).
@@ -177,6 +178,8 @@ function AIPage({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [creatingChat, setCreatingChat] = useState(false);
+  const aiLoading = useAiLoadingStore((state) => state.aiLoading);
+  const setAiLoading = useAiLoadingStore((state) => state.setAiLoading);
   // Get suggestions based on active category
   const activeCategoryData = suggestionGroups.find(
     (group) => group.label === activeCategory
@@ -377,8 +380,13 @@ function AIPage({
           sessionStorage.setItem("initialPrompt", input);
           sessionStorage.setItem("newChatId", newChatId);
         }
+
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("newChatLoading", "true");
+        }
         // 3. Redirect to the new chat page
-        router.push(`/chat/${newChatId}`);
+         setAiLoading(true);
+         router.push(`/chat/${newChatId}`);
         setPendingMessage(input); // Trigger AI message generation after redirect
         setCreatingChat(false);
         return;
@@ -556,33 +564,32 @@ function AIPage({
     <main className="flex flex-col min-h-screen bg-background">
       <div className="flex h-13 flex-row">
         <div className="h-13  fixed border-b flex justify-start items-center bg-background w-screen z-50">
-        <header className="bg-background z-10 align-middle justify-between flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
-          <div>
-            
-            <Button
-            data-sidebar="trigger"
-            data-slot="sidebar-trigger"
-            variant="outline"
-            
-            className={cn("mx-0")}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleSidebar();
-            }}
-            >
-            <PanelLeftIcon />
-            <span className="sr-only">Toggle Sidebar</span>
-          </Button>
-            </div>
-          <div className="flex flex-row gap-2 items-center">
-            <Link href="/settings">
-              <Button variant={"outline"}>
-                <Settings2></Settings2>
+          <header className="bg-background z-10 align-middle justify-between flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
+            <div>
+              <Button
+                data-sidebar="trigger"
+                data-slot="sidebar-trigger"
+                variant="outline"
+                className={cn("mx-0")}
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleSidebar();
+                }}
+              >
+                <PanelLeftIcon />
+                <span className="sr-only">Toggle Sidebar</span>
               </Button>
-            </Link>
-            <ModeToggle></ModeToggle>
-          </div>
-        </header></div>
+            </div>
+            <div className="flex flex-row gap-2 items-center">
+              <Link href="/settings">
+                <Button variant={"outline"}>
+                  <Settings2></Settings2>
+                </Button>
+              </Link>
+              <ModeToggle></ModeToggle>
+            </div>
+          </header>
+        </div>
       </div>
       <hr></hr>
       <div className="flex-1 flex flex-col items-start justify-center">
@@ -905,9 +912,8 @@ function AIPage({
                           return newState;
                         });
                       }}
-                      variant={
-                                searchEnabled === true ? "outline" : "default"
-                              }
+                      variant={                                searchEnabled === true ? "default" : "outline"
+}
                     >
                       <Globe></Globe>Search
                     </Button>
