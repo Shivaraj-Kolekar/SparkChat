@@ -948,7 +948,7 @@ function AIPage({
                               </Button>
                             </MessageAction>
 
-                             <MessageContent>{message.model }</MessageContent>
+                             {/*<MessageContent>{message.model }</MessageContent>*/}
                           </MessageActions>
                         </div>
                       ) : (
