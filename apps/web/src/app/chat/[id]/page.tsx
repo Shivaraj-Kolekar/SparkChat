@@ -71,7 +71,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useRef, useState, type JSX } from "react";
+import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import { useAiLoadingStore } from "@/store/aiLoadingStore";
 
 import { suggestionGroups } from "@/components/suggestions";
@@ -115,6 +115,7 @@ import { useModelStore } from "@/store/modelStore";
 import Image from "next/image";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TextShimmer } from "../../../../components/motion-primitives/text-shimmer";
+import ChatHeader from "@/components/chat-header";
 
 function AIPage({
   // currentChatId,
@@ -175,7 +176,7 @@ function AIPage({
   const [pendingAssistantMessageId, setPendingAssistantMessageId] = useState<
     string | null
   >(null);
-  const fetchMessages = async (chatId: string) => {
+  const fetchMessages = useCallback(async (chatId: string) => {
     try {
       const response = await api.get(`/api/chat/${chatId}`);
       if (response.data.success) {
@@ -185,13 +186,14 @@ function AIPage({
           role: msg.role,
           chatId: msg.chatId,
           timestamp: msg.created_at,
+          model: msg.model
         }));
         setCurrentMessages(transformedMessages);
       }
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
-  };
+  }, [setCurrentMessages]);
   const [searchEnabled, setSearchEnabled] = useState(false);
 
   const customFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -397,11 +399,8 @@ function AIPage({
       setIsLoading(false);
     }
   };
+  // Handle new chat loading state
   useEffect(() => {
-    if (selectedChatId) {
-      fetchMessages(selectedChatId);
-    }
-    // If new chat loading flag is set, show loader until assistant message is present
     if (
       typeof window !== "undefined" &&
       sessionStorage.getItem("newChatLoading") === "true"
@@ -417,7 +416,7 @@ function AIPage({
         sessionStorage.removeItem("newChatLoading");
       }
     }
-  }, [selectedChatId, currentMessages]);
+  }, [currentMessages]);
   useEffect(() => {
     return () => {
       if (streamIntervalRef.current) {
@@ -562,33 +561,73 @@ function AIPage({
     },
   };
 
+  // Track message count to detect new AI responses
+  const messageCountRef = useRef(currentMessages.length);
+
+  // Update ref when messages change
   useEffect(() => {
-    if (!selectedChatId) return;
+    messageCountRef.current = currentMessages.length;
+  }, [currentMessages]);
+
+  // Only poll when AI is actively generating a response
+  useEffect(() => {
+    if (!selectedChatId || !aiLoading) return;
+
     let interval: NodeJS.Timeout | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
     let attempts = 0;
+    const maxAttempts = 8;
+    const initialMessageCount = messageCountRef.current;
+    let isCleanedUp = false;
 
     const poll = async () => {
-      await fetchMessages(selectedChatId);
-      // Check if we have both user and assistant messages
-      const hasAI = currentMessages.some((msg) => msg.role === "assistant");
-      if (!hasAI && attempts < 3) {
-        // Reduced attempts to limit API calls
+      if (isCleanedUp) return;
+
+      try {
+        await fetchMessages(selectedChatId);
         attempts++;
-      } else {
-        if (interval) clearInterval(interval);
+
+        // Check current message count after fetch
+        const currentMessageCount = messageCountRef.current;
+        const hasNewMessages = currentMessageCount > initialMessageCount;
+
+        // Stop polling if we got new messages, max attempts reached, or component is cleaned up
+        if (hasNewMessages || attempts >= maxAttempts || isCleanedUp) {
+          if (interval) {
+            clearInterval(interval);
+            interval = null;
+          }
+          if (hasNewMessages) {
+            setAiLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error polling messages:', error);
+        attempts++;
+        if (attempts >= maxAttempts) {
+          if (interval) {
+            clearInterval(interval);
+            interval = null;
+          }
+        }
       }
     };
 
-    // Start polling with a longer interval to reduce API calls
-    interval = setInterval(poll, 3000);
-
-    // Also do an immediate fetch
-    poll();
+    // Start polling after a short delay to avoid immediate API calls
+    timeoutId = setTimeout(() => {
+      if (!isCleanedUp) {
+        interval = setInterval(poll, 2500);
+        // Do initial poll after delay
+        poll();
+      }
+    }, 1000);
 
     return () => {
+      isCleanedUp = true;
+      if (timeoutId) clearTimeout(timeoutId);
       if (interval) clearInterval(interval);
     };
-  }, [selectedChatId]);
+  }, [selectedChatId, aiLoading]);
 
   const [remaining, setRemaining] = useState(10);
   const [rateLimitReset, setRateLimitReset] = useState("");
@@ -772,10 +811,10 @@ function AIPage({
   };
   const { toggleSidebar } = useSidebar();
   return (
-    <main className="flex h-screen flex-col bg-background ">
-      <div className="flex relative h-13 flex-row">
-        <div className="h-13  fixed border-b flex justify-start mb-2 items-center bg-background w-screen z-50 ">
-          <header className="bg-transparent  opacity-100 justify-end flex min-h-13 py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
+    <main className="flex h-screen flex-col bg-background pt-14">
+       {/* <div className="flex relative h-13 flex-row">
+        <div className="h-13  fixed border-b flex justify-end  mb-2 items-center bg-background w-screen z-50 ">
+        <header className="bg-transparent  opacity-100 justify-end flex min-h-13 py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
             <Button
               data-sidebar="trigger"
               data-slot="sidebar-trigger"
@@ -815,8 +854,8 @@ function AIPage({
             </div>
           </header>{" "}
         </div>
-      </div>
-      <hr></hr>
+      </div>*/}
+
       <div className="grid h-full mt-12 max-w-(--breakpoint-md) grid-rows-[1fr_auto]   w-full mx-auto ">
         {" "}
         <div className=" space-y-4 pb-4">
@@ -909,7 +948,7 @@ function AIPage({
                               </Button>
                             </MessageAction>
 
-                            {/* <MessageContent>{value}</MessageContent> */}
+                             <MessageContent>{message.model }</MessageContent>
                           </MessageActions>
                         </div>
                       ) : (
@@ -969,7 +1008,7 @@ function AIPage({
                 />
                 <PromptInputActions className="justify-between pt-2">
                   <div className="flex align-items-center gap-2">
-                    <PromptInputAction tooltip="Select model">
+                    {/*<PromptInputAction tooltip="Select model">
                       <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
                           <Button
@@ -1058,7 +1097,7 @@ function AIPage({
                           </Command>
                         </PopoverContent>
                       </Popover>
-                    </PromptInputAction>
+                    </PromptInputAction>*/}
                     <PromptInputAction
                       tooltip={
                         !user ? "Please login to use Search Web" : "Search Web"
@@ -1148,6 +1187,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
           content: msg.content,
           role: msg.role,
           chatId: msg.chatId,
+          model: msg.model,
           timestamp: msg.created_at,
         }));
         setCurrentMessages(transformedMessages);
@@ -1167,11 +1207,14 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
     const getParams = async () => {
       const resolvedParams = await params;
       const id = resolvedParams.id;
-      setChatId(id);
-      await loadChatMessages(id);
+      // Only load messages if chat ID has actually changed
+      if (id !== chatId) {
+        setChatId(id);
+        await loadChatMessages(id);
+      }
     };
     getParams();
-  }, [params]);
+  }, [params, chatId]);
 
   const handleSelectChat = (id: string) => {
     setSelectedChatId(id);
@@ -1194,6 +1237,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   return (
     <SidebarProvider>
       <ChatSidebar />
+      <ChatHeader/>
       <SidebarInset>
         <AIPage
           // currentChatId={currentChatId}

@@ -109,6 +109,7 @@ import { ChatSidebar } from "@/components/layout/chatSideBar";
 import { useChatStore } from "@/store/chatStore";
 import { useModelStore } from "@/store/modelStore";
 import { useAiLoadingStore } from "@/store/aiLoadingStore";
+import ChatHeader from "@/components/chat-header";
 
 // The ChatSidebar now uses React Query for fetching chats, so you can remove the `chats`, `loadingChats`, and `errorChats` props.
 // You still need `onSelectChat` and `selectedChatId` for interaction, but `onDeleteChat` is not used (deletion is handled internally).
@@ -350,7 +351,6 @@ function AIPage({
       console.error("Error fetching remaining messages:", e);
     }
   };
-
   // Call fetchRemaining after each message is sent
   let chatId = selectedChatId;
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -561,10 +561,10 @@ function AIPage({
   const categories = ["Create", "Explore", "Code", "Learn"];
   const { toggleSidebar } = useSidebar();
   return (
-    <main className="flex flex-col min-h-screen bg-background">
-      <div className="flex h-13 flex-row">
+    <main className="flex flex-col min-h-screen bg-background pt-14">
+       {/*<div className="flex h-13 flex-row">
         <div className="h-13  fixed border-b flex justify-start items-center bg-background w-screen z-50">
-          <header className="bg-background z-10 align-middle justify-between flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
+         <header className="bg-background z-10 align-middle justify-between flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
             <div>
               <Button
                 data-sidebar="trigger"
@@ -590,8 +590,8 @@ function AIPage({
             </div>
           </header>
         </div>
-      </div>
-      <hr></hr>
+      </div>*/}
+
       <div className="flex-1 flex flex-col items-start justify-center">
         <div className="flex flex-col items-start justify-center w-full max-w-[800px] mx-auto flex-1">
           {pendingMessage && selectedChatId ? (
@@ -806,7 +806,7 @@ function AIPage({
               />
               <PromptInputActions className="justify-between pt-2">
                 <div className="flex align-items-center gap-2">
-                  <PromptInputAction tooltip="Select model">
+                  {/*<PromptInputAction tooltip="Select model">
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
                         <Button
@@ -893,7 +893,7 @@ function AIPage({
                         </Command>
                       </PopoverContent>
                     </Popover>
-                  </PromptInputAction>
+                  </PromptInputAction>*/}
 
                   <PromptInputAction
                     tooltip={
@@ -997,6 +997,7 @@ function FullChatApp() {
   return (
     <SidebarProvider>
       <ChatSidebar />
+      <ChatHeader></ChatHeader>
       <SidebarInset>
         <AIPage
           currentMessages={currentMessages}

@@ -755,13 +755,41 @@ export default function Settings() {
                           }`}
                           onClick={() => setBaseTheme("amethyst")}
                         >
-                          <span
-                            className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)",
-                            }}
-                          ></span>
+                          {mode === 'light' ? <div className="flex gap-0.5">
+                            <div
+                              className="h-3 w-3 rounded-sm border border-muted"
+                              style={{ backgroundColor: 'rgb(138, 121, 171)' }}
+                            />
+                            <div
+                              className="h-3 w-3 rounded-sm border border-muted"
+                              style={{ backgroundColor: 'rgb(230, 165, 184)' }}
+                            />
+                            <div
+                              className="h-3 w-3 rounded-sm border border-muted"
+                              style={{ backgroundColor: 'rgb(223, 217, 236)' }}
+                            />
+                            <div
+                              className="h-3 w-3 rounded-sm border border-muted"
+                              style={{ backgroundColor: 'rgb(206, 201, 217)' }}
+                            />
+                          </div> : <div className="flex gap-0.5">
+                            <div
+                              className="border-muted h-3 w-3 rounded-sm border"
+                              style={{ backgroundColor: 'rgb(169,149,201)' }}
+                            />
+                            <div
+                              className="border-muted h-3 w-3 rounded-sm border"
+                              style={{ backgroundColor: 'rgb(55,46,63)' }}
+                            />
+                            <div
+                              className="border-muted h-3 w-3 rounded-sm border"
+                              style={{ backgroundColor: 'rgb(90,83,112)' }}
+                            />
+                            <div
+                              className="border-muted h-3 w-3 rounded-sm border"
+                              style={{ backgroundColor: 'rgb(48,44,64)' }}
+                            />
+                          </div>}
                           Amethyst
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -772,13 +800,41 @@ export default function Settings() {
                           }`}
                           onClick={() => setBaseTheme("tangerine")}
                         >
-                          <span
-                            className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #fbbf24 0%, #f59e42 100%)",
-                            }}
-                          ></span>
+                         {mode==='light' ? <div className="flex gap-0.5">
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(224,93,56)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(214,228,240)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(243,244,246)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(220,223,226)' }}
+                          />
+                          </div> : <div className="flex gap-0.5">
+                           <div
+                           className="border-muted h-3 w-3 rounded-sm border"
+                           style={{ backgroundColor: 'rgb(224,93,56)' }}
+                           />
+                           <div
+                           className="border-muted h-3 w-3 rounded-sm border"
+                           style={{ backgroundColor: 'rgb(42,54,86)' }}
+                           />
+                           <div
+                           className="border-muted h-3 w-3 rounded-sm border"
+                           style={{ backgroundColor: 'rgb(42,48,62)' }}
+                           />
+                           <div
+                           className="border-muted h-3 w-3 rounded-sm border"
+                           style={{ backgroundColor: 'rgb(61,67,84)' }}
+                           />
+                           </div>}
                           Tangerine
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -789,13 +845,41 @@ export default function Settings() {
                           }`}
                           onClick={() => setBaseTheme("graphite")}
                         >
-                          <span
-                            className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #6b7280 0%, #111827 100%)",
-                            }}
-                          ></span>
+                          {mode==='light' ?  <div className="flex gap-0.5">
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(96,96,96)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(192,192,192)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(224,224,224)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(208,208,208)' }}
+                          />
+                          </div> :  <div className="flex gap-0.5">
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(160,160,160)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(64,64,64)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(48,48,48)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(53,53,53)' }}
+                          />
+                          </div>}
                           Graphite
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -806,13 +890,41 @@ export default function Settings() {
                           }`}
                           onClick={() => setBaseTheme("t3")}
                         >
-                          <span
-                            className="inline-block w-4 h-4 rounded-full mr-2 align-middle"
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #38bdf8 0%, #6366f1 100%)",
-                            }}
-                          ></span>
+                          {mode==='light' ?  <div className="flex gap-0.5">
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(168,67,112)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(241,196,230)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(241,196,230)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(239,189,235)' }}
+                          />
+                          </div> :  <div className="flex gap-0.5">
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(163,0,76)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(70,55,83)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(54,45,61)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(59,50,55)' }}
+                          />
+                          </div>}
                           T3 Chat
                         </DropdownMenuItem>
                       </DropdownMenuContent>

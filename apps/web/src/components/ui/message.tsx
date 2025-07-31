@@ -58,8 +58,10 @@ const MessageContent = ({
   ...props
 }: MessageContentProps) => {
   const classNames = cn(
-    // Base styles
-    "rounded-md p-4 text-foreground bg-muted/60 prose prose-sm sm:prose-base break-words whitespace-normal border border-border shadow-sm",
+    // Base styles with message cards like messaginbg apps
+    // "rounded-md p-4 text-foreground bg-muted/60 prose prose-sm sm:prose-base break-words whitespace-normal border border-border shadow-sm",
+    // Base styles with ai chats apps look
+    "rounded-md p-4 text-foreground  prose prose-sm sm:prose-base break-words whitespace-normal ",
     // Headings
     "prose-headings:font-bold prose-headings:text-primary prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-h4:text-base prose-h5:text-base prose-h6:text-base prose-h1:mb-4 prose-h2:mb-3 prose-h3:mb-2",
     // Paragraphs

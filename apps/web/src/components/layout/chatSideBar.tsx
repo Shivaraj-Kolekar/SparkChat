@@ -286,8 +286,10 @@ export function ChatSidebar() {
                 <Sparkchat />
               </div>
             </div>
+ <hr></hr>
           </span>
-          <div className="px-4 space-y-2 w-full">
+
+          <div className="px-4   space-y-2 w-full">
             <Button
               className="w-full"
               onClick={() => {
@@ -316,7 +318,7 @@ export function ChatSidebar() {
             </Button>
           </div>
         </SidebarHeader>
-        <hr className="my-2 border-accent dark:border-accent"></hr>
+        <hr className="my-2 "></hr>
         <SidebarGroupContent className="pt-2 h-full overflow-y-scroll">
           <SidebarGroup className=" overflow-y-hidden">
             <h1 className="pl-4 text-base text-primary">Recent Chats</h1>
