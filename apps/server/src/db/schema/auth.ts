@@ -72,6 +72,8 @@ export const rateLimit = pgTable("rate_limit", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+import { jsonb } from "drizzle-orm/pg-core";
+
 export const messages = pgTable("messages", {
   id: uuid("id").primaryKey(),
   chatId: text("chat_id").notNull(),
@@ -82,6 +84,7 @@ export const messages = pgTable("messages", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  sources: jsonb("sources").default([]), // Store web search sources as array of { url, title }
 });
 
 export const chats = pgTable("chat", {
@@ -105,6 +108,21 @@ export const userInfo = pgTable("userInfo", {
   user_description: text("user_description"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Table for storing files uploaded to chats
+export const chatFiles = pgTable("chat_files", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  chatId: text("chat_id")
+    .notNull()
+    .references(() => chats.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  fileName: text("file_name").notNull(),
+  fileUrl: text("file_url").notNull(),
+  fileType: text("file_type"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const chatsRelations = relations(chats, ({ many }) => ({

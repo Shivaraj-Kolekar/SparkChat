@@ -560,8 +560,37 @@ function AIPage({
 
   const categories = ["Create", "Explore", "Code", "Learn"];
   const { toggleSidebar } = useSidebar();
+  // Mobile warning persistent state
+  const [showMobileWarning, setShowMobileWarning] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("hideMobileWarning") !== "true";
+    }
+    return true;
+  });
+
+  const handleDismissMobileWarning = () => {
+    setShowMobileWarning(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hideMobileWarning", "true");
+    }
+  };
+
   return (
     <main className="flex flex-col min-h-screen bg-background pt-14">
+      {/* Mobile warning header */}
+      {/*{showMobileWarning && (
+        <div className="w-full flex justify-center bg-yellow-400 text-yellow-900 py-2 px-4 text-sm font-medium items-center z-50" style={{ position: "sticky", top: 0 }}>
+          <span className="flex-1 text-center">We do NOT support mobile yet. Use with caution.</span>
+          <button
+            className="ml-2 px-2 py-1 rounded hover:bg-yellow-300"
+            onClick={handleDismissMobileWarning}
+            aria-label="Dismiss"
+          >
+            <span className="font-bold text-lg">×</span>
+          </button>
+        </div>
+      )
+      }*/}
        {/*<div className="flex h-13 flex-row">
         <div className="h-13  fixed border-b flex justify-start items-center bg-background w-screen z-50">
          <header className="bg-background z-10 align-middle justify-between flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
@@ -616,7 +645,7 @@ function AIPage({
                       {categories.map((cat) => (
                         <div
                           key={cat}
-                          className={`flex-1 flex items-center gap-2 rounded-full font-medium justify-center p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent  cursor-pointer transition-all duration-200 hover:shadow-sm border ${
+                          className={`flex-1 flex items-center gap-2 rounded-xl font-medium justify-center p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent  cursor-pointer transition-all duration-200 hover:shadow-sm border ${
                             selectedCategory === cat
                               ? "border-border bg-accent"
                               : "border"

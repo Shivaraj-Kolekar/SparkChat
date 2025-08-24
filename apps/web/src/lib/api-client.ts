@@ -56,7 +56,7 @@ apiClient.interceptors.request.use(
     return config
   },
   error => {
-    console.error('API Request Error:', error)
+    console.log('API Request Error:', error)
     if (error.response?.status === 401) {
       // Optionally, trigger a re-auth or show a message
       alert('Session expired or unauthorized. Please sign in again.');

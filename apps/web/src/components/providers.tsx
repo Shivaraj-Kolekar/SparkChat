@@ -29,6 +29,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         "tangerine-dark": "tangerine-dark",
         "t3-light": "t3-light",
         "t3-dark": "t3-dark",
+        "vercel-light": "vercel-light",
+        "vercel-dark": "vercel-dark",
+        "claude-light": "claude-light",
+        "claude-dark": "claude-dark",
+        "mono-light": "mono-light",
+        "mono-dark": "mono-dark"
+
       }}
       // defaultTheme="system"
       enableSystem

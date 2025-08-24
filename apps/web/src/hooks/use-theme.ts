@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-type Theme = "amethyst" | "graphite" | "t3";
+type Theme = "amethyst" | "graphite" | "t3" | "tangerine" | "vercel" | "claude" | "mono";
 type Mode = "light" | "dark";
 
 // Custom Hook for Theme and Mode Management

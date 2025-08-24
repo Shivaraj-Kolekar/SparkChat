@@ -2,9 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 type ThemeStore = {
-  baseTheme: "amethyst" | "graphite" | "t3" | "tangerine";
+  baseTheme: "amethyst" | "graphite" | "t3" | "tangerine" | "vercel" | "claude" | "mono";
   mode: "light" | "dark" | "system";
-  setBaseTheme: (theme: "amethyst" | "graphite" | "t3" | "tangerine") => void;
+  setBaseTheme: (theme: "amethyst" | "graphite" | "t3" | "tangerine" | "vercel" | "claude" | "mono") => void;
   setMode: (mode: "light" | "dark" | "system") => void;
 };
 

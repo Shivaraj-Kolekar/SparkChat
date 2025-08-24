@@ -322,10 +322,27 @@ export function ChatSidebar() {
         <SidebarGroupContent className="pt-2 h-full overflow-y-scroll">
           <SidebarGroup className=" overflow-y-hidden">
             <h1 className="pl-4 text-base text-primary">Recent Chats</h1>
-            {error ? (
+            {
+            //   error ? (
+            //   <SidebarMenu>
+            //     <div className="h-40 flex items-center justify-center">
+            //       <p className="error">{(error as Error).message}</p>
+            //     </div>
+            //   </SidebarMenu>
+            // ) :
+            !isLoaded || !user ? (
               <SidebarMenu>
-                <div className="h-40 flex items-center justify-center">
-                  <p className="error">{(error as Error).message}</p>
+                <div className="h-40 px-4 flex flex-col items-center justify-center text-muted-foreground text-base">
+                  <span>
+                    {
+                      "Please login to see your chats."}
+                  </span>
+                </div>
+              </SidebarMenu>
+            ) : chatList.length === 0 && !isLoading ? (
+              <SidebarMenu>
+                <div className="h-40 flex flex-col items-center justify-center text-muted-foreground text-base">
+                  <span>No chats created yet.</span>
                 </div>
               </SidebarMenu>
             ) : chatList.length === 0 && isLoading ? (

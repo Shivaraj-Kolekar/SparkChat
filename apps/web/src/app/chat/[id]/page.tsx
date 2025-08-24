@@ -3,7 +3,7 @@
 import { useChat, type Message } from "@ai-sdk/react";
 import { useUser } from "@clerk/nextjs";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-
+import { FileUpload,FileUploadContent,FileUploadTrigger } from "@/components/ui/file-upload";
 import { Button } from "@/components/ui/button";
 import {
   ChatContainerContent,
@@ -61,6 +61,7 @@ import {
   ListRestart,
   LogInIcon,
   PanelLeftIcon,
+  Paperclip,
   Plus,
   PlusIcon,
   RotateCcw,
@@ -133,6 +134,7 @@ function AIPage({
   router: any;
 }) {
   const { user, isLoaded } = useUser();
+  const [files, setFiles] = useState<File[]>([]);
   const selectedModel = useModelStore((state) => state.selectedModel);
   const setSelectedModel = useModelStore((state) => state.setSelectedModel);
   const params = useParams();
@@ -143,6 +145,21 @@ function AIPage({
   const clearPending = useChatStore((state) => state.clearPending);
   const searchParams = useSearchParams();
   const initialPrompt = searchParams.get("initialPrompt");
+
+  // Mobile warning persistent state
+  const [showMobileWarning, setShowMobileWarning] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("hideMobileWarning") !== "true";
+    }
+    return true;
+  });
+
+  const handleDismissMobileWarning = () => {
+    setShowMobileWarning(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hideMobileWarning", "true");
+    }
+  };
 
   useEffect(() => {
     if (params?.id) {
@@ -302,6 +319,7 @@ function AIPage({
     if (inputValue.trim()) {
       console.log("Sending:", inputValue);
       setInputValue("");
+      setFiles([]); // Clear files after sending
       setActiveCategory("");
     }
   };
@@ -781,7 +799,9 @@ function AIPage({
     chatExists,
   ]);
   const { state } = useSidebar(); // or your sidebar state
-
+  const handleFilesAdded = (newFiles: File[]) => {
+    setFiles((prev) => [...prev, ...newFiles])
+  }
   // The actuallySendMessage function
   const actuallySendMessage = async (
     messageText: string,
@@ -799,7 +819,7 @@ function AIPage({
     const assistantMessageId = (Date.now() + 1).toString();
     setPendingAssistantMessageId(assistantMessageId);
     setAiLoading(true);
-    const stored = await storeMessage(userMessage, chatId, modelValue);
+const stored = await storeMessage(userMessage, chatId, modelValue);
     if (!stored) {
       toast.error("Failed to save your message");
       setAiLoading(false);
@@ -812,6 +832,19 @@ function AIPage({
   const { toggleSidebar } = useSidebar();
   return (
     <main className="flex h-screen flex-col bg-background pt-14">
+      {/* Mobile warning header */}
+      {/*{showMobileWarning && (
+        <div className="w-full flex justify-center bg-yellow-400 text-yellow-900 py-2 px-4 text-sm font-medium items-center z-50" style={{ position: "sticky", top: 0 }}>
+          <span className="flex-1 text-center">We do NOT support mobile yet. Use with caution.</span>
+          <button
+            className="ml-2 px-2 py-1 rounded hover:bg-yellow-300"
+            onClick={handleDismissMobileWarning}
+            aria-label="Dismiss"
+          >
+            <span className="font-bold text-lg">&times;</span>
+          </button>
+        </div>
+      )}*/}
        {/* <div className="flex relative h-13 flex-row">
         <div className="h-13  fixed border-b flex justify-end  mb-2 items-center bg-background w-screen z-50 ">
         <header className="bg-transparent  opacity-100 justify-end flex min-h-13 py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
@@ -874,15 +907,15 @@ function AIPage({
                     key={message.id}
                     className={
                       message.role === "user"
-                        ? "justify-end mr-3"
-                        : "justify-start"
+                        ? "flex justify-end"
+                        : "flex justify-start"
                     }
                   >
                     <div
                       className={
-                        message.role === "assistant"
-                          ? "min-w-[95%] flex-1 sm:max-w-[75%]  mr-auto"
-                          : " flex-1 min-w-[25%] w-auto max-w-[50%] ml-auto"
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground  rounded-lg mr-3 max-w-[75%] w-fit ml-auto"
+                          : "bg-background text-foreground  rounded-lg max-w-[100%] w-fit mr-auto"
                       }
                     >
                       {message.role === "assistant" ? (
@@ -950,7 +983,7 @@ function AIPage({
 
                              {/*<MessageContent>{message.model }</MessageContent>*/}
                           </MessageActions>
-                        </div>
+                      </div>
                       ) : (
                         <MessageContent
                           markdown
@@ -996,7 +1029,11 @@ function AIPage({
                   your quota resets.
                 </div>
               )}
-              <PromptInput
+              {/*<FileUpload
+                    onFilesAdded={handleFilesAdded}
+                    accept=".jpg,.jpeg,.png,.pdf,.docx"
+                  >*/}
+                  <PromptInput
                 value={input}
                 onSubmit={handleSubmit}
                 className="w-full max-w-(--breakpoint-md)"
@@ -1006,6 +1043,26 @@ function AIPage({
                   placeholder="Ask me anything..."
                   disabled={promptDisabled || isLoading}
                 />
+                {/* Show selected files below the input */}
+                {files.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {files.map((file, idx) => (
+                      <span
+                        key={file.name + idx}
+                        className="bg-accent px-2 py-1 rounded text-xs flex items-center gap-1"
+                      >
+                        {file.name}
+                        <button
+                          type="button"
+                          className="ml-1 text-red-500"
+                          onClick={() => setFiles(files.filter((_, i) => i !== idx))}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <PromptInputActions className="justify-between pt-2">
                   <div className="flex align-items-center gap-2">
                     {/*<PromptInputAction tooltip="Select model">
@@ -1098,6 +1155,12 @@ function AIPage({
                         </PopoverContent>
                       </Popover>
                     </PromptInputAction>*/}
+                    {/*<PromptInputAction tooltip="Attach files">
+                                <FileUploadTrigger asChild>
+<Button variant={'outline'} >                                    <Paperclip className="" />
+                                  </Button>
+                                </FileUploadTrigger>
+                              </PromptInputAction>*/}
                     <PromptInputAction
                       tooltip={
                         !user ? "Please login to use Search Web" : "Search Web"
@@ -1127,13 +1190,14 @@ function AIPage({
                         : ""}
                     </PromptInputAction>
                   </div>
+
                   <PromptInputAction
                     tooltip={isLoading ? "Processing..." : "Send message"}
                   >
                     <Button
                       variant="default"
                       size="icon"
-                      className="h-8 w-8 rounded-full"
+
                       onClick={() => {
                         if (
                           !promptDisabled &&
@@ -1159,6 +1223,34 @@ function AIPage({
                   </PromptInputAction>
                 </PromptInputActions>
               </PromptInput>
+              {/*<FileUploadContent>
+                      <div className="flex min-h-[200px] w-full items-center justify-center backdrop-blur-sm">
+                        <div className="bg-background/90 m-4 w-full max-w-md rounded-lg border p-8 shadow-lg">
+                          <div className="mb-4 flex justify-center">
+                            <svg
+                              className="text-muted size-8"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                              />
+                            </svg>
+                          </div>
+                          <h3 className="mb-2 text-center text-base font-medium">
+                            Drop files to upload
+                          </h3>
+                          <p className="text-muted-foreground text-center text-sm">
+                            Release to add files to your message
+                          </p>
+                        </div>
+                      </div>
+                    </FileUploadContent>
+                  </FileUpload>*/}
             </div>
           </div>
         </div>

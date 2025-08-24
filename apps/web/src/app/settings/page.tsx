@@ -201,7 +201,7 @@ export default function Settings() {
       await api.delete(`/api/account/${id}`);
 
       toast.success("Account Deleted");
-      router.push("https://accounts.sparkchat.shivraj-kolekar.in/sign-in");
+      router.push("https://accounts.sparkchat.shivraj-kolekar.in/sign-up");
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error("Error deleting account");
@@ -729,6 +729,10 @@ export default function Settings() {
                               ? "Graphite"
                               : baseTheme === "t3"
                               ? "T3 Chat"
+                              : baseTheme==="vercel" ?
+                              "Vercel"
+                              : baseTheme==="claude"?
+                              "Claude"
                               : "Select Theme"}
                           </span>
                           <svg
@@ -926,6 +930,116 @@ export default function Settings() {
                           />
                           </div>}
                           T3 Chat
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className={`rounded-lg px-3 py-2 font-medium ${
+                            baseTheme === "vercel"
+                              ? "bg-primary/10 text-primary"
+                              : ""
+                          }`}
+                          onClick={() => setBaseTheme("vercel")}
+                        >
+                          {mode==='light' ?   <div className="flex gap-0.5">
+                                 <div
+                                   className="h-3 w-3 rounded-sm border border-muted"
+                                   style={{ backgroundColor: 'oklch(0 0 0)' }}
+                                 />
+                                 <div
+                                   className="h-3 w-3 rounded-sm border border-muted"
+                                   style={{ backgroundColor: 'oklch(0.94 0 0)' }}
+                                 />
+                                 <div
+                                   className="h-3 w-3 rounded-sm border border-muted"
+                                   style={{ backgroundColor: 'oklch(0.94 0 0)' }}
+                                 />
+                                 <div
+                                   className="h-3 w-3 rounded-sm border border-muted"
+                                   style={{ backgroundColor: 'oklch(0.92 0 0)' }}
+                                 />
+                               </div> :  <div className="flex gap-0.5 mt-2">
+                                       <div
+                                         className="h-3 w-3 rounded-sm border border-muted"
+                                         style={{ backgroundColor: 'oklch(1 0 0)' }}
+                                       />
+                                       <div
+                                         className="h-3 w-3 rounded-sm border border-muted"
+                                         style={{ backgroundColor: 'oklch(0.32 0 0)' }}
+                                       />
+                                       <div
+                                         className="h-3 w-3 rounded-sm border border-muted"
+                                         style={{ backgroundColor: 'oklch(0.25 0 0)' }}
+                                       />
+                                       <div
+                                         className="h-3 w-3 rounded-sm border border-muted"
+                                         style={{ backgroundColor: 'oklch(0.26 0 0)' }}
+                                       />
+                                     </div>}
+                          Vercel
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className={`rounded-lg px-3 py-2 font-medium ${
+                            baseTheme === "claude"
+                              ? "bg-primary/10 text-primary"
+                              : ""
+                          }`}
+                          onClick={() => setBaseTheme("claude")}
+                        >
+                          {mode==='light' ?  <div className="flex gap-0.5">
+                                  <div className="h-3 w-3 rounded-sm border border-muted bg-[#d97757]" />
+                                  <div className="h-3 w-3 rounded-sm border border-muted bg-[#1a1915]" />
+                                  <div className="h-3 w-3 rounded-sm border border-muted bg-[#faf9f5]" />
+                                  <div className="h-3 w-3 rounded-sm border border-muted bg-[#3e3e38]" />
+                                </div> :  <div className="flex gap-0.5 mt-2">
+                                        <div className="h-3 w-3 rounded-sm border border-muted bg-[#c96442]" />
+                                        <div className="h-3 w-3 rounded-sm border border-muted bg-[#e9e6dc]" />
+                                        <div className="h-3 w-3 rounded-sm border border-muted bg-[#e9e6dc]" />
+                                        <div className="h-3 w-3 rounded-sm border border-muted bg-[#dad9d4]" />
+                                      </div>}
+                          Claude
+                        </DropdownMenuItem> <DropdownMenuItem
+                          className={`rounded-lg px-3 py-2 mb-1 font-medium ${
+                            baseTheme === "mono"
+                              ? "bg-primary/10 text-primary"
+                              : ""
+                          }`}
+                          onClick={() => setBaseTheme("mono")}
+                        >
+                          {mode==='light' ?  <div className="flex gap-0.5">
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(96,96,96)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(192,192,192)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(224,224,224)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(208,208,208)' }}
+                          />
+                          </div> :  <div className="flex gap-0.5">
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(160,160,160)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(64,64,64)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(48,48,48)' }}
+                          />
+                          <div
+                          className="border-muted h-3 w-3 rounded-sm border"
+                          style={{ backgroundColor: 'rgb(53,53,53)' }}
+                          />
+                          </div>}
+                          Mono
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
