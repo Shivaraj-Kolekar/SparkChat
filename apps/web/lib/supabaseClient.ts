@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // These environment variables should be set in your .env.local or deployment environment
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
 
 // Create a single Supabase client for the app
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
