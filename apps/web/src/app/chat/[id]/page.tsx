@@ -3,7 +3,11 @@
 import { useChat, type Message } from "@ai-sdk/react";
 import { useUser } from "@clerk/nextjs";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { FileUpload,FileUploadContent,FileUploadTrigger } from "@/components/ui/file-upload";
+import {
+  FileUpload,
+  FileUploadContent,
+  FileUploadTrigger,
+} from "@/components/ui/file-upload";
 import { Button } from "@/components/ui/button";
 import {
   ChatContainerContent,
@@ -68,6 +72,7 @@ import {
   Search,
   Settings2,
   Square,
+  Telescope,
   Text,
   X,
   Zap,
@@ -193,25 +198,31 @@ function AIPage({
   const [pendingAssistantMessageId, setPendingAssistantMessageId] = useState<
     string | null
   >(null);
-  const fetchMessages = useCallback(async (chatId: string) => {
-    try {
-      const response = await api.get(`/api/chat/${chatId}`);
-      if (response.data.success) {
-        const transformedMessages = response.data.messages.map((msg: any) => ({
-          id: msg.id,
-          content: msg.content,
-          role: msg.role,
-          chatId: msg.chatId,
-          timestamp: msg.created_at,
-          model: msg.model
-        }));
-        setCurrentMessages(transformedMessages);
+  const fetchMessages = useCallback(
+    async (chatId: string) => {
+      try {
+        const response = await api.get(`/api/chat/${chatId}`);
+        if (response.data.success) {
+          const transformedMessages = response.data.messages.map(
+            (msg: any) => ({
+              id: msg.id,
+              content: msg.content,
+              role: msg.role,
+              chatId: msg.chatId,
+              timestamp: msg.created_at,
+              model: msg.model,
+            })
+          );
+          setCurrentMessages(transformedMessages);
+        }
+      } catch (error) {
+        console.error("Error fetching messages:", error);
       }
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  }, [setCurrentMessages]);
+    },
+    [setCurrentMessages]
+  );
   const [searchEnabled, setSearchEnabled] = useState(false);
+  const [ResearchEnabled, setReSearchEnabled] = useState(false);
 
   const customFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const token = await getClerkToken();
@@ -244,6 +255,7 @@ function AIPage({
     body: {
       model: selectedModel,
       searchEnabled: searchEnabled,
+      ResearchEnabled: ResearchEnabled,
     },
     onFinish: async (message) => {
       // Store the AI's response using the latest chatId
@@ -467,12 +479,12 @@ function AIPage({
     },
 
     {
-      value: "llama3-8b-8192",
-      label: "Llama 3",
+      value: "moonshotai/kimi-k2-instruct",
+      label: "Kimi K2",
       svg: {
-        path: "M27.651 112.136c0 9.775 2.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808-1.79 26.52-19.372 10.185-14.092 22.186-33.874 30.26-46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651.988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.99 3.597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.49 6.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.775 2.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
+        path: "M27.651112.136c0 9.7752.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808 -1.79 26.52 -19.372 10.185 -14.092 22.186 -22.186 33.874 -30.26 -46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651 .988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.993 .597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.496.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.7752.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
         title: "Meta",
-        viewbox: "0 0 256 171 ",
+        viewbox: "0 0 256 171",
       },
       description:
         "Llama 3 is a powerful text-based large language model by Meta. It is designed for generating high-quality text, engaging in natural conversations, and performing various language understanding tasks. Its multilingual capabilities make it suitable for global applications requiring sophisticated text processing.",
@@ -620,7 +632,7 @@ function AIPage({
           }
         }
       } catch (error) {
-        console.error('Error polling messages:', error);
+        console.error("Error polling messages:", error);
         attempts++;
         if (attempts >= maxAttempts) {
           if (interval) {
@@ -800,8 +812,8 @@ function AIPage({
   ]);
   const { state } = useSidebar(); // or your sidebar state
   const handleFilesAdded = (newFiles: File[]) => {
-    setFiles((prev) => [...prev, ...newFiles])
-  }
+    setFiles((prev) => [...prev, ...newFiles]);
+  };
   // The actuallySendMessage function
   const actuallySendMessage = async (
     messageText: string,
@@ -812,6 +824,7 @@ function AIPage({
     if (!chatId || !(model || selectedModel)) return;
     const userMessage = {
       content: messageText,
+      model: selectedModel,
       role: "user" as const,
       id: Date.now().toString(),
     };
@@ -819,7 +832,7 @@ function AIPage({
     const assistantMessageId = (Date.now() + 1).toString();
     setPendingAssistantMessageId(assistantMessageId);
     setAiLoading(true);
-const stored = await storeMessage(userMessage, chatId, modelValue);
+    const stored = await storeMessage(userMessage, chatId, modelValue);
     if (!stored) {
       toast.error("Failed to save your message");
       setAiLoading(false);
@@ -845,7 +858,7 @@ const stored = await storeMessage(userMessage, chatId, modelValue);
           </button>
         </div>
       )}*/}
-       {/* <div className="flex relative h-13 flex-row">
+      {/* <div className="flex relative h-13 flex-row">
         <div className="h-13  fixed border-b flex justify-end  mb-2 items-center bg-background w-screen z-50 ">
         <header className="bg-transparent  opacity-100 justify-end flex min-h-13 py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
             <Button
@@ -980,10 +993,10 @@ const stored = await storeMessage(userMessage, chatId, modelValue);
                                 <RotateCcw />
                               </Button>
                             </MessageAction>
-
-                             {/*<MessageContent>{message.model }</MessageContent>*/}
+                            {/* <p>{message.model}</p> // This shows the model used for generating the ai messsage */}
+                            {/* <MessageContent>{message.id}</MessageContent> */}
                           </MessageActions>
-                      </div>
+                        </div>
                       ) : (
                         <MessageContent
                           markdown
@@ -1033,10 +1046,10 @@ const stored = await storeMessage(userMessage, chatId, modelValue);
                     onFilesAdded={handleFilesAdded}
                     accept=".jpg,.jpeg,.png,.pdf,.docx"
                   >*/}
-                  <PromptInput
+              <PromptInput
                 value={input}
                 onSubmit={handleSubmit}
-                className="w-full max-w-(--breakpoint-md)"
+                className="w-full  max-w-(--breakpoint-md)"
               >
                 <PromptInputTextarea
                   onChange={handleInputChange}
@@ -1055,7 +1068,9 @@ const stored = await storeMessage(userMessage, chatId, modelValue);
                         <button
                           type="button"
                           className="ml-1 text-red-500"
-                          onClick={() => setFiles(files.filter((_, i) => i !== idx))}
+                          onClick={() =>
+                            setFiles(files.filter((_, i) => i !== idx))
+                          }
                         >
                           ×
                         </button>
@@ -1064,7 +1079,7 @@ const stored = await storeMessage(userMessage, chatId, modelValue);
                   </div>
                 )}
                 <PromptInputActions className="justify-between pt-2">
-                  <div className="flex align-items-center gap-2">
+                  <div className="flex border align-items-center gap-1 p-1 rounded-md">
                     {/*<PromptInputAction tooltip="Select model">
                       <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
@@ -1163,6 +1178,32 @@ const stored = await storeMessage(userMessage, chatId, modelValue);
                               </PromptInputAction>*/}
                     <PromptInputAction
                       tooltip={
+                        !user
+                          ? "Please login to use Research tool"
+                          : "Research Tool"
+                      }
+                    >
+                      <Button
+                        onClick={() => {
+                          setReSearchEnabled((prevreSearchEnabled) => {
+                            const newState = !prevreSearchEnabled;
+                            if (newState) {
+                              toast.success("Research Tool enabled");
+                            } else {
+                              toast.info("Research Tool disabled");
+                            }
+                            return newState;
+                          });
+                        }}
+                        variant={
+                          ResearchEnabled === true ? "default" : "outline"
+                        }
+                      >
+                        <Telescope></Telescope>
+                      </Button>
+                    </PromptInputAction>
+                    <PromptInputAction
+                      tooltip={
                         !user ? "Please login to use Search Web" : "Search Web"
                       }
                     >
@@ -1184,7 +1225,7 @@ const stored = await storeMessage(userMessage, chatId, modelValue);
                                 searchEnabled === true ? "default" : "outline"
                               }
                             >
-                              <Globe></Globe>Search
+                              <Globe></Globe>
                             </Button>
                           )
                         : ""}
@@ -1197,7 +1238,6 @@ const stored = await storeMessage(userMessage, chatId, modelValue);
                     <Button
                       variant="default"
                       size="icon"
-
                       onClick={() => {
                         if (
                           !promptDisabled &&
@@ -1329,7 +1369,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   return (
     <SidebarProvider>
       <ChatSidebar />
-      <ChatHeader/>
+      <ChatHeader />
       <SidebarInset>
         <AIPage
           // currentChatId={currentChatId}

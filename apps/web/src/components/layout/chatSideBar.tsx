@@ -286,7 +286,7 @@ export function ChatSidebar() {
                 <Sparkchat />
               </div>
             </div>
- <hr></hr>
+            <hr></hr>
           </span>
 
           <div className="px-4   space-y-2 w-full">
@@ -323,103 +323,101 @@ export function ChatSidebar() {
           <SidebarGroup className=" overflow-y-hidden">
             <h1 className="pl-4 text-base text-primary">Recent Chats</h1>
             {
-            //   error ? (
-            //   <SidebarMenu>
-            //     <div className="h-40 flex items-center justify-center">
-            //       <p className="error">{(error as Error).message}</p>
-            //     </div>
-            //   </SidebarMenu>
-            // ) :
-            !isLoaded || !user ? (
-              <SidebarMenu>
-                <div className="h-40 px-4 flex flex-col items-center justify-center text-muted-foreground text-base">
-                  <span>
-                    {
-                      "Please login to see your chats."}
-                  </span>
-                </div>
-              </SidebarMenu>
-            ) : chatList.length === 0 && !isLoading ? (
-              <SidebarMenu>
-                <div className="h-40 flex flex-col items-center justify-center text-muted-foreground text-base">
-                  <span>No chats created yet.</span>
-                </div>
-              </SidebarMenu>
-            ) : chatList.length === 0 && isLoading ? (
-              <SidebarMenu>
-                <div className="h-40 flex flex-col items-center justify-center">
-                  <Loader />
-                  <span className="ml-2">Loading chats...</span>
-                </div>
-              </SidebarMenu>
-            ) : (
-              <SidebarMenu className="px-2 ">
-                {Array.isArray(chatList) &&
-                  chatList.map((chat: any) => (
-                    <SidebarMenuButton
-                      key={chat.id}
-                      className="text-base my-0.5 px-2 py-3 relative group"
-                      onClick={() => setSelectedChatId(chat.id)}
-                      isActive={chat.id === selectedChatId}
-                    >
-                      <Link
-                        href={`/chat/${chat.id}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedChatId(chat.id);
-                        }}
-                        className="absolute inset-0 flex items-center pl-2 pr-10"
+              //   error ? (
+              //   <SidebarMenu>
+              //     <div className="h-40 flex items-center justify-center">
+              //       <p className="error">{(error as Error).message}</p>
+              //     </div>
+              //   </SidebarMenu>
+              // ) :
+              !isLoaded || !user ? (
+                <SidebarMenu>
+                  <div className="h-40 px-4 flex flex-col items-center justify-center text-muted-foreground text-base">
+                    <span>{"Please login to see your chats."}</span>
+                  </div>
+                </SidebarMenu>
+              ) : chatList.length === 0 && !isLoading ? (
+                <SidebarMenu>
+                  <div className="h-40 flex flex-col items-center justify-center text-muted-foreground text-base">
+                    <span>No chats created yet.</span>
+                  </div>
+                </SidebarMenu>
+              ) : chatList.length === 0 && isLoading ? (
+                <SidebarMenu>
+                  <div className="h-40 flex flex-col items-center justify-center">
+                    <Loader />
+                    <span className="ml-2">Loading chats...</span>
+                  </div>
+                </SidebarMenu>
+              ) : (
+                <SidebarMenu className="px-2 ">
+                  {Array.isArray(chatList) &&
+                    chatList.map((chat: any) => (
+                      <SidebarMenuButton
+                        key={chat.id}
+                        className="text-base my-0.5 px-2 py-3 relative group"
+                        onClick={() => setSelectedChatId(chat.id)}
+                        isActive={chat.id === selectedChatId}
                       >
-                        <div className="relative flex-grow min-w-0">
-                          <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
-                            {chat.title}
-                          </span>
-                        </div>
-                      </Link>
-                      {/* Delete Button */}
-                      <div
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                          chat.id === selectedChatId ? "block" : ""
-                        }`}
-                      >
-                        <Dialog>
-                          <DialogTrigger>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 text-gray-500 hover:text-red-500"
-                            >
-                              <X className="h-4 w-4" />
-                              <span className="sr-only">Delete Chat</span>
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Delete Chat</DialogTitle>
-                            </DialogHeader>
-                            <DialogDescription>
-                              Are you sure you want to delete this chat ?
-                            </DialogDescription>
-                            <DialogFooter>
-                              <DialogClose>Close</DialogClose>
+                        <Link
+                          href={`/chat/${chat.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedChatId(chat.id);
+                          }}
+                          className="absolute inset-0 flex items-center pl-2 pr-10"
+                        >
+                          <div className="relative flex-grow min-w-0">
+                            <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
+                              {chat.title}
+                            </span>
+                          </div>
+                        </Link>
+                        {/* Delete Button */}
+                        <div
+                          className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
+                            chat.id === selectedChatId ? "block" : ""
+                          }`}
+                        >
+                          <Dialog>
+                            <DialogTrigger>
                               <Button
-                                variant={"destructive"}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteChat(chat.id);
-                                  toast.success("Chat deleted");
-                                }}
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8 text-gray-500 hover:text-red-500"
                               >
-                                Delete Chat
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Delete Chat</span>
                               </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </SidebarMenuButton>
-                  ))}
-              </SidebarMenu>
-            )}
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Delete Chat</DialogTitle>
+                              </DialogHeader>
+                              <DialogDescription>
+                                Are you sure you want to delete this chat ?
+                              </DialogDescription>
+                              <DialogFooter>
+                                <DialogClose>Close</DialogClose>
+                                <Button
+                                  variant={"destructive"}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteChat(chat.id);
+                                    toast.success("Chat deleted");
+                                  }}
+                                >
+                                  Delete Chat
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </SidebarMenuButton>
+                    ))}
+                </SidebarMenu>
+              )
+            }
           </SidebarGroup>
         </SidebarGroupContent>{" "}
         <hr className="mt-2"></hr>
@@ -433,7 +431,7 @@ export function ChatSidebar() {
               </Link>
             ) : (
               <a
-                href="https://accounts.sparkchat.shivraj-kolekar.in/sign-up"
+                href="https://assured-herring-21.accounts.dev/sign-in"
                 className="flex items-center space-x-2"
               >
                 <LogInIcon size={20} />

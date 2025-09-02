@@ -25,6 +25,7 @@ import {
   BookOpen,
   Code2,
   GraduationCap,
+  Telescope,
 } from "lucide-react";
 import { useRef, useEffect, type JSX } from "react";
 import {
@@ -163,6 +164,8 @@ function AIPage({
   }, [selectedModel]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
+  const [ResearchEnabled, setReSearchEnabled] = useState(false);
+
   const streamIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const streamContentRef = useRef("");
   const [isLoading, setIsLoading] = useState(false); // For streaming indicator
@@ -198,7 +201,11 @@ function AIPage({
       }
     };
   }, []);
-
+  const WebSearchModels = [
+    "gemini-2.0-flash",
+    "gemini-2.5-flash-preview-04-17",
+    "gemini-2.0-flash-lite",
+  ];
   const storeMessage = async (
     message: Message,
     chatId: string,
@@ -385,8 +392,8 @@ function AIPage({
           sessionStorage.setItem("newChatLoading", "true");
         }
         // 3. Redirect to the new chat page
-         setAiLoading(true);
-         router.push(`/chat/${newChatId}`);
+        setAiLoading(true);
+        router.push(`/chat/${newChatId}`);
         setPendingMessage(input); // Trigger AI message generation after redirect
         setCreatingChat(false);
         return;
@@ -591,7 +598,7 @@ function AIPage({
         </div>
       )
       }*/}
-       {/*<div className="flex h-13 flex-row">
+      {/*<div className="flex h-13 flex-row">
         <div className="h-13  fixed border-b flex justify-start items-center bg-background w-screen z-50">
          <header className="bg-background z-10 align-middle justify-between flex h-auto py-2 my-2 w-fit rounded-bl-lg shrink-0 items-center gap-2 px-4">
             <div>
@@ -834,7 +841,7 @@ function AIPage({
                 disabled={promptDisabled || creatingChat}
               />
               <PromptInputActions className="justify-between pt-2">
-                <div className="flex align-items-center gap-2">
+                <div className="flex align-items-center gap-1 p-1 border rounded-md">
                   {/*<PromptInputAction tooltip="Select model">
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
@@ -926,26 +933,55 @@ function AIPage({
 
                   <PromptInputAction
                     tooltip={
-                      !user ? "Please login to use Search Web" : "Search Web"
+                      !user
+                        ? "Please login to use Research tool"
+                        : "Research Tool"
                     }
                   >
                     <Button
                       onClick={() => {
-                        setSearchEnabled((prevSearchEnabled) => {
-                          const newState = !prevSearchEnabled;
+                        setReSearchEnabled((prevreSearchEnabled) => {
+                          const newState = !prevreSearchEnabled;
                           if (newState) {
-                            toast.success("Web search enabled");
+                            toast.success("Research Tool enabled");
                           } else {
-                            toast.info("Web search disabled");
+                            toast.info("Research Tool disabled");
                           }
                           return newState;
                         });
                       }}
-                      variant={                                searchEnabled === true ? "default" : "outline"
-}
+                      variant={ResearchEnabled === true ? "default" : "outline"}
                     >
-                      <Globe></Globe>Search
+                      <Telescope></Telescope>
                     </Button>
+                  </PromptInputAction>
+                  <PromptInputAction
+                    tooltip={
+                      !user ? "Please login to use Search Web" : "Search Web"
+                    }
+                  >
+                    {selectedModel
+                      ? WebSearchModels.includes(selectedModel) && (
+                          <Button
+                            onClick={() => {
+                              setSearchEnabled((prevSearchEnabled) => {
+                                const newState = !prevSearchEnabled;
+                                if (newState) {
+                                  toast.success("Web search enabled");
+                                } else {
+                                  toast.info("Web search disabled");
+                                }
+                                return newState;
+                              });
+                            }}
+                            variant={
+                              searchEnabled === true ? "default" : "outline"
+                            }
+                          >
+                            <Globe></Globe>
+                          </Button>
+                        )
+                      : ""}
                   </PromptInputAction>
                 </div>
 
@@ -955,7 +991,7 @@ function AIPage({
                   <Button
                     variant="default"
                     size="icon"
-                    className="h-8 w-8 rounded-full"
+                    className="h-8 w-8 "
                     onClick={() => {
                       if (!promptDisabled && !creatingChat) handleSubmit();
                     }}
