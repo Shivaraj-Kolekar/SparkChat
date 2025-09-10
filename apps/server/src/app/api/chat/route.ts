@@ -75,8 +75,8 @@ export const GET = withCORS(async (req: NextRequest) => {
     const result = await db
       .select()
       .from(chatTable)
-      .where(eq(chatTable.userId, user.id));
-    // .orderBy(desc(chatTable.created_at));
+      .where(eq(chatTable.userId, user.id))
+      .orderBy(desc(chatTable.created_at));
     return NextResponse.json({ result, success: true });
   } catch (error) {
     console.error("Error in GET /api/chat:", error);

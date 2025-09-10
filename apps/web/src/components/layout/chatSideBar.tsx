@@ -29,12 +29,14 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import {
+  Ellipsis,
   LogInIcon,
   PanelLeftIcon,
   Plus,
   PlusIcon,
   Search,
   SearchIcon,
+  Trash2,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -51,6 +53,16 @@ import {
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useChatStore } from "@/store/chatStore";
 import { Badge } from "../ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import Publiclinkdialog from "../public-link-dialog";
 
 export function ChatSidebar() {
   const [showAdditionalButtons, setShowAdditionalButtons] = useState(false);
@@ -58,6 +70,9 @@ export function ChatSidebar() {
   const [animatePlus, setAnimatePlus] = useState(false);
   const [isCmndDialogOpen, setIsCmndDialogOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [chatToDelete, setChatToDelete] = useState<string | null>(null);
+
   const { user, isLoaded } = useUser();
   const selectedChatId = useChatStore((state) => state.selectedChatId);
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
@@ -321,7 +336,6 @@ export function ChatSidebar() {
         <hr className="my-2 "></hr>
         <SidebarGroupContent className="pt-2 h-full overflow-y-scroll">
           <SidebarGroup className=" overflow-y-hidden">
-            <h1 className="pl-4 text-base text-primary">Recent Chats</h1>
             {
               //   error ? (
               //   <SidebarMenu>
@@ -350,72 +364,300 @@ export function ChatSidebar() {
                   </div>
                 </SidebarMenu>
               ) : (
-                <SidebarMenu className="px-2 ">
-                  {Array.isArray(chatList) &&
-                    chatList.map((chat: any) => (
-                      <SidebarMenuButton
-                        key={chat.id}
-                        className="text-base my-0.5 px-2 py-3 relative group"
-                        onClick={() => setSelectedChatId(chat.id)}
-                        isActive={chat.id === selectedChatId}
-                      >
-                        <Link
-                          href={`/chat/${chat.id}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedChatId(chat.id);
-                          }}
-                          className="absolute inset-0 flex items-center pl-2 pr-10"
-                        >
-                          <div className="relative flex-grow min-w-0">
-                            <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
-                              {chat.title}
-                            </span>
+                // Grouped and sorted chat sections
+                (() => {
+                  // Helper function for date comparison
+                  function isToday(date: Date) {
+                    const today = new Date();
+                    return (
+                      date.getDate() === today.getDate() &&
+                      date.getMonth() === today.getMonth() &&
+                      date.getFullYear() === today.getFullYear()
+                    );
+                  }
+
+                  function isLast30Days(date: Date) {
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    return date > thirtyDaysAgo && !isToday(date);
+                  }
+
+                  function groupChats(chats: any[]) {
+                    const now = new Date();
+                    // Start of today in local time
+                    const startOfToday = new Date(
+                      now.getFullYear(),
+                      now.getMonth(),
+                      now.getDate()
+                    );
+                    // 30 days ago from now
+                    const startOf30DaysAgo = new Date(
+                      now.getFullYear(),
+                      now.getMonth(),
+                      now.getDate() - 29
+                    );
+
+                    console.log("Time boundaries:", {
+                      startOfToday: startOfToday.toISOString(),
+                      startOf30DaysAgo: startOf30DaysAgo.toISOString(),
+                    });
+
+                    const todayChats: any[] = [];
+                    const last30DaysChats: any[] = [];
+                    const olderChats: any[] = [];
+
+                    // Chats are already sorted by created_at desc from the API
+                    chats.forEach((chat) => {
+                      const created = new Date(chat.created_at);
+
+                      if (isToday(created)) {
+                        todayChats.push(chat);
+                      } else if (isLast30Days(created)) {
+                        last30DaysChats.push(chat);
+                      } else {
+                        olderChats.push(chat);
+                      }
+                    });
+
+                    return {
+                      todayChats,
+                      last30DaysChats,
+                      olderChats,
+                    };
+                  }
+
+                  // Chats come sorted from API, just group them
+                  const sortedChats = Array.isArray(chatList) ? chatList : [];
+
+                  const { todayChats, last30DaysChats, olderChats } =
+                    groupChats(sortedChats);
+
+                  return (
+                    <SidebarMenu className="px-2">
+                      {/* Today Section */}
+                      {todayChats.length > 0 && (
+                        <>
+                          <div className="pl-2 py-1 text-xs font-semibold text-gray-500">
+                            Today
                           </div>
-                        </Link>
-                        {/* Delete Button */}
-                        <div
-                          className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                            chat.id === selectedChatId ? "block" : ""
-                          }`}
-                        >
-                          <Dialog>
-                            <DialogTrigger>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-8 w-8 text-gray-500 hover:text-red-500"
+                          {todayChats.map((chat) => (
+                            <SidebarMenuButton
+                              key={chat.id}
+                              className="text-base my-0.5 px-2 py-3 relative group"
+                              onClick={() => setSelectedChatId(chat.id)}
+                              isActive={chat.id === selectedChatId}
+                            >
+                              <Link
+                                href={`/chat/${chat.id}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedChatId(chat.id);
+                                }}
+                                className="absolute inset-0 flex items-center pl-2 pr-10"
                               >
-                                <X className="h-4 w-4" />
-                                <span className="sr-only">Delete Chat</span>
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Delete Chat</DialogTitle>
-                              </DialogHeader>
-                              <DialogDescription>
-                                Are you sure you want to delete this chat ?
-                              </DialogDescription>
-                              <DialogFooter>
-                                <DialogClose>Close</DialogClose>
-                                <Button
-                                  variant={"destructive"}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteChat(chat.id);
-                                    toast.success("Chat deleted");
-                                  }}
-                                >
-                                  Delete Chat
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
-                      </SidebarMenuButton>
-                    ))}
-                </SidebarMenu>
+                                <div className="relative flex-grow min-w-0">
+                                  <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
+                                    {chat.title}
+                                  </span>
+                                  {/*<span className="text-xs text-gray-400">
+                                          {new Date(chat.created_at).toLocaleString()}
+                                        </span>*/}
+                                </div>
+                              </Link>
+                              {/* Delete Button */}
+                              <div
+                                className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
+                                  chat.id === selectedChatId ? "block" : ""
+                                }`}
+                              >
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger>
+                                    <Ellipsis />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuLabel>
+                                      Chat Actions
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator></DropdownMenuSeparator>
+                                    <DropdownMenuGroup>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => {
+                                          e.preventDefault();
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setChatToDelete(chat.id);
+                                          setDeleteDialogOpen(true);
+                                        }}
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete Chat
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => {
+                                          e.preventDefault();
+                                        }}
+                                      >
+                                        <Publiclinkdialog chatId={chat.id} />
+                                      </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </SidebarMenuButton>
+                          ))}{" "}
+                          <hr></hr>
+                        </>
+                      )}
+
+                      {/* Last 30 Days Section */}
+                      {last30DaysChats.length > 0 && (
+                        <>
+                          <div className="pl-2 py-1 text-xs font-semibold text-gray-500">
+                            Last 30 Days
+                          </div>
+                          {last30DaysChats.map((chat) => (
+                            <SidebarMenuButton
+                              key={chat.id}
+                              className="text-base my-0.5 px-2 py-3 relative group"
+                              onClick={() => setSelectedChatId(chat.id)}
+                              isActive={chat.id === selectedChatId}
+                            >
+                              <Link
+                                href={`/chat/${chat.id}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedChatId(chat.id);
+                                }}
+                                className="absolute inset-0 flex items-center pl-2 pr-10"
+                              >
+                                <div className="relative flex-grow min-w-0">
+                                  <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
+                                    {chat.title}
+                                  </span>
+                                  {/*<span className="text-xs text-gray-400">
+                                    {new Date(chat.created_at).toLocaleString()}
+                                  </span>*/}
+                                </div>
+                              </Link>
+                              {/* Delete Button */}
+                              <div
+                                className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
+                                  chat.id === selectedChatId ? "block" : ""
+                                }`}
+                              >
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger>
+                                    <Ellipsis />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuLabel>
+                                      Chat Actions
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuGroup>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => {
+                                          e.preventDefault();
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setChatToDelete(chat.id);
+                                          setDeleteDialogOpen(true);
+                                        }}
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete Chat
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => {
+                                          e.preventDefault();
+                                        }}
+                                      >
+                                        <Publiclinkdialog chatId={chat.id} />
+                                      </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </SidebarMenuButton>
+                          ))}
+                          <hr></hr>
+                        </>
+                      )}
+
+                      {/* Older Section */}
+                      {olderChats.length > 0 && (
+                        <>
+                          <div className="pl-2 py-1 text-xs font-semibold text-gray-500">
+                            Older
+                          </div>
+                          {olderChats.map((chat) => (
+                            <SidebarMenuButton
+                              key={chat.id}
+                              className="text-base my-0.5 px-2 py-3 relative group"
+                              onClick={() => setSelectedChatId(chat.id)}
+                              isActive={chat.id === selectedChatId}
+                            >
+                              <Link
+                                href={`/chat/${chat.id}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedChatId(chat.id);
+                                }}
+                                className="absolute inset-0 flex items-center pl-2 pr-10"
+                              >
+                                <div className="relative flex-grow min-w-0">
+                                  <span className="block whitespace-nowrap overflow-hidden text-ellipsis">
+                                    {chat.title}
+                                  </span>
+                                </div>
+                              </Link>
+                              {/* Delete Button */}
+                              <div
+                                className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
+                                  chat.id === selectedChatId ? "block" : ""
+                                }`}
+                              >
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger>
+                                    <Ellipsis />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuLabel>
+                                      Chat Actions
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuGroup>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => {
+                                          e.preventDefault();
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setChatToDelete(chat.id);
+                                          setDeleteDialogOpen(true);
+                                        }}
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete Chat
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => {
+                                          e.preventDefault();
+                                        }}
+                                      >
+                                        <Publiclinkdialog chatId={chat.id} />
+                                      </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </SidebarMenuButton>
+                          ))}
+                        </>
+                      )}
+                    </SidebarMenu>
+                  );
+                })()
               )
             }
           </SidebarGroup>
@@ -431,7 +673,7 @@ export function ChatSidebar() {
               </Link>
             ) : (
               <a
-                href="https://assured-herring-21.accounts.dev/sign-in"
+                href="https://accounts.sparkchat.shivraj-kolekar.in/sign-in"
                 className="flex items-center space-x-2"
               >
                 <LogInIcon size={20} />
@@ -441,6 +683,41 @@ export function ChatSidebar() {
           </div>
         </SidebarFooter>
       </Sidebar>
+
+      {/* Delete Chat Dialog - Outside of dropdown */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Chat</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Are you sure you want to delete this chat? This action cannot be
+            undone.
+          </DialogDescription>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (chatToDelete) {
+                  handleDeleteChat(chatToDelete);
+                  toast.success("Chat deleted");
+                  setDeleteDialogOpen(false);
+                  setChatToDelete(null);
+                }
+              }}
+            >
+              Delete Chat
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
