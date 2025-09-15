@@ -52,7 +52,7 @@ export const POST = async (req: NextRequest) => {
 
     console.log("User information:", {
       userId: user.id,
-      email: user.emailAddresses?.[0]?.emailAddress || user.email
+
     });
 
     // Extract feedback content from request
