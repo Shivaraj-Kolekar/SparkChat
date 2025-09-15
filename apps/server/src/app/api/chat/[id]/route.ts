@@ -4,7 +4,7 @@ import { db } from "@/db";
 import {
   chats as chatTable,
   messages as messagesTable,
-} from "@/db/schema/auth";
+} from "@/db/schema/db";
 import { eq, and, asc } from "drizzle-orm";
 import { getAuth } from "@clerk/nextjs/server";
 

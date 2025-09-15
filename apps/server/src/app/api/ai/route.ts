@@ -3,9 +3,9 @@ import { NextRequest } from "next/server";
 import { db } from "@/db";
 import { streamText } from "ai";
 import { groq } from "@ai-sdk/groq";
-import { messages, userInfo } from "@/db/schema/auth";
+import { messages, userInfo } from "@/db/schema/db";
 import { google } from "@ai-sdk/google";
-import { rateLimit } from "@/db/schema/auth";
+import { rateLimit } from "@/db/schema/db";
 import { eq } from "drizzle-orm";
 import { getUserPreferences } from "@/lib/cache";
 import { withCORS } from "@/lib/cors";
@@ -152,7 +152,7 @@ export const POST = withCORS(async (req: NextRequest) => {
       await db
         .update(rateLimit)
         .set({
-          requestCount: 1,
+          requestCount: 2,
           windowStart: today,
           windowEnd: tomorrow,
           updatedAt: now,

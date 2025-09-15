@@ -3,7 +3,7 @@ import { db } from "../../../db";
 import {
   chats as chatTable,
   messages as messagesTable,
-} from "../../../db/schema/auth";
+} from "../../../db/schema/db";
 import { v4 as uuidv4 } from "uuid";
 import { eq } from "drizzle-orm";
 import { getClerkSession, getClerkUser } from "@/lib/auth";

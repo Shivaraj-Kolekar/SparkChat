@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { chatFiles } from "@/db/schema/auth";
+import { chatFiles } from "@/db/schema/db";
 import { eq, and, desc } from "drizzle-orm";
 import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { withCORS } from "@/lib/cors";

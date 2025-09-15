@@ -43,6 +43,13 @@
       "when": 1756026655497,
       "tag": "0005_military_toxin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1757947335691,
+      "tag": "0006_cool_liz_osborn",
+      "breakpoints": true
     }
   ]
 }

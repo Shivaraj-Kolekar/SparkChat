@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { user as userTable } from "@/db/schema/auth";
+import { user as userTable } from "@/db/schema/db";
 import { eq } from "drizzle-orm";
 
 export async function ensureUserInDb(clerkUser: any) {

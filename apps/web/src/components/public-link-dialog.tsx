@@ -71,7 +71,12 @@ function Publiclinkdialog({ chatId }: { chatId: string }) {
   return (
     <div>
       <Dialog onOpenChange={handleOpen}>
-        <DialogTrigger className={` `}>
+        <DialogTrigger
+          className={` `}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <span className="flex gap-2 flex-row">
             <Share className="mr-2 h-4 w-4"></Share>
             Share Chat

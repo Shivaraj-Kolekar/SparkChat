@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 import {
   Bolt,
   Brain,
@@ -71,6 +72,8 @@ import {
 import { useTheme } from "next-themes";
 import { handleClientScriptLoad } from "next/script";
 import { useThemeStore } from "@/store/themeStore";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2 } from "lucide-react";
 
 // Create form schema
 
@@ -180,8 +183,40 @@ export default function Settings() {
         "description",
         existingPreferences.user_description || ""
       );
+
+      // Parse traits into tags
+      if (existingPreferences.traits) {
+        const parsedTraits = existingPreferences.traits.split(',').map((trait: string) => trait.trim()).filter(Boolean);
+        setTraitTags(parsedTraits);
+      }
     }
   }, [existingPreferences, form]);
+
+  // Handle trait management
+  const addTraitTag = () => {
+    const trimmedTrait = traitInput.trim();
+    if (trimmedTrait && !traitTags.includes(trimmedTrait) && traitTags.length < maxTraits && trimmedTrait.length <= maxTraitLength) {
+      const newTags = [...traitTags, trimmedTrait];
+      setTraitTags(newTags);
+      setTraitInput("");
+      // Update form value
+      form.setFieldValue("traits", newTags.join(", "));
+    }
+  };
+
+  const removeTraitTag = (tagToRemove: string) => {
+    const newTags = traitTags.filter(tag => tag !== tagToRemove);
+    setTraitTags(newTags);
+    // Update form value
+    form.setFieldValue("traits", newTags.join(", "));
+  };
+
+  const handleTraitKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTraitTag();
+    }
+  };
 
   interface UseCaseDetails {
     icon: JSX.Element; // Or React.ReactNode if it can be other things
@@ -218,6 +253,22 @@ export default function Settings() {
   const [remaining, setRemaining] = useState<number>(10);
   const [resetAt, setResetAt] = useState<string>("");
   const [loadingUsage, setLoadingUsage] = useState<boolean>(true);
+
+  // Traits management
+  const [traitTags, setTraitTags] = useState<string[]>([]);
+  const [traitInput, setTraitInput] = useState("");
+  const maxTraits = 50;
+  const maxTraitLength = 100;
+
+  // Chat Management states
+  const [chatList, setChatList] = useState<any[]>([]);
+  const [selectedChats, setSelectedChats] = useState<string[]>([]);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
+  const [isDeletingChats, setIsDeletingChats] = useState(false);
+
+  // Feedback form states
+  const [feedbackContent, setFeedbackContent] = useState("");
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const models = [
     {
       label: "Llama 4 Scout",
@@ -408,6 +459,66 @@ export default function Settings() {
     fetchUsage();
   }, []);
 
+  // Fetch chats for management
+  const fetchChats = async () => {
+    try {
+      setIsLoadingChats(true);
+      const response = await api.get("/api/chat");
+      if (response.data.success) {
+        setChatList(response.data.result);
+      }
+    } catch (error) {
+      console.error("Error fetching chats:", error);
+      toast.error("Failed to load chats");
+    } finally {
+      setIsLoadingChats(false);
+    }
+  };
+
+  // Delete selected chats
+  const handleDeleteChats = async () => {
+    if (selectedChats.length === 0) {
+      toast.error("Please select chats to delete");
+      return;
+    }
+
+    try {
+      setIsDeletingChats(true);
+
+      // Delete each selected chat
+      await Promise.all(
+        selectedChats.map(chatId => api.delete(`/api/chat/${chatId}`))
+      );
+
+      toast.success(`${selectedChats.length} chat(s) deleted successfully`);
+      setSelectedChats([]);
+      await fetchChats(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting chats:", error);
+      toast.error("Failed to delete chats");
+    } finally {
+      setIsDeletingChats(false);
+    }
+  };
+
+  // Toggle chat selection
+  const toggleChatSelection = (chatId: string) => {
+    setSelectedChats(prev =>
+      prev.includes(chatId)
+        ? prev.filter(id => id !== chatId)
+        : [...prev, chatId]
+    );
+  };
+
+  // Select/deselect all chats
+  const toggleAllChats = () => {
+    if (selectedChats.length === chatList.length) {
+      setSelectedChats([]);
+    } else {
+      setSelectedChats(chatList.map(chat => chat.id));
+    }
+  };
+
   const saveSettings = async () => {
     setIsSaving(true);
     try {
@@ -418,6 +529,46 @@ export default function Settings() {
       toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Handle feedback submission
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!feedbackContent.trim()) {
+      toast.error("Please enter your feedback");
+      return;
+    }
+
+    try {
+      setIsSubmittingFeedback(true);
+
+      // Use the API client to submit feedback
+      const response = await api.post("/api/feedback", {
+        feedback: feedbackContent,
+      });
+
+      // API returns 201 status code on success
+      if (response.status >= 200 && response.status < 300) {
+        toast.success("Feedback submitted successfully! Thank you for your input.");
+        setFeedbackContent("");
+      } else {
+        const errorMessage = response.data?.error || "An unexpected error occurred";
+        toast.error(`Error: ${errorMessage}. Please try again.`);
+      }
+    } catch (error: any) {
+      console.error("Error submitting feedback:", error);
+
+      if (error.code === 'ERR_NETWORK') {
+        toast.error("Unable to connect to server. Please check your connection.");
+      } else if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Failed to submit feedback. Please try again later.");
+      }
+    } finally {
+      setIsSubmittingFeedback(false);
     }
   };
 
@@ -494,11 +645,12 @@ export default function Settings() {
           </Card>
         </div>
         <Tabs defaultValue="account" className="w-full">
-          <TabsList>
+          <TabsList className="">
             <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="customization">Personalize</TabsTrigger>
             <TabsTrigger value="appearance">Appearance</TabsTrigger>
             <TabsTrigger value="models">Models</TabsTrigger>
+            <TabsTrigger value="chat-management">Chat Management</TabsTrigger>
             <TabsTrigger value="contact-us">Contact us</TabsTrigger>
           </TabsList>
           <TabsContent value="account">
@@ -602,7 +754,13 @@ export default function Settings() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Traits</Label>
+                    <Label className="flex items-center justify-between">
+                      <span>What traits should T3 Chat have?</span>
+                      <span className="text-xs text-muted-foreground">
+                        {traitTags.length}/{maxTraits} traits
+                      </span>
+                    </Label>
+
                     {isLoadingPreferences ? (
                       <Input
                         disabled
@@ -610,17 +768,75 @@ export default function Settings() {
                         className="opacity-50"
                       />
                     ) : (
-                      <form.AppField
-                        name="traits"
-                        children={(field) => (
+                      <div className="space-y-3">
+                        {/* Traits Input */}
+                        <div className="flex gap-2">
                           <Input
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="Funny, concise, curious, etc"
+                            value={traitInput}
+                            onChange={(e) => setTraitInput(e.target.value)}
+                            onKeyDown={handleTraitKeyPress}
+                            placeholder="Type a trait and press Enter or Tab..."
+                            className="flex-1"
+                            maxLength={maxTraitLength}
+                            disabled={traitTags.length >= maxTraits}
                           />
+                          <Button
+                            type="button"
+                            onClick={addTraitTag}
+                            disabled={!traitInput.trim() || traitTags.includes(traitInput.trim()) || traitTags.length >= maxTraits}
+                            variant="outline"
+                            size="sm"
+                            className="px-4"
+                          >
+                            +
+                          </Button>
+                        </div>
+
+                        {/* Character counter for current input */}
+                        {traitInput.length > 0 && (
+                          <div className="text-xs text-muted-foreground">
+                            {traitInput.length}/{maxTraitLength} characters
+                          </div>
                         )}
-                      />
+
+                        {/* Trait Tags Display */}
+                        {traitTags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-muted/30 min-h-[60px]">
+                            {traitTags.map((tag, index) => (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="flex items-center gap-1 px-3 py-1 text-sm bg-background border hover:bg-accent transition-colors"
+                              >
+                                {tag}
+                                <button
+                                  type="button"
+                                  onClick={() => removeTraitTag(tag)}
+                                  className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5 transition-colors"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Helper text */}
+                        <p className="text-xs text-muted-foreground">
+                          Add traits like "friendly", "witty", "concise", "curious", "empathetic", "creative", "patient" (up to {maxTraitLength} chars each)
+                        </p>
+
+                        {/* Hidden input for form submission */}
+                        <form.AppField
+                          name="traits"
+                          children={(field) => (
+                            <input
+                              type="hidden"
+                              value={field.state.value}
+                            />
+                          )}
+                        />
+                      </div>
                     )}
                   </div>
 
@@ -1139,65 +1355,272 @@ export default function Settings() {
               ))}
             </div>
           </TabsContent>
-          <TabsContent value="contact-us">
+          <TabsContent value="chat-management">
             <Card className="mt-8">
               <CardHeader>
                 <CardTitle>
-                  <h2 className="text-lg font-semibold mb-2">Contact Us</h2>
+                  <h2 className="text-lg font-semibold">Chat Management</h2>
                 </CardTitle>
+                <CardDescription>
+                  Select and delete your chat conversations
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {/* Contact Links */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-5 w-5 text-primary" />
-                      <a
-                        href="mailto:shivkolekar01@gmail.com"
-                        className="text-blue-600 underline"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                <div className="space-y-4">
+                  {/* Controls */}
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="outline"
+                        onClick={fetchChats}
+                        disabled={isLoadingChats}
                       >
-                        shivkolekar01@gmail.com
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Github className="h-5 w-5 text-primary" />
-                      <a
-                        href="https://github.com/Shivaraj-Kolekar"
-                        className="text-blue-600 underline"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        github.com/Shivaraj-Kolekar
-                      </a>
-                    </div>
-                  </div>
-                  {/* Feedback Form */}
-                  <div className="mt-6">
-                    <h3 className="text-base font-semibold mb-2">
-                      Send Feedback, Suggestions, or Report a Bug
-                    </h3>
-                    <form
-                      action="mailto:shivkolekar01@gmail.com"
-                      method="POST"
-                      encType="text/plain"
-                    >
-                      <textarea
-                        name="message"
-                        rows={5}
-                        placeholder="Type your feedback, suggestion, or bug report here..."
-                        className="w-full rounded-lg border border-border bg-background p-3 text-base focus:outline-none focus:ring-2 focus:ring-primary resize-none mb-3"
-                        required
-                      />
-                      <Button type="submit" className="w-full">
-                        Send to Email
+                        {isLoadingChats ? "Loading..." : "Refresh Chats"}
                       </Button>
-                    </form>
+
+                      {chatList.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="select-all"
+                            checked={selectedChats.length === chatList.length && chatList.length > 0}
+                            onCheckedChange={toggleAllChats}
+                          />
+                          <Label htmlFor="select-all" className="text-sm">
+                            Select All ({selectedChats.length}/{chatList.length})
+                          </Label>
+                        </div>
+                      )}
+                    </div>
+
+                    {selectedChats.length > 0 && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Selected ({selectedChats.length})
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Confirm Deletion</DialogTitle>
+                          </DialogHeader>
+                          <p>Are you sure you want to delete {selectedChats.length} chat(s)? This action cannot be undone.</p>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <DialogClose asChild>
+                              <Button
+                                variant="destructive"
+                                onClick={handleDeleteChats}
+                                disabled={isDeletingChats}
+                              >
+                                {isDeletingChats ? "Deleting..." : "Delete"}
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </div>
+
+                  {/* Chat List */}
+                  {isLoadingChats ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                      <p className="text-muted-foreground mt-2">Loading chats...</p>
+                    </div>
+                  ) : chatList.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No chats found. Click "Refresh Chats" to load your conversations.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-96 overflow-y-auto border rounded-lg p-2">
+                      {chatList.map((chat) => (
+                        <div
+                          key={chat.id}
+                          className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                            selectedChats.includes(chat.id)
+                              ? 'bg-accent border-primary'
+                              : 'bg-card hover:bg-accent'
+                          }`}
+                        >
+                          <Checkbox
+                            id={`chat-${chat.id}`}
+                            checked={selectedChats.includes(chat.id)}
+                            onCheckedChange={() => toggleChatSelection(chat.id)}
+                          />
+
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium truncate">{chat.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Created: {new Date(chat.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+
+                          <Badge variant={chat.public ? "default" : "secondary"}>
+                            {chat.public ? "Public" : "Private"}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+          <TabsContent value="contact-us">
+            <div className="mt-8 space-y-6">
+              {/* Header */}
+              <div className="text-center space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight">Get in Touch</h1>
+                <p className="text-muted-foreground">
+                  We'd love to hear from you! Reach out with questions, feedback, or suggestions.
+                </p>
+              </div>
+
+              {/* Contact Methods */}
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                {/* Email Card */}
+                {/*<Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                        <Mail className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">Email</h3>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Send us a message directly
+                        </p>
+                        <a
+                          href="mailto:shivkolekar01@gmail.com"
+                          className="text-primary hover:text-primary/80 font-medium transition-colors"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          shivkolekar01@gmail.com
+                        </a>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>*/}
+
+                {/* GitHub Card */}
+                <Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                        <Github className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">GitHub</h3>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          View source code & contribute
+                        </p>
+                        <a
+                          href="https://github.com/Shivaraj-Kolekar"
+                          className="text-primary hover:text-primary/80 font-medium transition-colors"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          @Shivaraj-Kolekar
+                        </a>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Feedback Form */}
+              <Card className="shadow-lg border-2">
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-xl">Send us your feedback</CardTitle>
+                  <CardDescription>
+                    Help us improve SparkChat by sharing your thoughts, suggestions, or reporting bugs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Quick Action Buttons */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 h-12"
+                      onClick={() => setFeedbackContent("💡 Suggestion: ")}
+                      type="button"
+                    >
+                      <span className="text-lg">💡</span>
+                      Suggestion
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 h-12"
+                      onClick={() => setFeedbackContent("🐛 Bug Report: ")}
+                      type="button"
+                    >
+                      <span className="text-lg">🐛</span>
+                      Bug Report
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 h-12"
+                      onClick={() => setFeedbackContent("❤️ Feedback: ")}
+                      type="button"
+                    >
+                      <span className="text-lg">❤️</span>
+                      Feedback
+                    </Button>
+                  </div>
+
+                  <form
+                    onSubmit={handleFeedbackSubmit}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="message">Your Message</Label>
+                      <Textarea
+                        id="message"
+                        value={feedbackContent}
+                        onChange={(e) => setFeedbackContent(e.target.value)}
+                        rows={6}
+                        placeholder="Tell us what's on your mind..."
+                        className="resize-none focus:ring-2 focus:ring-primary/20"
+                        required
+                        maxLength={500}
+                        disabled={isSubmittingFeedback}
+                      />
+                      <div className="text-xs text-muted-foreground text-right">
+                        {feedbackContent.length}/5000 characters
+                      </div>
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full h-12 text-base font-semibold"
+                      disabled={isSubmittingFeedback || !feedbackContent.trim()}
+                    >
+                      {isSubmittingFeedback ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="h-4 w-4 mr-2" />
+                          Send Feedback
+                        </>
+                      )}
+                    </Button>
+                  </form>
+
+                  {/* Additional Info */}
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-muted-foreground text-center">
+                      We typically respond within 24-48 hours. Your feedback helps make SparkChat better for everyone! 🚀
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

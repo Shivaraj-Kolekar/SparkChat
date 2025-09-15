@@ -1,6 +1,6 @@
 import { withCORS } from "@/lib/cors";
 import { db } from "@/db";
-import { user as userTable, userInfo } from "@/db/schema/auth";
+import { user as userTable, userInfo } from "@/db/schema/db";
 import { getAuth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";

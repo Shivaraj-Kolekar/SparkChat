@@ -111,27 +111,34 @@ export default function PublicChatPage() {
                     key={message.id}
                     className={
                       message.role === "user"
-                        ? "justify-end mr-3"
-                        : "justify-start"
+                        ? "flex justify-end"
+                        : "flex justify-start"
                     }
                   >
                     <div
                       className={
-                        message.role === "assistant"
-                          ? "min-w-[95%] flex-1 sm:max-w-[75%]  mr-auto"
-                          : " flex-1 min-w-[25%] w-auto max-w-[50%] ml-auto"
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground  rounded-lg mr-3 max-w-[75%] w-fit ml-auto"
+                          : "bg-background text-foreground  rounded-lg max-w-[100%] w-fit mr-auto"
                       }
                     >
-                      <MessageContent
-                        markdown
-                        className={
-                          message.role === "assistant"
-                            ? "prose dark:prose-invert max-w-none"
-                            : "bg-primary min-w-[50%]  text-primary-foreground"
-                        }
-                      >
-                        {message.content}
-                      </MessageContent>
+                      {message.role === "assistant" ? (
+                        <div className="bg-transparent min-w-[95%] text-foreground prose rounded-lg p-2">
+                          <MessageContent
+                            className="prose dark:prose-invert max-w-none"
+                            markdown={true}
+                          >
+                            {message.content}
+                          </MessageContent>
+                        </div>
+                      ) : (
+                        <MessageContent
+                          markdown
+                          className="bg-primary min-w-[50%]  text-primary-foreground"
+                        >
+                          {message.content}
+                        </MessageContent>
+                      )}
                     </div>
                   </Message>
                 ))

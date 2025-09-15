@@ -443,7 +443,7 @@ export function ChatSidebar() {
                           {todayChats.map((chat) => (
                             <SidebarMenuButton
                               key={chat.id}
-                              className="text-base my-0.5 px-2 py-3 relative group"
+                              className="text-base my-0.5  px-2 py-3 relative group"
                               onClick={() => setSelectedChatId(chat.id)}
                               isActive={chat.id === selectedChatId}
                             >
@@ -466,12 +466,12 @@ export function ChatSidebar() {
                               </Link>
                               {/* Delete Button */}
                               <div
-                                className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                                  chat.id === selectedChatId ? "block" : ""
-                                }`}
+                                className={`absolute right-2 top-1/2 flex items-center -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10
+
+                                `}
                               >
                                 <DropdownMenu>
-                                  <DropdownMenuTrigger>
+                                  <DropdownMenuTrigger className="rounded-md">
                                     <Ellipsis />
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent>
@@ -490,12 +490,15 @@ export function ChatSidebar() {
                                           setDeleteDialogOpen(true);
                                         }}
                                       >
-                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                                         Delete Chat
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         onSelect={(e) => {
                                           e.preventDefault();
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
                                         }}
                                       >
                                         <Publiclinkdialog chatId={chat.id} />
@@ -542,18 +545,17 @@ export function ChatSidebar() {
                               </Link>
                               {/* Delete Button */}
                               <div
-                                className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                                  chat.id === selectedChatId ? "block" : ""
-                                }`}
+                                className={`absolute right-2 top-1/2 flex items-center -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 `}
                               >
                                 <DropdownMenu>
-                                  <DropdownMenuTrigger>
+                                  <DropdownMenuTrigger className="rounded-md">
                                     <Ellipsis />
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent>
                                     <DropdownMenuLabel>
                                       Chat Actions
                                     </DropdownMenuLabel>
+                                    <hr></hr>
                                     <DropdownMenuGroup>
                                       <DropdownMenuItem
                                         onSelect={(e) => {
@@ -565,12 +567,15 @@ export function ChatSidebar() {
                                           setDeleteDialogOpen(true);
                                         }}
                                       >
-                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                                         Delete Chat
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         onSelect={(e) => {
                                           e.preventDefault();
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
                                         }}
                                       >
                                         <Publiclinkdialog chatId={chat.id} />
@@ -614,18 +619,17 @@ export function ChatSidebar() {
                               </Link>
                               {/* Delete Button */}
                               <div
-                                className={`absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 ${
-                                  chat.id === selectedChatId ? "block" : ""
-                                }`}
+                                className={`absolute right-2 top-1/2 flex items-center -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 `}
                               >
                                 <DropdownMenu>
-                                  <DropdownMenuTrigger>
+                                  <DropdownMenuTrigger className=" rounded-md">
                                     <Ellipsis />
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent>
                                     <DropdownMenuLabel>
                                       Chat Actions
                                     </DropdownMenuLabel>
+                                    <hr></hr>
                                     <DropdownMenuGroup>
                                       <DropdownMenuItem
                                         onSelect={(e) => {
@@ -637,12 +641,15 @@ export function ChatSidebar() {
                                           setDeleteDialogOpen(true);
                                         }}
                                       >
-                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        <Trash2 className="mr-2 h-4 w-4 text-red-500" />
                                         Delete Chat
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         onSelect={(e) => {
                                           e.preventDefault();
+                                        }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
                                         }}
                                       >
                                         <Publiclinkdialog chatId={chat.id} />

@@ -1,11 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/db";
-import { chats as chatTable } from "@/db/schema/auth";
+import { chats as chatTable } from "@/db/schema/db";
 import { v4 as uuidv4 } from "uuid";
 import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { asc, desc, eq } from "drizzle-orm";
 import { withCORS } from "@/lib/cors";
-import { user as userTable } from "@/db/schema/auth";
+import { user as userTable } from "@/db/schema/db";
 import { ensureUserInDb } from "@/lib/ensureUserInDb";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { userInfo } from "@/db/schema/auth";
+import { userInfo } from "@/db/schema/db";
 import { eq } from "drizzle-orm";
 import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { invalidateUserPreferencesCache } from "@/lib/cache";

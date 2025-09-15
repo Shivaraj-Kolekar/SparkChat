@@ -125,6 +125,17 @@ export const chatFiles = pgTable("chat_files", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+
+export const feedback = pgTable("feedback", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  feedback: text("feedback").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+
 export const chatsRelations = relations(chats, ({ many }) => ({
   messages: many(messages),
 }));
