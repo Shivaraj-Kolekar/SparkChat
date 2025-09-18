@@ -165,6 +165,7 @@ function AIPage({
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
   const [ResearchEnabled, setReSearchEnabled] = useState(false);
+  const [researchCompleted, setResearchCompleted] = useState(false);
 
   const streamIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const streamContentRef = useRef("");
@@ -205,6 +206,20 @@ function AIPage({
     "gemini-2.0-flash",
     "gemini-2.5-flash-preview-04-17",
     "gemini-2.0-flash-lite",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+  ];
+
+  // Models that support research functionality
+  const ResearchModels = [
+    "gemini-2.0-flash",
+    "gemini-2.5-flash-preview-04-17",
+    "gemini-2.0-flash-lite",
+  ];
+
+  const ToolCallModels = [
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
   ];
   const storeMessage = async (
     message: Message,
@@ -312,7 +327,7 @@ function AIPage({
           "AI response was not saved. The chat history may be incomplete."
         );
       }
-      // fetchRemaining(); // Re-added fetchRemaining here
+// fetchRemaining(); // Re-added fetchRemaining here
     },
   });
   useEffect(() => {
@@ -947,7 +962,7 @@ function AIPage({
                           } else {
                             toast.info("Research Tool disabled");
                           }
-                          return newState;
+  return newState;
                         });
                       }}
                       variant={ResearchEnabled === true ? "default" : "outline"}
@@ -957,7 +972,11 @@ function AIPage({
                   </PromptInputAction>
                   <PromptInputAction
                     tooltip={
-                      !user ? "Please login to use Search Web" : "Search Web"
+                      !user
+                        ? "Please login to use Search Web"
+                        : selectedModel && ToolCallModels.includes(selectedModel)
+                          ? "Search Web (via Tool Calls)"
+                          : "Search Web"
                     }
                   >
                     {selectedModel
@@ -967,7 +986,10 @@ function AIPage({
                               setSearchEnabled((prevSearchEnabled) => {
                                 const newState = !prevSearchEnabled;
                                 if (newState) {
-                                  toast.success("Web search enabled");
+                                  const isGroqModel = selectedModel.startsWith("openai/gpt-oss");
+                                  toast.success(`Web ${isGroqModel ? "search (via tool calls)" : "search"} enabled`, {
+                                    description: isGroqModel ? "Search results will appear in a collapsible section" : undefined
+                                  });
                                 } else {
                                   toast.info("Web search disabled");
                                 }
@@ -978,7 +1000,10 @@ function AIPage({
                               searchEnabled === true ? "default" : "outline"
                             }
                           >
-                            <Globe></Globe>
+                            <Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
+                            {selectedModel && ToolCallModels.includes(selectedModel) && searchEnabled && (
+                              <span className="ml-1 text-xs">Tool</span>
+                            )}
                           </Button>
                         )
                       : ""}

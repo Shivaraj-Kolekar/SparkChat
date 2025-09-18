@@ -463,6 +463,13 @@ function AIPage({
     "gemini-2.0-flash",
     "gemini-2.5-flash-preview-04-17",
     "gemini-2.0-flash-lite",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+  ];
+
+  const ToolCallModels = [
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
   ];
   const models = [
     {
@@ -937,14 +944,25 @@ function AIPage({
                             const thinkMatch = message.content.match(
                               /<think>([\s\S]*?)<\/think>/
                             );
+                            const toolCallMatch = message.content.match(
+                              /<tool-call>([\s\S]*?)<\/tool-call>/
+                            );
                             const thinkingContent = thinkMatch
                               ? thinkMatch[1].trim()
                               : "";
-                            const displayContent = thinkingContent
-                              ? message.content
-                                  .replace(/<think>[\s\S]*?<\/think>/, "")
-                                  .trim()
-                              : message.content;
+                            const toolCallContent = toolCallMatch
+                              ? toolCallMatch[1].trim()
+                              : "";
+
+                            // Remove both think and tool-call tags from display content
+                            let displayContent = message.content;
+                            if (thinkingContent) {
+                              displayContent = displayContent.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+                            }
+                            if (toolCallContent) {
+                              displayContent = displayContent.replace(/<tool-call>[\s\S]*?<\/tool-call>/, "").trim();
+                            }
+
                             return (
                               <>
                                 {thinkingContent && (
@@ -952,14 +970,25 @@ function AIPage({
                                     <ReasoningTrigger>
                                       Thinking Process
                                     </ReasoningTrigger>
-                                    <ReasoningContent markdown={true}>
+                                    <ReasoningContent markdown={true} className="max-w-full overflow-x-auto">
                                       {thinkingContent}
                                     </ReasoningContent>
                                   </Reasoning>
                                 )}
 
+                                {toolCallContent && (
+                                  <Reasoning isStreaming={false}>
+                                    <ReasoningTrigger>
+                                      <Globe className="h-4 w-4 mr-1" /> Web Search
+                                    </ReasoningTrigger>
+                                    <ReasoningContent markdown={true} className="max-w-full overflow-x-auto">
+                                      {toolCallContent}
+                                    </ReasoningContent>
+                                  </Reasoning>
+                                )}
+
                                 <MessageContent
-                                  className="prose dark:prose-invert max-w-none"
+                                  className="prose dark:prose-invert max-w-full sm:max-w-none overflow-hidden"
                                   markdown={true}
                                 >
                                   {displayContent}
@@ -1204,7 +1233,11 @@ function AIPage({
                     </PromptInputAction>
                     <PromptInputAction
                       tooltip={
-                        !user ? "Please login to use Search Web" : "Search Web"
+                        !user
+                          ? "Please login to use Search Web"
+                          : selectedModel && ToolCallModels.includes(selectedModel as string)
+                            ? "Search Web (via Tool Calls)"
+                            : "Search Web"
                       }
                     >
                       {selectedModel
@@ -1214,7 +1247,10 @@ function AIPage({
                                 setSearchEnabled((prevSearchEnabled) => {
                                   const newState = !prevSearchEnabled;
                                   if (newState) {
-                                    toast.success("Web search enabled");
+                                    const isGroqModel = selectedModel.startsWith("openai/gpt-oss");
+                                    toast.success(`Web ${isGroqModel ? "search (via tool calls)" : "search"} enabled`, {
+                                      description: isGroqModel ? "Search results will appear in a collapsible section" : undefined
+                                    });
                                   } else {
                                     toast.info("Web search disabled");
                                   }
@@ -1225,7 +1261,10 @@ function AIPage({
                                 searchEnabled === true ? "default" : "outline"
                               }
                             >
-                              <Globe></Globe>
+                              <Globe className={selectedModel ? (ToolCallModels.includes(selectedModel as string) ? "text-blue-500" : "") : ""} />
+                              {selectedModel && ToolCallModels.includes(selectedModel as string) && searchEnabled && (
+                                <span className="ml-1 text-xs">Tool</span>
+                              )}
                             </Button>
                           )
                         : ""}

@@ -98,6 +98,7 @@ export const POST = withCORS(async (req: NextRequest) => {
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
+  const { messages, model, searchEnabled, ResearchEnabled } = await req.json();
 
   // Fetch Clerk user for name
   let userName = "User";
@@ -126,55 +127,99 @@ export const POST = withCORS(async (req: NextRequest) => {
     .limit(1);
 
   // If the record exists and is for today, check the count
+  const validModels = [
+    'meta-llama/llama-4-scout-17b-16e-instruct','gemini-2.5-flash-live-preview', 'llama-3.1-8b-instant', 'llama-guard-4-12b', 'moonshotai/kimi-k2-instruct-0905', 'gemini-2.0-flash' ,'gemini-2.0-flash-lite', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3-32b', 'deepseek-r1-distill-llama-70b'
+
+  ];
+
+  // Validate model
+  if (!validModels.includes(model)) {
+    return new Response(
+      JSON.stringify({ error: `Invalid model: ${model}` }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // If the record exists and is for today, check the count
   if (limit && limit.windowStart && limit.windowEnd) {
     const windowStart = new Date(limit.windowStart);
     const windowEnd = new Date(limit.windowEnd);
     if (now >= windowStart && now < windowEnd) {
+      // Check research tool-specific limit
+      // if (ResearchEnabled && limit.requestCount >= 5) {
+      //   return new Response(
+      //     JSON.stringify({ error: 'Research tool rate limit exceeded (5/day). Try again tomorrow.' }),
+      //     { status: 429, headers: { 'Content-Type': 'application/json' } }
+      //   );
+      // }
+      // Check general limit
       if (limit.requestCount >= 10) {
-        // User exceeded limit
-        return new Response(
-          JSON.stringify({
-            error:
-              "Rate limit exceeded. You can send more messages after: " +
-              windowEnd.toLocaleString(),
-          }),
-          { status: 429, headers: { "Content-Type": "application/json" } }
-        );
-      } else {
-        // Increment request count
+            return new Response(
+              JSON.stringify({
+                error: `Rate limit exceeded. You can send more messages after: ${windowEnd.toLocaleString()}`,
+              }),
+              { status: 429, headers: { 'Content-Type': 'application/json' } }
+            );
+          }
+          // Calculate credits based on model
+          const credits = model === 'openai/gpt-oss-120b' || model === 'openai/gpt-oss-20b' || model === 'qwen/qwen3-32b' || model=== 'deepseek-r1-distill-llama-70b' ? 2 : 1;
+          // Increment request count
+      try {
         await db
           .update(rateLimit)
-          .set({ requestCount: limit.requestCount + 1, updatedAt: now })
+          .set({ requestCount: limit.requestCount + credits, updatedAt: now })
           .where(eq(rateLimit.id, limit.id));
+      } catch (error) {
+        console.error('Rate limit update failed:', error);
+        return new Response(
+          JSON.stringify({ error: 'Internal server error' }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
       }
     } else {
       // Window expired, reset
-      await db
-        .update(rateLimit)
-        .set({
-          requestCount: 2,
-          windowStart: today,
-          windowEnd: tomorrow,
-          updatedAt: now,
-        })
-        .where(eq(rateLimit.id, limit.id));
+      const credits = model === 'openai/gpt-oss-120b' || model === 'openai/gpt-oss-20b' || model === 'qwen/qwen3-32b' ? 2 : 1;
+      try {
+        await db
+          .update(rateLimit)
+          .set({
+            requestCount: credits,
+            windowStart: today,
+            windowEnd: tomorrow,
+            updatedAt: now,
+          })
+          .where(eq(rateLimit.id, limit.id));
+      } catch (error) {
+        console.error('Rate limit reset failed:', error);
+        return new Response(
+          JSON.stringify({ error: 'Internal server error' }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
     }
   } else {
     // No record, create one
-    await db.insert(rateLimit).values({
-      userId,
-      requestCount: 1,
-      windowStart: today,
-      windowEnd: tomorrow,
-      createdAt: now,
-      updatedAt: now,
-    });
+    try {
+      await db.insert(rateLimit).values({
+        userId,
+        requestCount: model === 'openai/gpt-oss-120b' || model === 'openai/gpt-oss-20b' || model === 'qwen/qwen3-32b' ? 2 : 1,
+        windowStart: today,
+        windowEnd: tomorrow,
+        createdAt: now,
+        updatedAt: now,
+      });
+    } catch (error) {
+      console.error('Rate limit insertion failed:', error);
+      return new Response(
+        JSON.stringify({ error: 'Internal server error' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
   }
 
   // Fetch user preferences for personalized system prompt
   const userPreferences = await getUserPreferences(userId, db, userInfo, eq);
 
-  const { messages, model, searchEnabled, ResearchEnabled } = await req.json();
   let aiModel;
   if (
     model === "gemini-2.0-flash" ||
@@ -197,63 +242,81 @@ export const POST = withCORS(async (req: NextRequest) => {
     userName
   );
 
-  const researchPrompt = `You are an expert research assistant tasked with conducting in-depth research on the provided topic. Your goal is to produce a comprehensive, well-structured report that is clear, accurate, and actionable. Follow these steps:
+  const researchPrompt = `You are an advanced Gemini-powered research assistant tasked with conducting comprehensive research on the provided topic. Your goal is to produce a well-structured, detailed report with accurate information, clear organization, and actionable insights.
 
-  1. **Understand the Topic**: Analyze the input topic or query: "${messages}". If the query is ambiguous, infer the most relevant interpretation based on context or clarify key aspects to focus on.
-  2. **Research Process**:
-     - Search for credible, recent sources (e.g., academic journals, reputable news, industry reports, government databases) using available tools or knowledge.
-     - Prioritize sources from the last 5 years unless seminal works are relevant.
-     - Cross-reference findings across multiple sources to ensure accuracy and reduce bias.
-  3. **Extract Key Information**:
-     - Identify main findings, methodologies, data points, and conclusions.
-     - Note any limitations, contradictions, or gaps in the information.
-     - Highlight pros and cons if applicable (e.g., for technologies, policies, or strategies).
-  4. **Synthesize Findings**:
-     - Organize the report thematically or chronologically for clarity.
-     - Provide a concise summary of key insights (500-600 words).
-     - Include a detailed section with specific evidence, citing sources where possible.
-  5. **Output Format**:
-     - Use Markdown for structure (headings, bullet points, tables if needed).
-     - Structure the report as:
-       - **Summary**: Brief overview of findings.
-       - **Key Findings**: Detailed insights with evidence and citations.
-       - **Limitations/Gaps**: Any issues or areas for further research.
-       - **Recommendations**: Practical next steps or applications.
-     - If data is available, suggest a Chart.js chart (bar, line, or pie) only if explicitly requested.
-  6. **Cross-Model Validation**:
-     - Leverage Gemini 1.5 Pro for initial research and structured analysis.
-     - Refine findings using GPT-4o for deeper reasoning and narrative clarity.
-     - Combine insights to ensure robustness and consistency.
-  7. **Constraints**:
-     - Avoid speculation or unverified claims; admit uncertainty if data is lacking.
-     - Do not include personal opinions or biased language.
-     - Ensure the response is concise yet comprehensive, targeting 500-1000 words unless specified otherwise.
+  # Research Framework
 
-  Example Output:
-  \`\`\`markdown
+  1. **Topic Analysis**
+     - Thoroughly analyze the query: "${messages}"
+     - Identify key concepts, relationships, and research questions
+     - Determine relevant domains of knowledge needed (scientific, historical, technical, etc.)
+
+  2. **Information Gathering**
+     - Access and synthesize information from diverse, high-quality sources
+     - Prioritize recent information (last 3-5 years) but include seminal works when relevant
+     - Draw from academic journals, industry reports, government data, reputable news sources
+     - Cross-reference multiple sources to validate key claims
+     - Note contradictions or debates within the field
+
+  3. **Critical Analysis**
+     - Evaluate methodological strengths/weaknesses of source materials
+     - Distinguish between established facts, emerging research, and speculative claims
+     - Identify consensus views vs. outlier perspectives
+     - Apply domain-specific analytical frameworks where appropriate
+
+  4. **Synthesis & Structured Presentation**
+     - Organize findings logically with clear hierarchy and relationships
+     - Balance breadth and depth appropriately for the topic
+     - Present information in an accessible yet nuanced manner
+     - Use visualizations or structured data when it enhances understanding
+
+  # Output Format
+  Present your research as properly formatted text. IMPORTANT: DO NOT use triple backticks or code blocks in your response. Format your response as plain text with Markdown formatting. Follow this structure:
+
   # Research Report: ${messages}
 
-  ## Summary
-  [100-200 word overview of findings]
+  ## Executive Summary
+  [250-350 word concise overview of key findings and implications]
+
+  ## Background & Context
+  [Relevant historical, technical or theoretical foundation]
 
   ## Key Findings
-  - **Point 1**: [Detailed insight with evidence, source citation]
-  - **Point 2**: [Detailed insight, including data or examples]
-  - **Pros/Cons**: [If applicable, e.g., for technology or strategy]
+  [3-5 major insights with supporting evidence]
 
-  ## Limitations/Gaps
-  - [Any missing data, contradictions, or limitations in sources]
+  ## Analysis & Implications
+  [Deeper exploration of relationships, patterns and significance]
 
-  ## Recommendations
-  - [Actionable steps or future research directions]
-  \`\`\`
+  ## Limitations & Knowledge Gaps
+  [Honest assessment of current understanding limits]
 
-  If you need clarification on the topic or additional context, ask: "Can you specify the scope or focus of the research (e.g., industry, region, timeframe)?"`;
+  ## Future Directions & Recommendations
+  [Practical next steps or research opportunities]
+
+  # Research Quality Standards
+  - Maintain scholarly rigor while ensuring accessibility
+  - Clearly distinguish between factual statements and interpretation
+  - Acknowledge uncertainty and limitations transparently
+  - Provide proper attribution for key information
+  - Avoid biased language, speculative claims, or personal opinions
+  - Target 800-1200 words total for comprehensive coverage
+  - CRITICAL: DO NOT wrap your response in code blocks or triple backticks. Format directly as plain text with Markdown.
+
+  If clarification is needed on the topic, ask specific questions to narrow the scope: "Could you specify which aspect of [topic] you're most interested in?"`;
   let result;
   if (ResearchEnabled) {
+    // Always use Gemini models for research for better quality
+    const researchModel = google("gemini-2.0-flash", {
+      useSearchGrounding: true, // Always enable search for research
+      // temperature: 0.2, // Lower temperature for more factual responses
+      // topP: 0.7, // More focused sampling
+      // topK: 40, // Broader token consideration
+      // maxOutputTokens: 4096, // Allow longer outputs for comprehensive research
+    });
+
     result = streamText({
-      model: aiModel,
-      system: personalizedSystemPrompt+researchPrompt,
+      model: researchModel,
+      system: personalizedSystemPrompt + researchPrompt,
       messages,
 
     });
@@ -262,7 +325,6 @@ export const POST = withCORS(async (req: NextRequest) => {
       model: aiModel,
       system: personalizedSystemPrompt,
       messages,
-
     });
   }
   return result.toDataStreamResponse();

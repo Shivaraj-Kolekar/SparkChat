@@ -15,7 +15,7 @@ function CodeBlock({ children, className, ...props }: CodeBlockProps) {
     <div
       className={cn(
         "not-prose flex my-4 w-full flex-col overflow-clip border",
-        "border-border  bg-card  text-card-foreground rounded-xl",
+        "border-border max-w-full sm:max-w-[90vw] md:max-w-[800px] overflow-x-auto bg-card text-card-foreground rounded-xl",
         className
       )}
       {...props}
@@ -63,7 +63,7 @@ function CodeBlockCode({
   }, [code, language, currentTheme]);
 
   const classNames = cn(
-    "w-full  overflow-x-auto text-[13px] [&>pre]:px-4 [&>pre]:py-4",
+    "max-w-full sm:max-w-[90vw] md:max-w-[800px] overflow-x-auto text-[13px] [&>pre]:px-2 sm:[&>pre]:px-4 [&>pre]:py-3 sm:[&>pre]:py-4",
     className
   );
 
@@ -92,7 +92,7 @@ function CodeBlockGroup({
 }: CodeBlockGroupProps) {
   return (
     <div
-      className={cn("flex items-center justify-between", className)}
+      className={cn("flex items-center max-w-full sm:max-w-[90vw] md:max-w-[800px] overflow-x-auto justify-between", className)}
       {...props}
     >
       {children}
