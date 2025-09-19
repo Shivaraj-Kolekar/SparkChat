@@ -925,7 +925,7 @@ function AIPage({
                 messages.map((message, idx) => (
                   <MessageComponent
                     key={message.id}
-                    className={
+  className={
                       message.role === "user"
                         ? "flex justify-end"
                         : "flex justify-start"
@@ -1108,7 +1108,7 @@ function AIPage({
                   </div>
                 )}
                 <PromptInputActions className="justify-between pt-2">
-                  <div className="flex border align-items-center gap-1 p-1 rounded-md">
+                  <div className="flex  align-items-center gap-1 ">
                     {/*<PromptInputAction tooltip="Select model">
                       <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
@@ -1205,7 +1205,7 @@ function AIPage({
                                   </Button>
                                 </FileUploadTrigger>
                               </PromptInputAction>*/}
-                    <PromptInputAction
+                    {/*<PromptInputAction
                       tooltip={
                         !user
                           ? "Please login to use Research tool"
@@ -1230,12 +1230,12 @@ function AIPage({
                       >
                         <Telescope></Telescope>
                       </Button>
-                    </PromptInputAction>
+                    </PromptInputAction>*/}
                     <PromptInputAction
                       tooltip={
                         !user
                           ? "Please login to use Search Web"
-                          : selectedModel && ToolCallModels.includes(selectedModel as string)
+                          : selectedModel && ToolCallModels.includes(selectedModel)
                             ? "Search Web (via Tool Calls)"
                             : "Search Web"
                       }
@@ -1261,10 +1261,11 @@ function AIPage({
                                 searchEnabled === true ? "default" : "outline"
                               }
                             >
-                              <Globe className={selectedModel ? (ToolCallModels.includes(selectedModel as string) ? "text-blue-500" : "") : ""} />
-                              {selectedModel && ToolCallModels.includes(selectedModel as string) && searchEnabled && (
+                              {/*<Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
+                              {selectedModel && ToolCallModels.includes(selectedModel) && searchEnabled && (
                                 <span className="ml-1 text-xs">Tool</span>
-                              )}
+                              )}*/}
+                            Web Search <Globe></Globe>
                             </Button>
                           )
                         : ""}

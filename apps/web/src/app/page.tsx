@@ -856,7 +856,7 @@ function AIPage({
                 disabled={promptDisabled || creatingChat}
               />
               <PromptInputActions className="justify-between pt-2">
-                <div className="flex align-items-center gap-1 p-1 border rounded-md">
+                <div className="flex align-items-center gap-1 ">
                   {/*<PromptInputAction tooltip="Select model">
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
@@ -946,7 +946,7 @@ function AIPage({
                     </Popover>
                   </PromptInputAction>*/}
 
-                  <PromptInputAction
+                  {/*<PromptInputAction
                     tooltip={
                       !user
                         ? "Please login to use Research tool"
@@ -969,7 +969,7 @@ function AIPage({
                     >
                       <Telescope></Telescope>
                     </Button>
-                  </PromptInputAction>
+                  </PromptInputAction>*/}
                   <PromptInputAction
                     tooltip={
                       !user
@@ -1000,10 +1000,11 @@ function AIPage({
                               searchEnabled === true ? "default" : "outline"
                             }
                           >
-                            <Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
+                            {/*<Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
                             {selectedModel && ToolCallModels.includes(selectedModel) && searchEnabled && (
                               <span className="ml-1 text-xs">Tool</span>
-                            )}
+                            )}*/}
+                          Web Search <Globe></Globe>
                           </Button>
                         )
                       : ""}

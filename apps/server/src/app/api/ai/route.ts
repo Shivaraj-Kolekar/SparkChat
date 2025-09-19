@@ -128,7 +128,7 @@ export const POST = withCORS(async (req: NextRequest) => {
 
   // If the record exists and is for today, check the count
   const validModels = [
-    'meta-llama/llama-4-scout-17b-16e-instruct','gemini-2.5-flash-live-preview', 'llama-3.1-8b-instant', 'llama-guard-4-12b', 'moonshotai/kimi-k2-instruct-0905', 'gemini-2.0-flash' ,'gemini-2.0-flash-lite', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3-32b', 'deepseek-r1-distill-llama-70b'
+    'meta-llama/llama-4-scout-17b-16e-instruct','gemini-2.5-flash-live-preview','meta-llama/llama-guard-4-12b', 'llama-3.1-8b-instant', 'llama-guard-4-12b', 'moonshotai/kimi-k2-instruct-0905', 'gemini-2.0-flash' ,'gemini-2.0-flash-lite', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3-32b', 'deepseek-r1-distill-llama-70b'
 
   ];
 

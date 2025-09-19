@@ -680,7 +680,7 @@ export function ChatSidebar() {
               </Link>
             ) : (
               <a
-                href="https://accounts.sparkchat.shivraj-kolekar.in/sign-in"
+                href="https://accounts.sparkchat.shivraj-kolekar.in/sign-up"
                 className="flex items-center space-x-2"
               >
                 <LogInIcon size={20} />
