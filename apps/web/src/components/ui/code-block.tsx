@@ -9,13 +9,23 @@ export type CodeBlockProps = {
   children?: React.ReactNode;
   className?: string;
 } & React.HTMLProps<HTMLDivElement>;
-
+const themeBackgrounds: Record<string, string> = {
+  "catppuccin-latte": "#eff1f5",
+  "catppuccin-mocha": "#1f1e2f",
+  // Add more themes as needed
+};
 function CodeBlock({ children, className, ...props }: CodeBlockProps) {
+  const { baseTheme, mode, setBaseTheme, setMode } = useThemeStore();
+
+  const currentTheme =(mode === "light" ? "catppuccin-latte" : "catppuccin-mocha");
+const backgroundColor = themeBackgrounds[currentTheme] || "#fff";
+
   return (
     <div
+      style={{backgroundColor}}
       className={cn(
-        "not-prose flex my-4 w-full flex-col overflow-clip border",
-        "border-border max-w-full sm:max-w-[90vw] md:max-w-[800px] overflow-x-auto bg-card text-card-foreground rounded-xl",
+        "not-prose flex my-4  flex-col overflow-clip border",
+        "border max-w-[380px] md:max-w-[700px]  overflow-x-auto dark:bg-[#1f1e2f] bg-[#eff1f5] text-card-foreground rounded-xl",
         className
       )}
       {...props}
@@ -44,7 +54,7 @@ function CodeBlockCode({
   const { baseTheme, mode, setBaseTheme, setMode } = useThemeStore();
 
   const currentTheme =
-    propTheme || (mode === "light" ? "github-light" : "github-dark");
+    propTheme || (mode === "light" ? "catppuccin-latte" : "catppuccin-mocha");
 
   useEffect(() => {
     async function highlight() {
@@ -63,7 +73,7 @@ function CodeBlockCode({
   }, [code, language, currentTheme]);
 
   const classNames = cn(
-    "max-w-full sm:max-w-[90vw] md:max-w-[800px] overflow-x-auto text-[13px] [&>pre]:px-2 sm:[&>pre]:px-4 [&>pre]:py-3 sm:[&>pre]:py-4",
+    "max-w-[380px] md:max-w-[700px] text-wrap overflow-x-auto text-[13px] [&>pre]:px-2 sm:[&>pre]:px-4 [&>pre]:py-3 sm:[&>pre]:py-4",
     className
   );
 
@@ -90,9 +100,18 @@ function CodeBlockGroup({
   className,
   ...props
 }: CodeBlockGroupProps) {
+  const { baseTheme, mode, setBaseTheme, setMode } = useThemeStore();
+
+  const currentTheme =(mode === "light" ? "catppuccin-latte" : "catppuccin-mocha");
+const backgroundColor = themeBackgrounds[currentTheme] || "#fff";
+
   return (
     <div
-      className={cn("flex items-center max-w-full sm:max-w-[90vw] md:max-w-[800px] overflow-x-auto justify-between", className)}
+      style={{backgroundColor}}
+      className={cn(
+        "flex items-center max-w-[380px] md:max-w-[700px] dark:bg-[#1f1e2f] bg-[#eff1f5]  overflow-x-auto justify-between",
+        className
+      )}
       {...props}
     >
       {children}

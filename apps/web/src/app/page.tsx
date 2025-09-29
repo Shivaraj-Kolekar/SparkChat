@@ -206,8 +206,8 @@ function AIPage({
     "gemini-2.0-flash",
     "gemini-2.5-flash-preview-04-17",
     "gemini-2.0-flash-lite",
-    "openai/gpt-oss-120b",
-    "openai/gpt-oss-20b",
+    // "openai/gpt-oss-120b",
+    // "openai/gpt-oss-20b",
   ];
 
   // Models that support research functionality
@@ -831,8 +831,8 @@ function AIPage({
         </div>
       </div>
       {/* Prompt input always at bottom */}
-      <div className="w-full flex justify-center sticky bottom-0 bg-background z-50  border-border pt-3 px-2">
-        <div className="w-full max-w-[800px] mb-2 mx-auto">
+      <div className="w-full flex  justify-center sticky bottom-0 bg-background z-50  border-border pt-3 px-2">
+        <div className="w-full max-w-(--breakpoint-md) mb-2 mx-auto">
           <div className="p-0.5 max-w-(--breakpoint-md)  rounded-xl bg-accent">
             {remaining <= 5 && remaining > 0 && (
               <div className="text-yellow-600 text-center mb-2">
@@ -986,10 +986,8 @@ function AIPage({
                               setSearchEnabled((prevSearchEnabled) => {
                                 const newState = !prevSearchEnabled;
                                 if (newState) {
-                                  const isGroqModel = selectedModel.startsWith("openai/gpt-oss");
-                                  toast.success(`Web ${isGroqModel ? "search (via tool calls)" : "search"} enabled`, {
-                                    description: isGroqModel ? "Search results will appear in a collapsible section" : undefined
-                                  });
+                                 // const isGroqModel = selectedModel.startsWith("openai/gpt-oss");
+                                  toast.success(`Web search enabled`);
                                 } else {
                                   toast.info("Web search disabled");
                                 }
@@ -1017,11 +1015,12 @@ function AIPage({
                   <Button
                     variant="default"
                     size="icon"
-                    className="h-8 w-8 "
                     onClick={() => {
-                      if (!promptDisabled && !creatingChat) handleSubmit();
+                      if (!promptDisabled && !creatingChat &&  input &&
+                      input.trim() !== "") handleSubmit();
                     }}
-                    disabled={promptDisabled || creatingChat}
+                    disabled={promptDisabled || creatingChat ||  !input ||
+                    input.trim() === ""}
                   >
                     {isLoading ? (
                       <Square className="size-5 fill-current" />

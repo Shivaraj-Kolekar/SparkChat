@@ -163,7 +163,7 @@ export default function ChatHeader() {
     },
 
     {
-      value: "gemini-2.0-flash-lite",
+      value: "gemini-2.0-flash-lite-001",
       label: "Gemini 2.0 Flash Lite",
       svg: {
         path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",

@@ -935,7 +935,7 @@ function AIPage({
                       className={
                         message.role === "user"
                           ? "bg-primary text-primary-foreground  rounded-lg mr-3 max-w-[75%] w-fit ml-auto"
-                          : "bg-background text-foreground  rounded-lg max-w-[100%] w-fit mr-auto"
+                          : "bg-background  text-foreground  rounded-lg max-w-[100%] w-fit mr-auto"
                       }
                     >
                       {message.role === "assistant" ? (
@@ -988,7 +988,7 @@ function AIPage({
                                 )}
 
                                 <MessageContent
-                                  className="prose dark:prose-invert max-w-full sm:max-w-none overflow-hidden"
+                                  className="prose p-0 dark:prose-invert max-w-full sm:max-w-none overflow-hidden"
                                   markdown={true}
                                 >
                                   {displayContent}
@@ -1055,7 +1055,7 @@ function AIPage({
         {/* promtp window */}
         <div
           className={cn(
-            "sticky bottom-0 left-0 w-full z-50 bg-none   px-2 transition-all duration-200"
+            "sticky bottom-0 left-0 w-full z-50 bg-none   transition-all duration-200"
           )}
         >
           <div className="w-full mb-2 max-w-[800px] mx-auto">
