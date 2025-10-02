@@ -335,19 +335,19 @@ export default function Settings() {
       usecase: ["Text", "Vision", "PDFs", "Search"],
     },
 
-    {
-      value: "gemini-2.0-flash-lite-001",
-      label: "Gemini 2.0 Flash Lite",
-      svg: {
-        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
-        title: "Gemini",
-        viewbox: "0 0 16 16",
-      },      credit: 1,
+    // {
+    //   value: "gemini-2.0-flash-lite-001",
+    //   label: "Gemini 2.0 Flash Lite",
+    //   svg: {
+    //     path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+    //     title: "Gemini",
+    //     viewbox: "0 0 16 16",
+    //   },      credit: 1,
 
-      description:
-        "Gemini 2.0 Flash Lite is a streamlined and faster version of Gemini 2.0 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
-      usecase: ["Fast", "Text", "Vision", "PDFs"],
-    },
+    //   description:
+    //     "Gemini 2.0 Flash Lite is a streamlined and faster version of Gemini 2.0 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
+    //   usecase: ["Fast", "Text", "Vision", "PDFs"],
+    // },
 
     {
       label: "Llama 4 Scout",

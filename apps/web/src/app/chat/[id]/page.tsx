@@ -935,7 +935,7 @@ function AIPage({
                       className={
                         message.role === "user"
                           ? "bg-primary text-primary-foreground  rounded-lg mr-3 max-w-[75%] w-fit ml-auto"
-                          : "bg-background  text-foreground  rounded-lg max-w-[100%] w-fit mr-auto"
+                          : "bg-background p-0 text-foreground  rounded-lg max-w-[100%] w-fit mr-auto"
                       }
                     >
                       {message.role === "assistant" ? (
