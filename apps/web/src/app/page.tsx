@@ -400,9 +400,7 @@ function AIPage({
           promptSection.classList.add('center-to-top');
         }
         if (helpSection) {
-          helpSection.style.opacity = '0.3';
-          helpSection.style.transform = 'translateY(-20px)';
-          helpSection.style.transition = 'all 300ms ease-in';
+          helpSection.classList.add('opacity-30', 'transform', '-translate-y-5', 'transition-all', 'duration-300', 'ease-in');
         }
 
         // 1. Create chat with prompt as title
@@ -453,8 +451,7 @@ function AIPage({
           promptSection.classList.remove('center-to-top');
         }
         if (helpSection) {
-          helpSection.style.opacity = '1';
-          helpSection.style.transform = 'translateY(0)';
+          helpSection.classList.remove('opacity-30', 'transform', '-translate-y-5', 'transition-all', 'duration-300', 'ease-in');
         }
         return;
       }
