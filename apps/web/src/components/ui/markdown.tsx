@@ -9,6 +9,7 @@ import { CodeBlock, CodeBlockCode, CodeBlockGroup } from "./code-block";
 import { Button } from "./button";
 import { Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import { useThemeStore } from "@/store/themeStore";
 
 export type MarkdownProps = {
   children: string;
@@ -30,6 +31,8 @@ function extractLanguage(className?: string): string {
 
 const INITIAL_COMPONENTS: Partial<Components> = {
   code: function CodeComponent({ className, children, ...props }) {
+    const { baseTheme, mode, setBaseTheme, setMode } = useThemeStore();
+
     const isInline =
       !props.node?.position?.start.line ||
       props.node?.position?.start.line === props.node?.position?.end.line;
@@ -38,7 +41,8 @@ const INITIAL_COMPONENTS: Partial<Components> = {
       return (
         <span
           className={cn(
-            "bg-primary-foreground  dark:bg-secondary/50 rounded-sm px-1 my-2 font-mono text-sm",
+            // mode==='light'? "bg-primary-foreground" : "bg-red-500",
+            "bg- rounded-sm px-1 my-2 font-mono text-sm",
             className
           )}
           {...props}

@@ -281,38 +281,61 @@ function AIPage({
       fetchMessages(latestChatId as string);
     },
   });
+  const [promptDisabled, setPromptDisabled] = useState(false);
 
-  // Handle initial prompt from new chat
-  // useEffect(() => {
-  //   const initialPrompt = sessionStorage.getItem("initialPrompt");
-  //   const newChatId = sessionStorage.getItem("newChatId");
+  // Handle initial prompt with smooth transition
+  useEffect(() => {
+    if (
+      initialPrompt &&
+      initialPrompt.trim() !== "" &&
+      messages.length === 0 &&
+      !isLoading &&
+      !promptDisabled &&
+      typeof selectedChatId === "string" &&
+      selectedChatId &&
+      typeof selectedModel === "string" &&
+      selectedModel
+    ) {
+      // Add entrance animation
+      const mainElement = document.querySelector('main');
+      if (mainElement) {
+        mainElement.classList.remove('page-transition-enter-active');
+        mainElement.classList.add('page-transition-enter');
+        setTimeout(() => {
+          mainElement.classList.add('page-transition-enter-active');
+        }, 50);
+      }
 
-  //   if (initialPrompt && newChatId === currentChatId && !isInitialMessage) {
-  //     setIsInitialMessage(true);
+      // Store the user message and send it
+      // const userMessage = {
+      //   content: initialPrompt,
+      //   role: "user" as const,
+      //   id: Date.now().toString(),
+      // };
 
-  //     // Clear the session storage
-  //     sessionStorage.removeItem("initialPrompt");
-  //     sessionStorage.removeItem("newChatId");
-
-  //     // Set the input value to the initial prompt and submit it
-  //     // This will trigger useChat to add the user message and AI response to its own state
-  //     setTimeout(() => {
-  //       // Create a mock event with a target.value property to match the expected input type
-  //       handleInputChange({
-  //         target: { value: initialPrompt },
-  //       } as React.ChangeEvent<HTMLInputElement>);
-  //       setTimeout(() => {
-  //         originalHandleSubmit();
-  //       }, 50);
-  //     }, 50);
-  //   }
-  // }, [
-  //   currentChatId,
-  //   isInitialMessage,
-  //   originalHandleSubmit,
-  //   handleInputChange,
-  //   originalHandleSubmit,
-  // ]);
+      // (async () => {
+      //   const model = selectedModel;
+      //   if (typeof selectedChatId !== "string" || !selectedChatId) return;
+      //   if (typeof model !== "string" || !model) return;
+      //   if (typeof initialPrompt !== "string" || !initialPrompt) return;
+      //   const prompt: string = initialPrompt;
+      //   const stored = await storeMessage(userMessage , selectedChatId, model);
+      //   if (!stored) {
+      //     toast.error("Failed to save your message");
+      //     return;
+      //   }
+      //   // Trigger the AI API
+      //   await actuallySendMessage(prompt, selectedChatId, undefined, model);
+      // })();
+    }
+  }, [
+    initialPrompt,
+    messages.length,
+    isLoading,
+    promptDisabled,
+    selectedChatId,
+    selectedModel,
+  ]);
 
   // Add this effect to scroll to bottom when messages change
   useEffect(() => {
@@ -668,7 +691,6 @@ function AIPage({
 
   const [remaining, setRemaining] = useState(10);
   const [rateLimitReset, setRateLimitReset] = useState("");
-  const [promptDisabled, setPromptDisabled] = useState(false);
 
   // Fetch remaining messages after each send
   const fetchRemaining = async () => {
@@ -751,49 +773,6 @@ function AIPage({
   // Helper to check if chat exists (by checking if messages.length > 0)
   const chatExists = !!messages && messages.length > 0;
 
-  // Step 1: If pendingPrompt, ensure chat exists, then set input value
-  useEffect(() => {
-    if (
-      initialPrompt &&
-      initialPrompt.trim() !== "" &&
-      messages.length === 0 &&
-      !isLoading &&
-      !promptDisabled &&
-      typeof selectedChatId === "string" &&
-      selectedChatId &&
-      typeof selectedModel === "string" &&
-      selectedModel
-    ) {
-      // Store the user message
-      const userMessage = {
-        content: initialPrompt,
-        role: "user" as const,
-        id: Date.now().toString(),
-      };
-      (async () => {
-        const model = selectedModel;
-        if (typeof selectedChatId !== "string" || !selectedChatId) return;
-        if (typeof model !== "string" || !model) return;
-        if (typeof initialPrompt !== "string" || !initialPrompt) return;
-        const prompt: string = initialPrompt;
-        const stored = await storeMessage(userMessage, selectedChatId, model);
-        if (!stored) {
-          toast.error("Failed to save your message");
-          return;
-        }
-        // Trigger the AI API
-        await actuallySendMessage(prompt, selectedChatId, undefined, model);
-      })();
-    }
-  }, [
-    initialPrompt,
-    messages.length,
-    isLoading,
-    promptDisabled,
-    selectedChatId,
-    selectedModel,
-  ]);
-
   // Step 2: When input matches pendingPrompt, trigger AI API
   useEffect(() => {
     if (
@@ -851,7 +830,7 @@ function AIPage({
   };
   const { toggleSidebar } = useSidebar();
   return (
-    <main className="flex h-screen flex-col bg-background pt-14">
+    <main className="flex h-screen flex-col bg-background pt-14 page-transition-enter-active">
       {/* Mobile warning header */}
       {/*{showMobileWarning && (
         <div className="w-full flex justify-center bg-yellow-400 text-yellow-900 py-2 px-4 text-sm font-medium items-center z-50" style={{ position: "sticky", top: 0 }}>
@@ -911,7 +890,7 @@ function AIPage({
 
       <div className="grid h-full mt-12 max-w-(--breakpoint-md) grid-rows-[1fr_auto]   w-full mx-auto ">
         {" "}
-        <div className=" space-y-4 pb-4">
+        <div className="space-y-4 pb-4 fade-in-up">
           <ChatContainerRoot className="flex-1">
             <ChatContainerContent className="space-y-4 py-4">
               {messages.length === 0 ? (
@@ -988,6 +967,7 @@ function AIPage({
                                 )}
 
                                 <MessageContent
+                                  aiMessage={true}
                                   className="prose p-0 dark:prose-invert max-w-full sm:max-w-none overflow-hidden"
                                   markdown={true}
                                 >
@@ -1055,11 +1035,11 @@ function AIPage({
         {/* promtp window */}
         <div
           className={cn(
-            "sticky bottom-0 left-0 w-full z-50 bg-none   transition-all duration-200"
+            "sticky bottom-0 left-0 w-full z-50 bg-none prompt-transition"
           )}
         >
           <div className="w-full mb-2 max-w-[800px] mx-auto">
-            <div className="p-0.5 max-w-(--breakpoint-md) rounded-xl bg-accent">
+            <div className="p-0.5 max-w-(--breakpoint-md) rounded-xl bg-accent prompt-transition">
               {remaining <= 5 && remaining > 0 && (
                 <div className="text-yellow-600 text-center mb-2">
                   {remaining} messages left before your daily limit is reached.

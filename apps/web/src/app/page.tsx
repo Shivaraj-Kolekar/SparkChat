@@ -384,19 +384,43 @@ function AIPage({
     if (!selectedChatId) {
       clearSelectedChatId(); // Clear any old chatId before creating a new chat
       setCreatingChat(true);
+
+      // Show immediate visual feedback
+      toast.loading("Creating new chat...", { id: "creating-chat" });
+
       try {
+        // Add transition class to trigger animation
+        const mainElement = document.querySelector('main');
+        const promptSection = document.querySelector('.prompt-section');
+        const helpSection = document.querySelector('.help-section');
+        if (mainElement) {
+          mainElement.classList.add('page-transition-exit-active', 'creating-chat');
+        }
+        if (promptSection) {
+          promptSection.classList.add('center-to-top');
+        }
+        if (helpSection) {
+          helpSection.style.opacity = '0.3';
+          helpSection.style.transform = 'translateY(-20px)';
+          helpSection.style.transition = 'all 300ms ease-in';
+        }
+
         // 1. Create chat with prompt as title
         const chatRes = await api.post("/api/chat", {
           title: input,
           created_at: new Date(),
         });
         if (!chatRes.data.success || !chatRes.data.result?.id) {
-          toast.error("Failed to create new chat.");
+          toast.error("Failed to create new chat.", { id: "creating-chat" });
           setCreatingChat(false);
           return;
         }
         const newChatId = chatRes.data.result.id;
         setSelectedChatId(newChatId);
+
+        // Success feedback
+        toast.success("Chat created successfully!", { id: "creating-chat" });
+
         // 2. Store the pending prompt in sessionStorage
         if (typeof window !== "undefined") {
           sessionStorage.setItem("initialPrompt", input);
@@ -406,15 +430,32 @@ function AIPage({
         if (typeof window !== "undefined") {
           sessionStorage.setItem("newChatLoading", "true");
         }
-        // 3. Redirect to the new chat page
-        setAiLoading(true);
-        router.push(`/chat/${newChatId}`);
-        setPendingMessage(input); // Trigger AI message generation after redirect
-        setCreatingChat(false);
+
+        // 3. Add slight delay for transition effect, then redirect
+        setTimeout(() => {
+          setAiLoading(true);
+          router.push(`/chat/${newChatId}?initialPrompt=${encodeURIComponent(input)}`);
+          setPendingMessage(input); // Trigger AI message generation after redirect
+          setCreatingChat(false);
+        }, 250);
         return;
       } catch (err) {
-        toast.error("Failed to create new chat.");
+        toast.error("Failed to create new chat.", { id: "creating-chat" });
         setCreatingChat(false);
+        // Remove transition classes on error
+        const mainElement = document.querySelector('main');
+        const promptSection = document.querySelector('.prompt-section');
+        const helpSection = document.querySelector('.help-section');
+        if (mainElement) {
+          mainElement.classList.remove('page-transition-exit-active', 'creating-chat');
+        }
+        if (promptSection) {
+          promptSection.classList.remove('center-to-top');
+        }
+        if (helpSection) {
+          helpSection.style.opacity = '1';
+          helpSection.style.transform = 'translateY(0)';
+        }
         return;
       }
     }
@@ -598,7 +639,7 @@ function AIPage({
   };
 
   return (
-    <main className="flex flex-col min-h-screen bg-background pt-14">
+    <main className={cn("flex flex-col min-h-screen bg-background pt-14 prompt-transition", creatingChat && "creating-chat")}>
       {/* Mobile warning header */}
       {/*{showMobileWarning && (
         <div className="w-full flex justify-center bg-yellow-400 text-yellow-900 py-2 px-4 text-sm font-medium items-center z-50" style={{ position: "sticky", top: 0 }}>
@@ -643,397 +684,212 @@ function AIPage({
         </div>
       </div>*/}
 
-      <div className="flex-1 flex flex-col items-start justify-center">
-        <div className="flex flex-col items-start justify-center w-full max-w-[800px] mx-auto flex-1">
-          {pendingMessage && selectedChatId ? (
-            <div className="w-full flex flex-col items-center justify-center min-h-[300px]">
-              <Loader />
-              <div className="mt-4 text-muted-foreground text-sm">
-                Redirecting to your new chat...
-              </div>
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] main-content">
+        {pendingMessage && selectedChatId ? (
+          <div className="w-full flex flex-col items-center justify-center min-h-[300px]">
+            <Loader />
+            <div className="mt-4 text-muted-foreground text-sm">
+              Redirecting to your new chat...
             </div>
-          ) : messages.length === 0 ? (
-            <div className="w-full flex flex-col items-start justify-start">
-              <div className="flex flex-col items-start justify-start w-full">
-                <div className="bg-background rounded-2xl px-2 py-4 sm:px-4 sm:py-4 mx-auto">
-                  <div className="text-left space-y-4 sm:space-y-6">
-                    <h1 className="text-2xl text-center sm:text-lg md:text-xl font-bold text-foreground leading-tight">
-                      How can I help you
-                      {user?.firstName ? `, ${user.firstName}` : ""}?
-                    </h1>
+          </div>
+        ) : (
+          <div className="w-full max-w-[800px] mx-auto flex flex-col items-center space-y-8 home-content">
+            {/* Centered Prompt Input */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight text-center">
+              How can I help you
+              {user?.firstName ? `, ${user.firstName}` : ""}?
+            </h1>
+            <div className="w-full prompt-section prompt-center">
+              <div className="p-0.5 max-w-(--breakpoint-md) rounded-xl bg-accent mx-auto prompt-transition">
 
-                    {/* Category Buttons */}
-                    <div className="w-full max-w-lg flex flex-row gap-2 px-2">
-                      {categories.map((cat) => (
-                        <div
-                          key={cat}
-                          className={`flex-1 flex items-center gap-2 rounded-xl font-medium justify-center p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent  cursor-pointer transition-all duration-200 hover:shadow-sm border ${
-                            selectedCategory === cat
-                              ? "border-border bg-accent"
-                              : "border"
-                          }`}
-                          style={{ minWidth: 0 }}
-                          onClick={() =>
-                            setSelectedCategory(
-                              cat === selectedCategory ? null : cat
+                <PromptInput
+                  value={input}
+                  onSubmit={handleSubmit}
+                  className="w-full max-w-(--breakpoint-md)"
+                >
+                  <PromptInputTextarea
+                    onChange={handleInputChange}
+                    placeholder="Ask me anything..."
+                    disabled={promptDisabled || creatingChat}
+                  />
+                  <PromptInputActions className="justify-between pt-2">
+                    <div className="flex align-items-center gap-1 ">
+                      <PromptInputAction
+                        tooltip={
+                          !user
+                            ? "Please login to use Search Web"
+                            : selectedModel && ToolCallModels.includes(selectedModel)
+                              ? "Search Web (via Tool Calls)"
+                              : "Search Web"
+                        }
+                      >
+                        {selectedModel
+                          ? WebSearchModels.includes(selectedModel) && (
+                              <Button
+                                onClick={() => {
+                                  setSearchEnabled((prevSearchEnabled) => {
+                                    const newState = !prevSearchEnabled;
+                                    if (newState) {
+                                      toast.success(`Web search enabled`);
+                                    } else {
+                                      toast.info("Web search disabled");
+                                    }
+                                    return newState;
+                                  });
+                                }}
+                                variant={
+                                  searchEnabled === true ? "default" : "outline"
+                                }
+                              >
+                                Web Search <Globe></Globe>
+                              </Button>
                             )
-                          }
-                        >
-                          <span className="inline ">
-                            {categoryIcons[cat as keyof typeof categoryIcons]}
-                          </span>
-                          {cat}
-                        </div>
-                      ))}
+                          : ""}
+                      </PromptInputAction>
                     </div>
 
-                    {/* Category Prompt Suggestions */}
-                    {selectedCategory && (
-                      <div className="w-full bg-background border border-border rounded-xl shadow-lg p-4 sm:p-6 animate-in fade-in duration-300 mt-2">
-                        <div className="flex items-center justify-between mb-3 sm:mb-4">
-                          <div className="flex items-center gap-2">
-                            <span className="inline">
-                              {
-                                categoryIcons[
-                                  selectedCategory as keyof typeof categoryIcons
-                                ]
-                              }
-                            </span>
-                            <span className="font-semibold text-foreground text-sm sm:text-base">
-                              {selectedCategory} Suggestions
-                            </span>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground"
-                            onClick={() => setSelectedCategory(null)}
-                          >
-                            <X className="h-3 w-3 sm:h-4 sm:w-4" />
-                          </Button>
-                        </div>
-                        <div className="space-y-1.5 sm:space-y-2">
-                          {suggestionGroups
-                            .find(
-                              (g) =>
-                                g.label ===
-                                categoryMap[
-                                  selectedCategory as keyof typeof categoryMap
-                                ]
-                            )
-                            ?.items.slice(0, 6)
-                            .map((prompt) => (
-                              <div
-                                key={prompt}
-                                className="w-full p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm border border-transparent hover:border-border"
-                                onClick={() => {
-                                  handleInputChange({
-                                    target: { value: prompt },
-                                  } as any);
-                                  setSelectedCategory(null);
-                                }}
-                              >
-                                {prompt}
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
+                    <PromptInputAction
+                      tooltip={creatingChat ? "Creating chat..." : isLoading ? "Processing..." : "Send message"}
+                    >
+                      <Button
+                        variant="default"
+                        size="icon"
+                        onClick={() => {
+                          if (!promptDisabled && !creatingChat &&  input &&
+                          input.trim() !== "") handleSubmit();
+                        }}
+                        disabled={promptDisabled || creatingChat ||  !input ||
+                        input.trim() === ""}
+                      >
+                        {creatingChat || isLoading ? (
+                          <Square className="size-5 fill-current animate-pulse" />
+                        ) : (
+                          <ArrowUp className="size-5" />
+                        )}
+                      </Button>
+                    </PromptInputAction>
+                  </PromptInputActions>
+                </PromptInput> {remaining <= 5 && remaining > 0 && (
+                  <div className="text-yellow-600 text-center my-2">
+                    {remaining} messages left before your daily limit is reached.
+                  </div>
+                )}
+                {remaining === 0 && (
+                  <div className="text-red-600 text-center my-2">
+                    You have reached your daily message limit. Please wait until
+                    your quota resets.
+                  </div>
+                )}
+              </div>
+            </div>
 
-                    {/* Example Prompts (only if no category selected) */}
-                    {!selectedCategory && (
-                      <div className="w-full space-y-1.5 sm:space-y-2 mt-4">
-                        {examplePrompts.map((prompt) => (
+            {/* How can I help you section */}
+            {messages.length === 0 && !creatingChat && (
+              <div className="w-full flex flex-col items-center space-y-6 fade-in-up help-section">
+
+
+                {/* Category Buttons */}
+                <div className="w-full max-w-lg flex flex-row gap-2 px-2">
+                  {categories.map((cat) => (
+                    <div
+                      key={cat}
+                      className={`flex-1 flex items-center gap-2 rounded-full font-medium justify-center p-2.5 sm:p-2 text-xs sm:text-sm text-left hover:bg-accent  cursor-pointer transition-all duration-300 hover:shadow-sm border ${
+                        selectedCategory === cat
+                          ? "border-border bg-accent"
+                          : "border"
+                      }`}
+                      style={{ minWidth: 0 }}
+                      onClick={() =>
+                        setSelectedCategory(
+                          cat === selectedCategory ? null : cat
+                        )
+                      }
+                    >
+                      <span className="inline ">
+                        {categoryIcons[cat as keyof typeof categoryIcons]}
+                      </span>
+                      {cat}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Category Prompt Suggestions */}
+                {selectedCategory && (
+                  <div className="w-full bg-background border border-border rounded-xl shadow-lg p-4 sm:p-6 animate-in fade-in duration-500 mt-2 category-suggestions">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="inline">
+                          {
+                            categoryIcons[
+                              selectedCategory as keyof typeof categoryIcons
+                            ]
+                          }
+                        </span>
+                        <span className="font-semibold text-foreground text-sm sm:text-base">
+                          {selectedCategory} Suggestions
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground"
+                        onClick={() => setSelectedCategory(null)}
+                      >
+                        <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                    </div>
+                    <div className="space-y-1.5 sm:space-y-2">
+                      {suggestionGroups
+                        .find(
+                          (g) =>
+                            g.label ===
+                            categoryMap[
+                              selectedCategory as keyof typeof categoryMap
+                            ]
+                        )
+                        ?.items.slice(0, 6)
+                        .map((prompt) => (
                           <div
                             key={prompt}
                             className="w-full p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm border border-transparent hover:border-border"
-                            onClick={() =>
+                            onClick={() => {
                               handleInputChange({
                                 target: { value: prompt },
-                              } as any)
-                            }
+                              } as any);
+                              setSelectedCategory(null);
+                            }}
                           >
                             {prompt}
                           </div>
                         ))}
-                      </div>
-                    )}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full flex flex-col items-start justify-center">
-              {/* <ChatContainerRoot className="flex-1 w-full">
-                <ChatContainerContent className="space-y-4 py-4 flex flex-col items-start justify-center">
-                  {messages.map((message) => (
-                    <MessageComponent
-                      key={message.id}
-                      className={
-                        message.role === "user"
-                          ? "justify-end"
-                          : "justify-start"
-                      }
-                    >
+                )}
+
+                {/* Example Prompts (only if no category selected) */}
+                {!selectedCategory && (
+                  <div className="w-full space-y-1.5 sm:space-y-2 mt-4 example-prompts">
+                    {examplePrompts.map((prompt) => (
                       <div
-                        className={
-                          message.role === "assistant"
-                            ? "min-w-[95%] flex-1 sm:max-w-[75%] mx-auto"
-                            : " flex-1 min-w-[25%] w-auto max-w-[50%] ml-auto"
+                        key={prompt}
+                        className="w-full p-2.5 sm:p-3 text-xs sm:text-sm text-left hover:bg-accent rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm border border-transparent hover:border-border"
+                        onClick={() =>
+                          handleInputChange({
+                            target: { value: prompt },
+                          } as any)
                         }
                       >
-                        {message.role === "assistant" ? (
-                          <div className="min-w-[95%] text-foreground prose rounded-lg py-2">
-                            <Markdown className="bg-none">
-                              {message.content}
-                            </Markdown>
-                            <MessageActions>
-                              <MessageAction tooltip="Copy response">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {}}
-                                  className="rounded-full"
-                                >
-                                  <Copy />
-                                </Button>
-                              </MessageAction>
-                              <MessageAction tooltip="reload response">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    reload();
-                                  }}
-                                  className="rounded-full"
-                                >
-                                  <ListRestart />
-                                </Button>
-                              </MessageAction>
-                            </MessageActions>
-                          </div>
-                        ) : (
-                          <MessageContent
-                            markdown
-                            className="bg-primary text-primary-foreground px-4 py-2 rounded-lg"
-                          >
-                            {message.content}
-                          </MessageContent>
-                        )}
+                        {prompt}
                       </div>
-                    </MessageComponent>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </ChatContainerContent>
-              </ChatContainerRoot> */}
-            </div>
-          )}
-        </div>
-      </div>
-      {/* Prompt input always at bottom */}
-      <div className="w-full flex  justify-center sticky bottom-0 bg-background z-50  border-border pt-3 px-2">
-        <div className="w-full max-w-(--breakpoint-md) mb-2 mx-auto">
-          <div className="p-0.5 max-w-(--breakpoint-md)  rounded-xl bg-accent">
-            {remaining <= 5 && remaining > 0 && (
-              <div className="text-yellow-600 text-center mb-2">
-                {remaining} messages left before your daily limit is reached.
+                    ))}
+                  </div>
+                )}
               </div>
             )}
-            {remaining === 0 && (
-              <div className="text-red-600 text-center mb-2">
-                You have reached your daily message limit. Please wait until
-                your quota resets.
-              </div>
-            )}
-            <PromptInput
-              value={input}
-              onSubmit={handleSubmit}
-              className="w-full max-w-(--breakpoint-md)"
-            >
-              <PromptInputTextarea
-                onChange={handleInputChange}
-                placeholder="Ask me anything..."
-                disabled={promptDisabled || creatingChat}
-              />
-              <PromptInputActions className="justify-between pt-2">
-                <div className="flex align-items-center gap-1 ">
-                  {/*<PromptInputAction tooltip="Select model">
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={open}
-                          className="w-[200px] justify-between"
-                        >
-                          {value
-                            ? models.find((model) => model.value === value)
-                                ?.label
-                            : "Select Model"}
-                          <ChevronsUpDown className="opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[400px]  p-0">
-                        <Command>
-                          <CommandInput
-                            placeholder="Search model..."
-                            className="h-9"
-                          />
-                          <CommandList>
-                            <CommandEmpty>No Models found.</CommandEmpty>
-                            <CommandGroup>
-                              {models.map((model) => (
-                                <CommandItem
-                                  key={model.value}
-                                  value={model.value}
-                                  className={cn(
-                                    "ml-auto",
-                                    "flex flex-row justify-between items-center",
-                                    value === model.value
-                                      ? "bg-accent"
-                                      : "bg-none"
-                                  )}
-                                  onSelect={(currentValue) => {
-                                    setValue(
-                                      currentValue === value ? "" : currentValue
-                                    );
-                                    setOpen(false);
-                                    setSelectedModel(currentValue);
-                                  }}
-                                >
-                                  <div className="inline-flex gap-2 items-center">
-                                    <svg
-                                      className="size-4 text-color-heading"
-                                      viewBox={model.svg.viewbox}
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      fill="currentColor"
-                                    >
-                                      <title>{model.svg?.title}</title>
-                                      <path d={model.svg?.path}></path>
-                                    </svg>
-                                    <p className="text-base">{model.label}</p>{" "}
-                                  </div>
-                                  <div className="space-x-2 my-1.5 inline-flex">
-                                    {model.usecase.map((usecase) => {
-                                      const config = useCaseConfig[usecase];
-                                      if (!config) return null;
-                                      return (
-                                        <Tooltip key={usecase}>
-                                          <TooltipTrigger>
-                                            <Badge
-                                              className={`flex items-center rounded-sm p-1 gap-1 ${config.color}`}
-                                            >
-                                              {config.icon && (
-                                                <span className="h-4 rounded-none w-4">
-                                                  {config.icon}
-                                                </span>
-                                              )}
-                                            </Badge>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            {config.tooltip}
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      );
-                                    })}
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </PromptInputAction>*/}
-
-                  {/*<PromptInputAction
-                    tooltip={
-                      !user
-                        ? "Please login to use Research tool"
-                        : "Research Tool"
-                    }
-                  >
-                    <Button
-                      onClick={() => {
-                        setReSearchEnabled((prevreSearchEnabled) => {
-                          const newState = !prevreSearchEnabled;
-                          if (newState) {
-                            toast.success("Research Tool enabled");
-                          } else {
-                            toast.info("Research Tool disabled");
-                          }
-  return newState;
-                        });
-                      }}
-                      variant={ResearchEnabled === true ? "default" : "outline"}
-                    >
-                      <Telescope></Telescope>
-                    </Button>
-                  </PromptInputAction>*/}
-                  <PromptInputAction
-                    tooltip={
-                      !user
-                        ? "Please login to use Search Web"
-                        : selectedModel && ToolCallModels.includes(selectedModel)
-                          ? "Search Web (via Tool Calls)"
-                          : "Search Web"
-                    }
-                  >
-                    {selectedModel
-                      ? WebSearchModels.includes(selectedModel) && (
-                          <Button
-                            onClick={() => {
-                              setSearchEnabled((prevSearchEnabled) => {
-                                const newState = !prevSearchEnabled;
-                                if (newState) {
-                                 // const isGroqModel = selectedModel.startsWith("openai/gpt-oss");
-                                  toast.success(`Web search enabled`);
-                                } else {
-                                  toast.info("Web search disabled");
-                                }
-                                return newState;
-                              });
-                            }}
-                            variant={
-                              searchEnabled === true ? "default" : "outline"
-                            }
-                          >
-                            {/*<Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
-                            {selectedModel && ToolCallModels.includes(selectedModel) && searchEnabled && (
-                              <span className="ml-1 text-xs">Tool</span>
-                            )}*/}
-                          Web Search <Globe></Globe>
-                          </Button>
-                        )
-                      : ""}
-                  </PromptInputAction>
-                </div>
-
-                <PromptInputAction
-                  tooltip={isStreaming ? "Processing..." : "Send message"}
-                >
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={() => {
-                      if (!promptDisabled && !creatingChat &&  input &&
-                      input.trim() !== "") handleSubmit();
-                    }}
-                    disabled={promptDisabled || creatingChat ||  !input ||
-                    input.trim() === ""}
-                  >
-                    {isLoading ? (
-                      <Square className="size-5 fill-current" />
-                    ) : (
-                      <ArrowUp className="size-5" />
-                    )}
-                  </Button>
-                </PromptInputAction>
-              </PromptInputActions>
-            </PromptInput>
           </div>
-        </div>
+        )}
       </div>
+
     </main>
   );
 }
