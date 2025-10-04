@@ -686,7 +686,7 @@ function AIPage({
         </div>
       </div>*/}
 
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] main-content">
+      <div className="flex-1 flex flex-col items-center mx-2 justify-center min-h-[calc(100vh-200px)] main-content">
         {pendingMessage && selectedChatId ? (
           <div className="w-full flex flex-col items-center justify-center min-h-[300px]">
             <Loader />

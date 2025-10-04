@@ -830,7 +830,7 @@ function AIPage({
   };
   const { toggleSidebar } = useSidebar();
   return (
-    <main className="flex h-screen flex-col bg-background pt-14 page-transition-enter-active">
+    <main className="flex h-screen flex-col bg-background mx-2 pt-14 page-transition-enter-active">
       {/* Mobile warning header */}
       {/*{showMobileWarning && (
         <div className="w-full flex justify-center bg-yellow-400 text-yellow-900 py-2 px-4 text-sm font-medium items-center z-50" style={{ position: "sticky", top: 0 }}>
