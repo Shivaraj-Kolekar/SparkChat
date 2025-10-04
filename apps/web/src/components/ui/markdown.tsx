@@ -32,6 +32,7 @@ function extractLanguage(className?: string): string {
 const INITIAL_COMPONENTS: Partial<Components> = {
   code: function CodeComponent({ className, children, ...props }) {
     const { baseTheme, mode, setBaseTheme, setMode } = useThemeStore();
+    const [copied, setCopied] = useState(false);
 
     const isInline =
       !props.node?.position?.start.line ||
@@ -53,7 +54,6 @@ const INITIAL_COMPONENTS: Partial<Components> = {
     }
 
     const language = extractLanguage(className);
-    const [copied, setCopied] = useState(false);
 
     const handleCopy = async () => {
       try {

@@ -143,6 +143,11 @@ function AIPage({
   const clearSelectedChatId = useChatStore(
     (state) => state.clearSelectedChatId
   );
+  // useEffect(()=>{
+  //   if(selectedChatId!==null){
+  //     toast.info("Please create a new chat as you have the another chat selected");
+  //   }
+  // },[])
   // useEffect(() => {
   //   // Only access localStorage in the browser
   //   if (typeof window !== "undefined") {
@@ -694,10 +699,10 @@ function AIPage({
             {/* Centered Prompt Input */}
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight text-center">
               How can I help you
-              {user?.firstName ? `, ${user.firstName}` : ""}?
+              {/*{user?.firstName ? `, ${user.firstName}` : ""}?*/}
             </h1>
             <div className="w-full prompt-section prompt-center">
-              <div className="p-0.5 max-w-(--breakpoint-md) rounded-xl bg-accent mx-auto prompt-transition">
+              <div className="p-[0.2rem] max-w-(--breakpoint-md) rounded-xl bg-accent focus-within:bg-accent mx-auto prompt-transition">
 
                 <PromptInput
                   value={input}

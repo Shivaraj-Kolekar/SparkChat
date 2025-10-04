@@ -42,6 +42,7 @@ import {
   User,
   Sun,
   Moon,
+  Coins,
 } from "lucide-react";
 import Header from "@/components/header";
 import type Theme from "next-themes";
@@ -277,7 +278,8 @@ export default function Settings() {
         path: "M304.246 295.411V249.828C304.246 245.989 305.687 243.109 309.044 241.191L400.692 188.412C413.167 181.215 428.042 177.858 443.394 177.858C500.971 177.858 537.44 222.482 537.44 269.982C537.44 273.34 537.44 277.179 536.959 281.018L441.954 225.358C436.197 222 430.437 222 424.68 225.358L304.246 295.411ZM518.245 472.945V364.024C518.245 357.304 515.364 352.507 509.608 349.149L389.174 279.096L428.519 256.543C431.877 254.626 434.757 254.626 438.115 256.543L529.762 309.323C556.154 324.679 573.905 357.304 573.905 388.971C573.905 425.436 552.315 459.024 518.245 472.941V472.945ZM275.937 376.982L236.592 353.952C233.235 352.034 231.794 349.154 231.794 345.315V239.756C231.794 188.416 271.139 149.548 324.4 149.548C344.555 149.548 363.264 156.268 379.102 168.262L284.578 222.964C278.822 226.321 275.942 231.119 275.942 237.838V376.986L275.937 376.982ZM360.626 425.922L304.246 394.255V327.083L360.626 295.416L417.002 327.083V394.255L360.626 425.922ZM396.852 571.789C376.698 571.789 357.989 565.07 342.151 553.075L436.674 498.374C442.431 495.017 445.311 490.219 445.311 483.499V344.352L485.138 367.382C488.495 369.299 489.936 372.179 489.936 376.018V481.577C489.936 532.917 450.109 571.785 396.852 571.785V571.789ZM283.134 464.79L191.486 412.01C165.094 396.654 147.343 364.029 147.343 332.362C147.343 295.416 169.415 262.309 203.48 248.393V357.791C203.48 364.51 206.361 369.308 212.117 372.665L332.074 442.237L292.729 464.79C289.372 466.707 286.491 466.707 283.134 464.79ZM277.859 543.48C223.639 543.48 183.813 502.695 183.813 452.314C183.813 448.475 184.294 444.636 184.771 440.797L279.295 495.498C285.051 498.856 290.812 498.856 296.568 495.498L417.002 425.927V471.509C417.002 475.349 415.562 478.229 412.204 480.146L320.557 532.926C308.081 540.122 293.206 543.48 277.854 543.48H277.859ZM396.852 600.576C454.911 600.576 503.37 559.313 514.41 504.612C568.149 490.696 602.696 440.315 602.696 388.976C602.696 355.387 588.303 322.762 562.392 299.25C564.791 289.173 566.231 279.096 566.231 269.024C566.231 200.411 510.571 149.067 446.274 149.067C433.322 149.067 420.846 150.984 408.37 155.305C386.775 134.192 357.026 120.758 324.4 120.758C266.342 120.758 217.883 162.02 206.843 216.721C153.104 230.637 118.557 281.018 118.557 332.357C118.557 365.946 132.95 398.571 158.861 422.083C156.462 432.16 155.022 442.237 155.022 452.309C155.022 520.922 210.682 572.266 274.978 572.266C287.931 572.266 300.407 570.349 312.883 566.028C334.473 587.141 364.222 600.576 396.852 600.576Z",
         title: "Open ai",
         viewbox: "118 120 480 480",
-      },      credit: 1,
+      },
+      credit: 2,
 
       description:
         "GPT-OSS 120B is a highly capable large language model from the Open Source Studio project. It is engineered for generating detailed text, understanding nuanced instructions, and facilitating natural conversations. With extensive multilingual support and advanced reasoning skills, GPT-OSS 120B is well-suited for demanding global applications that require sophisticated language processing.",
@@ -291,6 +293,7 @@ export default function Settings() {
         title: "Open ai",
         viewbox: "118 120 480 480",
       },
+      credit: 2,
       description:
         "GPT-OSS 20B is a versatile large language model developed by Open Source Studio. It specializes in producing high-quality text, following user instructions, and engaging in interactive dialogue. Its multilingual capabilities and efficient performance make GPT-OSS 20B an excellent choice for a variety of tasks involving language understanding and communication across diverse domains.",
       usecase: ["Text", "Reasoning"],
@@ -302,7 +305,8 @@ export default function Settings() {
         path: "M12.604 1.34c.393.69.784 1.382 1.174 2.075a.18.18 0 00.157.091h5.552c.174 0 .322.11.446.327l1.454 2.57c.19.337.24.478.024.837-.26.43-.513.864-.76 1.3l-.367.658c-.106.196-.223.28-.04.512l2.652 4.637c.172.301.111.494-.043.77-.437.785-.882 1.564-1.335 2.34-.159.272-.352.375-.68.37-.777-.016-1.552-.01-2.327.016a.099.099 0 00-.081.05 575.097 575.097 0 01-2.705 4.74c-.169.293-.38.363-.725.364-.997.003-2.002.004-3.017.002a.537.537 0 01-.465-.271l-1.335-2.323a.09.09 0 00-.083-.049H4.982c-.285.03-.553-.001-.805-.092l-1.603-2.77a.543.543 0 01-.002-.54l1.207-2.12a.198.198 0 000-.197 550.951 550.951 0 01-1.875-3.272l-.79-1.395c-.16-.31-.173-.496.095-.965.465-.813.927-1.625 1.387-2.436.132-.234.304-.334.584-.335a338.3 338.3 0 012.589-.001.124.124 0 00.107-.063l2.806-4.895a.488.488 0 01.422-.246c.524-.001 1.053 0 1.583-.006L11.704 1c.341-.003.724.032.9.34zm-3.432.403a.06.06 0 00-.052.03L6.254 6.788a.157.157 0 01-.135.078H3.253c-.056 0-.07.025-.041.074l5.81 10.156c.025.042.013.062-.034.063l-2.795.015a.218.218 0 00-.2.116l-1.32 2.31c-.044.078-.021.118.068.118l5.716.008c.046 0 .08.02.104.061l1.403 2.454c.046.081.092.082.139 0l5.006-8.76.783-1.382a.055.055 0 01.096 0l1.424 2.53a.122.122 0 00.107.062l2.763-.02a.04.04 0 00.035-.02.041.041 0 000-.04l-2.9-5.086a.108.108 0 010-.113l.293-.507 1.12-1.977c.024-.041.012-.062-.035-.062H9.2c-.059 0-.073-.026-.043-.077l1.434-2.505a.107.107 0 000-.114L9.225 1.774a.06.06 0 00-.053-.031zm6.29 8.02c.046 0 .058.02.034.06l-.832 1.465-2.613 4.585a.056.056 0 01-.05.029.058.058 0 01-.05-.029L8.498 9.841c-.02-.034-.01-.052.028-.054l.216-.012 6.722-.012z",
         title: "Qwen",
         viewbox: "0 0 24 24 ",
-      },      credit: 1,
+      },
+      credit: 2,
 
       description:
         "Qwen QwQ is a robust language model known for its strong reasoning abilities and efficient text processing. Developed for tasks requiring logical deduction and coherent text generation, it's particularly effective in scenarios demanding analytical insights and structured outputs.",
@@ -611,7 +615,7 @@ export default function Settings() {
     return <div>Loading...</div>;
   }
   return (
-    <div className=" justify-center flex flex-col px-4 py-8 md:px-12 md:py-10 lg:px-40 p-auto lg:py-10">
+    <div className="justify-center flex flex-col px-4 py-8 md:px-12 md:py-10 lg:px-20 xl:px-40 p-auto lg:py-10">
       <Header></Header>
       <div className="flex   justify-between items-center mb-8">
         <div>
@@ -622,9 +626,9 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-5 space-y-6">
-        {/* Model Settings */}
-        <div className="flex min-w-[300] space-y-2 justify-start   items-center  flex-col">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 space-y-6 lg:space-y-0">
+        {/* User Profile Section */}
+        <div className="flex min-w-[250px] lg:min-w-[300px] xl:min-w-[320px] space-y-2 justify-start items-center flex-col lg:sticky lg:top-4 lg:self-start">
           <Image
             className="rounded-full "
             src={user?.imageUrl ? user?.imageUrl : "/sparkchat.png"}
@@ -632,14 +636,14 @@ export default function Settings() {
             width={180}
             height={180}
           />
-          <h1 className="text-4xl text-center font-semibold">
+          <h1 className="text-2xl md:text-4xl text-center font-semibold">
             {user?.fullName || user?.username}
           </h1>
-          <h2 className="text-lg font-normal text-center">
+          <h2 className="text-sm md:text-lg font-normal text-center break-words">
             {user?.primaryEmailAddress?.emailAddress}
           </h2>
 
-          <Card className=" mt-6 shadow-lg w-full rounded-xl">
+          <Card className="mt-6 shadow-lg w-full max-w-sm lg:max-w-none rounded-xl">
             <CardHeader>
               <CardTitle>
                 <h2 className="text-lg font-semibold">Keyboard Shortcuts</h2>
@@ -678,52 +682,52 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+          <Card className="mt-6 w-full shadow-lg rounded-xl">
+            <CardHeader>
+              <CardTitle>
+                <h2 className="text-lg font-semibold">Message Usage</h2>
+              </CardTitle>
+              <CardDescription>
+                {loadingUsage
+                  ? "Loading..."
+                  : resetAt
+                  ? `Resets at: ${new Date(resetAt).toLocaleString()}`
+                  : null}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingUsage ? (
+                <div>Loading usage...</div>
+              ) : (
+                <>
+                  <div className="mb-2 flex justify-between">
+                    <span>Standard</span>
+                    <span>{10 - remaining}/10</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-300 rounded-full mb-2">
+                    <div
+                      className="h-2 bg-primary rounded-full"
+                      style={{ width: `${((10 - remaining) / 10) * 100}%` }}
+                    />
+                  </div>
+                  <div>{remaining} messages remaining</div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
-        <Tabs defaultValue="account" className="w-full">
-          <TabsList className="">
-            <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="customization">Personalize</TabsTrigger>
-            <TabsTrigger value="appearance">Appearance</TabsTrigger>
-            <TabsTrigger value="models">Models</TabsTrigger>
-            <TabsTrigger value="chat-management">Chat Management</TabsTrigger>
-            <TabsTrigger value="contact-us">Contact us</TabsTrigger>
+        <Tabs defaultValue="customization" className="w-full flex-1">
+          <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full h-auto gap-1 p-1">
+            {/*<TabsTrigger value="account" className="text-xs md:text-sm">Account</TabsTrigger>*/}
+            <TabsTrigger value="customization" className="text-xs md:text-sm">Personalize</TabsTrigger>
+            <TabsTrigger value="appearance" className="text-xs md:text-sm">Appearance</TabsTrigger>
+            <TabsTrigger value="models" className="text-xs md:text-sm">Models</TabsTrigger>
+            <TabsTrigger value="chat-management" className="text-xs md:text-sm">Chat Management</TabsTrigger>
+            <TabsTrigger value="contact-us" className="text-xs md:text-sm">Contact us</TabsTrigger>
           </TabsList>
-          <TabsContent value="account">
-            {/* Message Usage Section */}
-            <Card className="mt-6 shadow-lg rounded-xl">
-              <CardHeader>
-                <CardTitle>
-                  <h2 className="text-lg font-semibold">Message Usage</h2>
-                </CardTitle>
-                <CardDescription>
-                  {loadingUsage
-                    ? "Loading..."
-                    : resetAt
-                    ? `Resets at: ${new Date(resetAt).toLocaleString()}`
-                    : null}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loadingUsage ? (
-                  <div>Loading usage...</div>
-                ) : (
-                  <>
-                    <div className="mb-2 flex justify-between">
-                      <span>Standard</span>
-                      <span>{10 - remaining}/10</span>
-                    </div>
-                    <div className="w-full h-2 bg-gray-300 rounded-full mb-2">
-                      <div
-                        className="h-2 bg-primary rounded-full"
-                        style={{ width: `${((10 - remaining) / 10) * 100}%` }}
-                      />
-                    </div>
-                    <div>{remaining} messages remaining</div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/*<TabsContent value="account">
+
+          </TabsContent>*/}
           <TabsContent value="customization">
             <Card className="mt-8">
               <CardHeader>
@@ -926,62 +930,62 @@ export default function Settings() {
 
             {/* Chat Settings */}
           </TabsContent>{" "}
-          <TabsContent className="w-auto lg:w-[50%]" value="appearance">
-            <div className="mt-8">
+          <TabsContent className="w-full" value="appearance">
+            <div className="mt-8 max-w-2xl mx-auto">
               <Card className="shadow-lg border-2 border-border/60">
                 <CardHeader>
                   <CardTitle>
-                    <h1 className="text-center text-2xl font-bold tracking-tight">
+                    <h1 className="text-center text-xl md:text-2xl font-bold tracking-tight">
                       Appearance
                     </h1>
                   </CardTitle>
-                  <p className="text-center text-muted-foreground text-sm mt-1">
+                  <p className="text-center text-muted-foreground text-xs md:text-sm mt-1">
                     Choose your preferred color mode and theme.
                   </p>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-8 mt-2">
+                <CardContent className="flex flex-col gap-6 md:gap-8 mt-2">
                   {/* Color Mode Section */}
                   <div>
-                    <h2 className="text-lg font-semibold mb-2 text-center">
+                    <h2 className="text-base md:text-lg font-semibold mb-3 text-center">
                       Color Mode
                     </h2>
-                    <div className="flex gap-4">
+                    <div className="flex gap-3 md:gap-4">
                       <Button
                         variant={mode === "light" ? "default" : "outline"}
-                        className={`flex-1 py-8 flex flex-col items-center gap-2 rounded-xl border transition-all duration-200 ${
+                        className={`flex-1 py-6 md:py-8 flex flex-col items-center gap-1 md:gap-2 rounded-xl border transition-all duration-200 ${
                           mode === "light"
                             ? "border-primary bg-primary/90 text-white shadow"
                             : "border-border bg-background hover:bg-accent"
                         }`}
                         onClick={() => setMode("light")}
                       >
-                        <Sun className="w-6 h-6 mb-1" />
-                        <span className="font-medium">Light</span>
+                        <Sun className="w-5 h-5 md:w-6 md:h-6 mb-1" />
+                        <span className="font-medium text-sm md:text-base">Light</span>
                       </Button>
                       <Button
                         variant={mode === "dark" ? "default" : "outline"}
-                        className={`flex-1 py-8 flex flex-col items-center gap-2 rounded-xl border transition-all duration-200 ${
+                        className={`flex-1 py-6 md:py-8 flex flex-col items-center gap-1 md:gap-2 rounded-xl border transition-all duration-200 ${
                           mode === "dark"
                             ? "border-primary bg-primary/90 text-white shadow"
                             : "border-border bg-background hover:bg-accent"
                         }`}
                         onClick={() => setMode("dark")}
                       >
-                        <Moon className="w-6 h-6 mb-1" />
-                        <span className="font-medium">Dark</span>
+                        <Moon className="w-5 h-5 md:w-6 md:h-6 mb-1" />
+                        <span className="font-medium text-sm md:text-base">Dark</span>
                       </Button>
                     </div>
                   </div>
                   {/* Theme Section */}
                   <div>
-                    <h2 className="text-lg font-semibold mb-2 text-center">
+                    <h2 className="text-base md:text-lg font-semibold mb-3 text-center">
                       Theme
                     </h2>
                     <DropdownMenu>
                       <DropdownMenuTrigger className="w-full">
                         <Button
                           variant={"outline"}
-                          className="w-full py-5 rounded-xl font-semibold text-lg flex items-center justify-center gap-2"
+                          className="w-full py-4 md:py-5 rounded-xl font-medium md:font-semibold text-base md:text-lg flex items-center justify-center gap-2"
                         >
                           <span>
                             {baseTheme === "amethyst"
@@ -999,7 +1003,7 @@ export default function Settings() {
                               : "Select Theme"}
                           </span>
                           <svg
-                            className="w-4 h-4 ml-2"
+                            className="w-3 h-3 md:w-4 md:h-4 ml-2"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
@@ -1013,7 +1017,7 @@ export default function Settings() {
                           </svg>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="px-4 py-2 min-w-[180px]">
+                      <DropdownMenuContent className="px-4 py-2 min-w-[180px] md:min-w-[200px] max-w-xs w-full">
                         <DropdownMenuItem
                           className={`rounded-lg px-3 py-2 mb-1 font-medium ${
                             baseTheme === "amethyst"
@@ -1349,45 +1353,98 @@ export default function Settings() {
             </div>
           </TabsContent>
           <TabsContent className="" value="models">
-            <div className="mt-8  space-y-3">
-              {models.map((model) => (
-                <Card className="drop-shadow-sm">
-                  <CardHeader className="inline-flex gap-3 items-center">
-                    <svg
-                      className="size-12 text-color-heading"
-                      viewBox={model.svg.viewbox}
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="currentColor"
-                    >
-                      <title>{model.svg?.title}</title>
-                      <path d={model.svg?.path}></path>
-                    </svg>
-                    <CardTitle>{model.label}</CardTitle>
-                  </CardHeader>
+            <div className="mt-8 space-y-4">
+              <div className="text-center space-y-2 mb-6">
+                <h2 className="text-2xl font-bold">Available Models</h2>
+                <p className="text-muted-foreground">
+                  Choose from our selection of AI models. Each model has different capabilities and credit costs.
+                </p>
+              </div>
 
-                  <CardContent>
-                    <p>{model.description}</p>
-                    <div className="space-x-2 my-3  inline-flex">
-                      {model.usecase.map((usecase) => {
-                        const config = useCaseConfig[usecase];
-                        if (!config) return null; // Handle cases where a use case might not have a config
-
-                        return (
-                          <Badge
-                            key={usecase}
-                            className={`flex items-center gap-1 ${config.color}`}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {models.map((model) => (
+                  <Card key={model.value} className="drop-shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <svg
+                            className="size-10 md:size-12 text-color-heading flex-shrink-0"
+                            viewBox={model.svg.viewbox}
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor"
                           >
-                            {config.icon && (
-                              <span className="h-4 w-4">{config.icon}</span>
-                            )}
-                            {usecase}
+                            <title>{model.svg?.title}</title>
+                            <path d={model.svg?.path}></path>
+                          </svg>
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg md:text-xl truncate">{model.label}</CardTitle>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Badge
+                            variant={model.credit === 2 ? "destructive" : "secondary"}
+                            className="flex items-center gap-1 px-2 py-1"
+                          >
+                            <Coins className="h-3 w-3" />
+                            {model.credit} {model.credit === 1 ? 'Credit' : 'Credits'}
                           </Badge>
-                        );
-                      })}
+                        </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-3">
+                      <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+                        {model.description}
+                      </p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {model.usecase.map((usecase) => {
+                          const config = useCaseConfig[usecase];
+                          if (!config) return null;
+
+                          return (
+                            <Badge
+                              key={usecase}
+                              className={`flex items-center gap-1 text-xs ${config.color}`}
+                            >
+                              {config.icon && (
+                                <span className="h-3 w-3">{config.icon}</span>
+                              )}
+                              {usecase}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+
+                      <div className="pt-2 border-t border-border/40">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>Cost per request:</span>
+                          <span className="font-medium text-foreground">
+                            {model.credit} {model.credit === 1 ? 'credit' : 'credits'}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <Card className="mt-6 bg-muted/30 border-dashed">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-full bg-primary/10">
+                      <Coins className="h-4 w-4 text-primary" />
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <div className="flex-1">
+                      <h3 className="font-medium text-sm mb-1">Credit System</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Premium models (GPT-OSS 120B, GPT-OSS 20B, Qwen 3-32B) use 2 credits per request,
+                        while standard models use 1 credit per request. Choose wisely based on your needs!
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
           <TabsContent value="chat-management">
@@ -1505,17 +1562,17 @@ export default function Settings() {
             </Card>
           </TabsContent>
           <TabsContent value="contact-us">
-            <div className="mt-8 space-y-6">
+            <div className="mt-8 space-y-6 max-w-4xl mx-auto">
               {/* Header */}
               <div className="text-center space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Get in Touch</h1>
-                <p className="text-muted-foreground">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Get in Touch</h1>
+                <p className="text-sm md:text-base text-muted-foreground px-2">
                   We'd love to hear from you! Reach out with questions, feedback, or suggestions.
                 </p>
               </div>
 
               {/* Contact Methods */}
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-4 px-2 md:px-0">
                 {/* Email Card */}
                 {/*<Card className="group hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20">
                   <CardContent className="p-6">
@@ -1549,8 +1606,8 @@ export default function Settings() {
                         <Github className="h-6 w-6 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg">GitHub</h3>
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <h3 className="font-semibold text-base md:text-lg">GitHub</h3>
+                        <p className="text-xs md:text-sm text-muted-foreground mb-2">
                           View source code & contribute
                         </p>
                         <a
@@ -1568,41 +1625,41 @@ export default function Settings() {
               </div>
 
               {/* Feedback Form */}
-              <Card className="shadow-lg border-2">
+              <Card className="shadow-lg border-2 mx-2 md:mx-0">
                 <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-xl">Send us your feedback</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg md:text-xl">Send us your feedback</CardTitle>
+                  <CardDescription className="text-sm">
                     Help us improve SparkChat by sharing your thoughts, suggestions, or reporting bugs
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Quick Action Buttons */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 mb-6">
                     <Button
                       variant="outline"
-                      className="flex items-center gap-2 h-12"
+                      className="flex items-center gap-2 h-10 md:h-12 text-sm md:text-base"
                       onClick={() => setFeedbackContent("💡 Suggestion: ")}
                       type="button"
                     >
-                      <span className="text-lg">💡</span>
+                      <span className="text-base md:text-lg">💡</span>
                       Suggestion
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex items-center gap-2 h-12"
+                      className="flex items-center gap-2 h-10 md:h-12 text-sm md:text-base"
                       onClick={() => setFeedbackContent("🐛 Bug Report: ")}
                       type="button"
                     >
-                      <span className="text-lg">🐛</span>
+                      <span className="text-base md:text-lg">🐛</span>
                       Bug Report
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex items-center gap-2 h-12"
+                      className="flex items-center gap-2 h-10 md:h-12 text-sm md:text-base"
                       onClick={() => setFeedbackContent("❤️ Feedback: ")}
                       type="button"
                     >
-                      <span className="text-lg">❤️</span>
+                      <span className="text-base md:text-lg">❤️</span>
                       Feedback
                     </Button>
                   </div>
@@ -1619,7 +1676,7 @@ export default function Settings() {
                         onChange={(e) => setFeedbackContent(e.target.value)}
                         rows={6}
                         placeholder="Tell us what's on your mind..."
-                        className="resize-none focus:ring-2 focus:ring-primary/20"
+                        className="resize-none focus:ring-2 focus:ring-primary/20 text-sm md:text-base"
                         required
                         maxLength={500}
                         disabled={isSubmittingFeedback}
@@ -1630,7 +1687,7 @@ export default function Settings() {
                     </div>
                     <Button
                       type="submit"
-                      className="w-full h-12 text-base font-semibold"
+                      className="w-full h-10 md:h-12 text-sm md:text-base font-semibold"
                       disabled={isSubmittingFeedback || !feedbackContent.trim()}
                     >
                       {isSubmittingFeedback ? (
@@ -1649,7 +1706,7 @@ export default function Settings() {
 
                   {/* Additional Info */}
                   <div className="pt-4 border-t">
-                    <p className="text-sm text-muted-foreground text-center">
+                    <p className="text-xs md:text-sm text-muted-foreground text-center px-2">
                       We typically respond within 24-48 hours. Your feedback helps make SparkChat better for everyone! 🚀
                     </p>
                   </div>
