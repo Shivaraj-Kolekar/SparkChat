@@ -63,6 +63,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import Publiclinkdialog from "../public-link-dialog";
+import LoadingSpinner from "../ui/loading-spinner";
 
 export function ChatSidebar() {
   const [showAdditionalButtons, setShowAdditionalButtons] = useState(false);
@@ -359,8 +360,8 @@ export function ChatSidebar() {
               ) : chatList.length === 0 && isLoading ? (
                 <SidebarMenu>
                   <div className="h-40 flex flex-col items-center justify-center">
-                    <Loader />
-                    <span className="ml-2">Loading chats...</span>
+                    <LoadingSpinner/>
+                    <span className="ml-2 my-2">Loading chats...</span>
                   </div>
                 </SidebarMenu>
               ) : (
@@ -680,7 +681,7 @@ export function ChatSidebar() {
               </Link>
             ) : (
               <a
-                href="https://accounts.sparkchat.shivraj-kolekar.in/sign-up"
+                href="/login"
                 className="flex items-center space-x-2"
               >
                 <LogInIcon size={20} />

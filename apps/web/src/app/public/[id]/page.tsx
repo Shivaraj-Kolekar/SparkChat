@@ -11,6 +11,8 @@ import Sparkchat from "@/components/sparkchat";
 import { ModeToggle } from "@/components/mode-toggle";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import LoadingSpinner from "@/components/ui/loading-spinner";
+import Image from "next/image";
 
 export default function PublicChatPage() {
   const params = useParams();
@@ -67,8 +69,8 @@ export default function PublicChatPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <Loader />
-        <div className="mt-4 text-muted-foreground text-lg">Loading public chat...</div>
+        <LoadingSpinner/>
+        <div className="my-4 text-muted-foreground text-lg">Loading public chat...</div>
       </div>
     );
   }
@@ -84,12 +86,21 @@ export default function PublicChatPage() {
       <div className="flex h-13 flex-row">
         <div className="h-2 bg-background w-full"></div>
         <header className="bg-transparent opacity-100 z-10 justify-between flex h-auto py-2 my-2 w-full rounded-bl-lg shrink-0 items-center gap-2 px-4">
-          <div className="flex flex-row gap-2 items-center">
-            <Sparkchat />
+          <div className="flex flex-row items-center  ">
+            <Image
+              className="rounded-sm "
+              src="/sparkchat.png"
+              alt="SparkChat"
+              height={48}
+              width={48}
+            />
+            <div className="text-lg font-base text-primary tracking-tight">
+              <Sparkchat />
+            </div>
           </div>
           <div className="flex flex-row gap-2 items-center">
             <ModeToggle />
-            <Link href="https://accounts.sparkchat.shivraj-kolekar.in/sign-in">
+            <Link href="/login">
               <Button variant="outline">Sign Up</Button>
             </Link>
           </div>
@@ -102,7 +113,7 @@ export default function PublicChatPage() {
             <ChatContainerContent className="space-y-4 py-4">
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground mt-8">
-                  <Loader />
+                  <LoadingSpinner/>
                   <p className="text-xl">No messages yet.</p>
                 </div>
               ) : (

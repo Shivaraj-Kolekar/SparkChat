@@ -122,6 +122,7 @@ import Image from "next/image";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TextShimmer } from "../../../../components/motion-primitives/text-shimmer";
 import ChatHeader from "@/components/chat-header";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 
 function AIPage({
   // currentChatId,
@@ -896,8 +897,8 @@ function AIPage({
               {messages.length === 0 ? (
                 <div className="">
                   <div className="text-center text-muted-foreground mt-8">
-                    <Loader></Loader>
-                    <p className="text-xl">Loading Messages</p>
+                    <LoadingSpinner/>
+                    <p className="text-xl my-2">Loading Messages</p>
                   </div>
                 </div>
               ) : (

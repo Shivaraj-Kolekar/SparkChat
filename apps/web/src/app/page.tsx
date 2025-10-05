@@ -111,6 +111,7 @@ import { useChatStore } from "@/store/chatStore";
 import { useModelStore } from "@/store/modelStore";
 import { useAiLoadingStore } from "@/store/aiLoadingStore";
 import ChatHeader from "@/components/chat-header";
+import LoadingSpinner from "@/components/ui/loading-spinner";
 
 // The ChatSidebar now uses React Query for fetching chats, so you can remove the `chats`, `loadingChats`, and `errorChats` props.
 // You still need `onSelectChat` and `selectedChatId` for interaction, but `onDeleteChat` is not used (deletion is handled internally).
@@ -689,7 +690,7 @@ function AIPage({
       <div className="flex-1 flex flex-col items-center mx-2 justify-center min-h-[calc(100vh-200px)] main-content">
         {pendingMessage && selectedChatId ? (
           <div className="w-full flex flex-col items-center justify-center min-h-[300px]">
-            <Loader />
+            <LoadingSpinner/>
             <div className="mt-4 text-muted-foreground text-sm">
               Redirecting to your new chat...
             </div>
@@ -699,7 +700,7 @@ function AIPage({
             {/* Centered Prompt Input */}
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight text-center">
               How can I help you
-              {/*{user?.firstName ? `, ${user.firstName}` : ""}?*/}
+              {user?.firstName ? `, ${user.firstName}` : ""}?
             </h1>
             <div className="w-full prompt-section prompt-center">
               <div className="p-[0.2rem] max-w-(--breakpoint-md) rounded-xl bg-accent focus-within:bg-accent mx-auto prompt-transition">
