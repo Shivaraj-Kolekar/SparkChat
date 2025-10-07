@@ -353,7 +353,7 @@ function AIPage({
   const [activeCategory, setActiveCategory] = useState("");
   const handleSend = () => {
     if (inputValue.trim()) {
-      console.log("Sending:", inputValue);
+     // console.log("Sending:", inputValue);
       setInputValue("");
       setFiles([]); // Clear files after sending
       setActiveCategory("");
@@ -432,7 +432,7 @@ function AIPage({
 
       // Retry logic for failed requests (max 3 attempts)
       if (retryCount < 3) {
-        console.log(`Retrying message storage attempt ${retryCount + 1}`);
+        //console.log(`Retrying message storage attempt ${retryCount + 1}`);
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retry
         if (selectedChatId) {
           return storeMessage(
@@ -869,12 +869,12 @@ function AIPage({
                 <TooltipContent>Share Chat</TooltipContent>
               </Tooltip>
               <Tooltip>
-                <TooltipTrigger>
-                  <Link href="/settings">
-                    <Button variant={"outline"}>
-                      <Settings2></Settings2>
-                    </Button>
-                  </Link>
+                <TooltipTrigger asChild>
+                  <Button asChild variant={"outline"}>
+                    <Link href="/settings">
+                      <Settings2 className="h-4 w-4" />
+                    </Link>
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>Settings</TooltipContent>
               </Tooltip>

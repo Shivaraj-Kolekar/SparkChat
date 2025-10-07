@@ -21,21 +21,22 @@ export function ModeToggle() {
     setTheme(`${baseTheme}-${mode}`);
   }, [baseTheme, mode, setTheme]);
   return (
-  <Tooltip>
-
-  <TooltipTrigger><Button
-      variant="outline"
-      size="icon"
-      onClick={() => setMode(mode === "light" ? "dark" : "light")}
-    >
-      {mode === "light" ? (
-        <Sun className="h-[1.2rem] w-[1.2rem] transition-all" />
-      ) : (
-        <Moon className="h-[1.2rem] w-[1.2rem] transition-all" />
-      )}
-      <span className="sr-only">Toggle theme</span>
-    </Button></TooltipTrigger>
-  <TooltipContent>Theme Switcher</TooltipContent>
-  </Tooltip>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setMode(mode === "light" ? "dark" : "light")}
+        >
+          {mode === "light" ? (
+            <Sun className="h-[1.2rem] w-[1.2rem] transition-all" />
+          ) : (
+            <Moon className="h-[1.2rem] w-[1.2rem] transition-all" />
+          )}
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>Theme Switcher</TooltipContent>
+    </Tooltip>
   );
 }

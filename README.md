@@ -12,7 +12,6 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **Next.js** - Full-stack React framework
 - **TailwindCSS** - Utility-first CSS for rapid UI development
 - **shadcn/ui** - Reusable UI components
-- **tRPC** - End-to-end type-safe APIs
 - **Node.js** - Runtime environment
 - **Drizzle** - TypeScript-first ORM
 - **PostgreSQL** - Database engine
@@ -26,23 +25,47 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 
 ### 🤖 Multi-Model AI Support
 
-SparkChat supports a wide range of AI models with different capabilities:
+SparkChat supports a diverse range of AI models with different capabilities and credit costs. Each model is optimized for specific use cases:
 
-#### **Google Gemini Models**
+#### **Premium Models** (2 Credits per Request)
 
-- **Gemini 2.0 Flash** - High-performance multimodal model with text, vision, PDF support, and web search
-- **Gemini 2.0 Flash Lite** - Fast, streamlined version optimized for quick responses
-- **Gemini 2.5 Flash** - Cutting-edge model with advanced multimodal capabilities
+**OpenAI Models:**
+- **GPT-OSS 120B** - Highly capable large language model engineered for generating detailed text, understanding nuanced instructions, and facilitating natural conversations. Features extensive multilingual support and advanced reasoning skills for demanding global applications.
+  - *Use Cases:* Text Generation, Advanced Reasoning
+  
+- **GPT-OSS 20B** - Versatile large language model specializing in high-quality text production, instruction following, and interactive dialogue. Efficient performance with multilingual capabilities makes it excellent for diverse language processing tasks.
+  - *Use Cases:* Text Generation, Reasoning
 
-#### **Meta Llama Models**
+**Qwen Models:**
+- **Qwen 3-32B** - Robust language model known for strong reasoning abilities and efficient text processing. Particularly effective in scenarios demanding logical deduction, analytical insights, and structured outputs.
+  - *Use Cases:* Text Generation, Advanced Reasoning
 
-- **Llama 4 Scout** - Versatile multimodal model supporting text, vision, and multilingual content
-- **Llama 3** - Powerful text-based model with multilingual capabilities
-- **Llama 3.1** - Advanced iteration with enhanced conversational abilities
+**DeepSeek Models:**
+- **DeepSeek R1 Distill Llama 70B** - Powerful language model excelling in reasoning and code generation, ideal for complex problem-solving and development tasks.
+  - *Use Cases:* Text Generation, Advanced Reasoning
 
-#### **Qwen Models**
+#### **Standard Models** (1 Credit per Request)
 
-- **Qwen QwQ** - Robust language model with strong reasoning abilities
+**Google Gemini Models:**
+- **Gemini 2.0 Flash** - High-performance multimodal model from Google that excels in processing both text and visual information, including PDF insights, with robust search capabilities for comprehensive data retrieval and analysis.
+  - *Use Cases:* Text, Vision, PDFs, Web Search
+
+**Meta Llama Models:**
+- **Llama 4 Scout** - Versatile multimodal model capable of understanding and generating content from text and images. Supports a wide range of languages, making it ideal for diverse global applications.
+  - *Use Cases:* Vision, Text, Multilingual
+
+- **Llama 3.1** - Advanced iteration of Meta's Llama series with refined text generation and improved multilingual support. Offers enhanced conversational abilities optimized for complex language tasks with nuanced, contextually aware responses.
+  - *Use Cases:* Text, Multilingual
+
+**Moonshot AI Models:**
+- **Kimi K2 Instruct** - Advanced large language model that excels at generating coherent text, following complex instructions, and engaging in interactive conversations. Strong multilingual support and robust reasoning abilities make it ideal for applications demanding precise language understanding.
+  - *Use Cases:* Text, Multilingual
+
+#### **Credit System**
+- **Premium Models:** 2 credits per request (GPT-OSS series, Qwen 3-32B, DeepSeek R1)
+- **Standard Models:** 1 credit per request (Gemini, Llama, Kimi K2)
+- **Daily Limit:** 10 total credits per day (resets at midnight)
+- **Usage Tracking:** Real-time credit counter and reset notifications
 
 ### 🔍 Web Search Integration
 

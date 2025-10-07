@@ -166,7 +166,7 @@ function AIPage({
   //   }
   // }, [selectedModel]);
   useEffect(() => {
-    console.log("Selected Model: ", selectedModel);
+    //console.log("Selected Model: ", selectedModel);
   }, [selectedModel]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
@@ -676,11 +676,11 @@ function AIPage({
               </Button>
             </div>
             <div className="flex flex-row gap-2 items-center">
-              <Link href="/settings">
-                <Button variant={"outline"}>
-                  <Settings2></Settings2>
-                </Button>
-              </Link>
+              <Button asChild variant={"outline"}>
+                <Link href="/settings">
+                  <Settings2 />
+                </Link>
+              </Button>
               <ModeToggle></ModeToggle>
             </div>
           </header>

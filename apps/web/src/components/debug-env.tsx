@@ -45,7 +45,7 @@ export function DebugEnv() {
         // Test basic API connectivity
         try {
           const healthCheck = await api.get("/api/ai");
-          console.log("Health check response:", healthCheck.status);
+          //console.log("Health check response:", healthCheck.status);
         } catch (error: any) {
           errorLog.push(`API health check failed: ${error.message}`);
         }

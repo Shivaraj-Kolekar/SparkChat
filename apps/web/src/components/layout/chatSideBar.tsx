@@ -100,7 +100,7 @@ export function ChatSidebar() {
   });
 
   useEffect(() => {
-    console.log("SELECTED CHAT ID: ", selectedChatId);
+    //console.log("SELECTED CHAT ID: ", selectedChatId);
   });
   // Sidebar animation logic
   const { toggleSidebar, state } = useSidebar();
@@ -398,10 +398,10 @@ export function ChatSidebar() {
                       now.getDate() - 29
                     );
 
-                    console.log("Time boundaries:", {
-                      startOfToday: startOfToday.toISOString(),
-                      startOf30DaysAgo: startOf30DaysAgo.toISOString(),
-                    });
+                    // console.log("Time boundaries:", {
+                    //   startOfToday: startOfToday.toISOString(),
+                    //   startOf30DaysAgo: startOf30DaysAgo.toISOString(),
+                    // });
 
                     const todayChats: any[] = [];
                     const last30DaysChats: any[] = [];

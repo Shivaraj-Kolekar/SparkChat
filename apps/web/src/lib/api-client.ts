@@ -33,7 +33,7 @@ apiClient.interceptors.request.use(
   async config => {
     // Log request details in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`)
+     // console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`)
     }
 
     // Ensure credentials are included
@@ -56,7 +56,7 @@ apiClient.interceptors.request.use(
     return config
   },
   error => {
-    console.log('API Request Error:', error)
+   // console.log('API Request Error:', error)
     if (error.response?.status === 401) {
       // Optionally, trigger a re-auth or show a message
       alert('Session expired or unauthorized. Please sign in again.');
@@ -70,7 +70,7 @@ apiClient.interceptors.response.use(
   response => {
     // Log successful responses in development
     if (process.env.NODE_ENV === 'development') {
-      console.log(`API Response: ${response.status} ${response.config.url}`)
+      //console.log(`API Response: ${response.status} ${response.config.url}`)
     }
     return response
   },
@@ -87,7 +87,7 @@ apiClient.interceptors.response.use(
 
     // Don't automatically redirect on 401 - let components handle it
     if (error.response?.status === 401) {
-      console.log('Unauthorized access detected')
+      //console.log('Unauthorized access detected')
       // Let the calling component decide how to handle this
     }
 

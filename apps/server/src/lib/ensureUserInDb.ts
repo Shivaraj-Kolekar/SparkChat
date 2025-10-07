@@ -28,7 +28,7 @@ export async function ensureUserInDb(clerkUser: any) {
         createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt) : new Date(),
         updatedAt: new Date(),
       });
-      console.log("User inserted into DB:", clerkUser.id);
+      //console.log("User inserted into DB:", clerkUser.id);
     }
   } catch (err) {
     console.error("Error in ensureUserInDb:", err, clerkUser);

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 type ChatStore = {
   selectedChatId: string | null;
@@ -10,6 +10,7 @@ type ChatStore = {
   pendingChatId: string | null;
   setPendingChatId: (id: string | null) => void;
   clearPending: () => void;
+  clearStore: () => void;
 };
 
 export const useChatStore = create<ChatStore>()(
@@ -23,13 +24,28 @@ export const useChatStore = create<ChatStore>()(
       pendingChatId: null,
       setPendingChatId: (id) => set({ pendingChatId: id }),
       clearPending: () => set({ pendingPrompt: null, pendingChatId: null }),
+      clearStore: () => {
+        set({
+          selectedChatId: null,
+          pendingPrompt: null,
+          pendingChatId: null,
+        });
+        localStorage.removeItem("chat-store"); // Clear the persisted data
+      },
     }),
     {
       name: "chat-store", // unique name in storage
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         selectedChatId: state.selectedChatId,
-        // Optionally persist other keys if needed
+        pendingPrompt: state.pendingPrompt,
+        pendingChatId: state.pendingChatId,
       }),
     }
   )
 );
+
+// Clear the store on window beforeunload
+window.addEventListener("beforeunload", () => {
+  useChatStore.getState().clearStore();
+});
