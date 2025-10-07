@@ -217,7 +217,7 @@ function AIPage({
           setCurrentMessages(transformedMessages);
         }
       } catch (error) {
-        console.error("Error fetching messages:", error);
+       // console.error("Error fetching messages:", error);
       }
     },
     [setCurrentMessages]
@@ -428,7 +428,7 @@ function AIPage({
 
       return true; // Indicate successful storage
     } catch (error) {
-      console.error("Error storing message:", error);
+      //console.error("Error storing message:", error);
 
       // Retry logic for failed requests (max 3 attempts)
       if (retryCount < 3) {
@@ -663,7 +663,7 @@ function AIPage({
           }
         }
       } catch (error) {
-        console.error("Error polling messages:", error);
+       // console.error("Error polling messages:", error);
         attempts++;
         if (attempts >= maxAttempts) {
           if (interval) {
@@ -1349,7 +1349,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
         setCurrentMessages([]);
       }
     } catch (error) {
-      console.error("Error loading chat messages:", error);
+    //  console.error("Error loading chat messages:", error);
       toast.error("Error loading chat messages");
       setCurrentMessages([]);
     }

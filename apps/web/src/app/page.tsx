@@ -376,7 +376,7 @@ function AIPage({
         );
       }
     } catch (e) {
-      console.error("Error fetching remaining messages:", e);
+      //console.error("Error fetching remaining messages:", e);
     }
   };
   // Call fetchRemaining after each message is sent
@@ -912,7 +912,7 @@ function FullChatApp() {
       await api.delete(`/api/chat/${id}`);
       toast.success("Chat Deleted");
     } catch (error) {
-      console.error("Error loading chat messages:", error);
+     // console.error("Error loading chat messages:", error);
       toast.error("Error loading chat messages");
     }
   };
@@ -931,14 +931,14 @@ function FullChatApp() {
           timestamp: msg.created_at,
         }));
         setCurrentMessages(transformedMessages);
-        console.log("Loaded messages:", transformedMessages);
+        //console.log("Loaded messages:", transformedMessages);
         router.push(`/chat/${id}`);
       } else {
         toast.error("Failed to load chat messages");
         setCurrentMessages([]);
       }
     } catch (error) {
-      console.error("Error loading chat messages:", error);
+      //console.error("Error loading chat messages:", error);
       toast.error("Error loading chat messages");
       setCurrentMessages([]);
     }

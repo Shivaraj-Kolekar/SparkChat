@@ -76,14 +76,14 @@ apiClient.interceptors.response.use(
   },
   error => {
     // Enhanced error logging
-    console.error('API Response Error:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      method: error.config?.method,
-      message: error.message,
-      data: error.response?.data
-    })
+    // console.error('API Response Error:', {
+    //   status: error.response?.status,
+    //   statusText: error.response?.statusText,
+    //   url: error.config?.url,
+    //   method: error.config?.method,
+    //   message: error.message,
+    //   data: error.response?.data
+    // })
 
     // Don't automatically redirect on 401 - let components handle it
     if (error.response?.status === 401) {
@@ -93,7 +93,7 @@ apiClient.interceptors.response.use(
 
     // Handle network errors
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      console.error('API request timed out')
+     // console.error('API request timed out')
     }
 
     // Handle connection errors
@@ -101,7 +101,7 @@ apiClient.interceptors.response.use(
       error.code === 'ERR_NETWORK' ||
       error.message.includes('Network Error')
     ) {
-      console.error('Network error - check if server is running and accessible')
+     // console.error('Network error - check if server is running and accessible')
     }
 
     return Promise.reject(error)

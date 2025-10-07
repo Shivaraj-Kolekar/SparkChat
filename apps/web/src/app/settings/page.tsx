@@ -113,7 +113,7 @@ export default function Settings() {
         setExistingPreferences(response.data.data);
       }
     } catch (error: any) {
-      console.error("Error fetching preferences:", error);
+      //console.error("Error fetching preferences:", error);
       if (error.response?.status === 401) {
         toast.error("Please login to view preferences");
       } else {
@@ -239,7 +239,7 @@ export default function Settings() {
       toast.success("Account Deleted");
       router.push("/login");
     } catch (error) {
-      console.error("Error deleting account:", error);
+      //console.error("Error deleting account:", error);
       toast.error("Error deleting account");
     }
   };
@@ -507,7 +507,7 @@ export default function Settings() {
         setChatList(response.data.result);
       }
     } catch (error) {
-      console.error("Error fetching chats:", error);
+      //console.error("Error fetching chats:", error);
       toast.error("Failed to load chats");
     } finally {
       setIsLoadingChats(false);
@@ -533,7 +533,7 @@ export default function Settings() {
       setSelectedChats([]);
       await fetchChats(); // Refresh the list
     } catch (error) {
-      console.error("Error deleting chats:", error);
+      //console.error("Error deleting chats:", error);
       toast.error("Failed to delete chats");
     } finally {
       setIsDeletingChats(false);
@@ -597,7 +597,7 @@ export default function Settings() {
         toast.error(`Error: ${errorMessage}. Please try again.`);
       }
     } catch (error: any) {
-      console.error("Error submitting feedback:", error);
+      //console.error("Error submitting feedback:", error);
 
       if (error.code === 'ERR_NETWORK') {
         toast.error("Unable to connect to server. Please check your connection.");

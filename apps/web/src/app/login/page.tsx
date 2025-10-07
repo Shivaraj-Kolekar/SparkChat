@@ -36,7 +36,7 @@ export default function LoginPage() {
         redirectUrlComplete: "/",
       });
     } catch (error: any) {
-      console.error("Google auth error:", error);
+      //console.error("Google auth error:", error);
       setError("Failed to sign in with Google. Please try again.");
       setIsLoading(false);
     }
@@ -81,7 +81,7 @@ export default function LoginPage() {
         }
       }
     } catch (error: any) {
-      console.error("Email auth error:", error);
+      //console.error("Email auth error:", error);
       const errorMessage = error?.errors?.[0]?.message ||
                           error?.message ||
                           `Failed to ${isSignUp ? 'sign up' : 'sign in'}. Please try again.`;
