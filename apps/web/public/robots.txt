@@ -1,5 +1,13 @@
+# SparkChat - Multi-Model AI Chat Platform
+# https://sparkchat.shivraj-kolekar.in
+
 User-agent: *
 Allow: /
+Allow: /about
+Allow: /login
+Allow: /public/*
+Allow: /models/*
+Allow: /features/*
 
 # Block private/sensitive areas
 Disallow: /api/
@@ -7,14 +15,47 @@ Disallow: /settings/
 Disallow: /admin/
 Disallow: /_next/
 Disallow: /.*
+Disallow: /chat/*/private
+Disallow: /private/
 
-# Allow specific pages
+# Search Engine Specific Rules
+User-agent: Googlebot
 Allow: /
-Allow: /login
-Allow: /public/*
+Allow: /about
+Allow: /models/*
+Allow: /features/*
+Disallow: /api/
+Disallow: /settings/
+Disallow: /_next/
+Crawl-delay: 0
 
-# Sitemap
+User-agent: Bingbot
+Allow: /
+Allow: /about
+Allow: /models/*
+Allow: /features/*
+Disallow: /api/
+Disallow: /settings/
+Disallow: /_next/
+Crawl-delay: 1
+
+User-agent: facebookexternalhit/*
+Allow: /
+Allow: /about
+
+User-agent: Twitterbot
+Allow: /
+Allow: /about
+
+User-agent: LinkedInBot
+Allow: /
+Allow: /about
+
+# Sitemap location
 Sitemap: https://sparkchat.shivraj-kolekar.in/sitemap.xml
 
-# Crawl delay (optional)
+# Crawl delay for general bots
 Crawl-delay: 1
+
+# Host directive
+Host: https://sparkchat.shivraj-kolekar.in
