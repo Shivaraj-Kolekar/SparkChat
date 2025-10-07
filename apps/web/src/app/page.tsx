@@ -1,4 +1,8 @@
+
 "use client";
+import type { Metadata } from "next";
+
+
 import { useChat, type Message } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";

@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Block private/sensitive areas
+Disallow: /api/
+Disallow: /settings/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /.*
+
+# Allow specific pages
+Allow: /
+Allow: /login
+Allow: /public/*
+
+# Sitemap
+Sitemap: https://sparkchat.shivraj-kolekar.in/sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1
