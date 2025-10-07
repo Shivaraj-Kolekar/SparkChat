@@ -46,6 +46,6 @@ export const useChatStore = create<ChatStore>()(
 );
 
 // Clear the store on window beforeunload
-window.addEventListener("beforeunload", () => {
+typeof window !== "undefined" && window.addEventListener("beforeunload", () => {
   useChatStore.getState().clearStore();
 });
