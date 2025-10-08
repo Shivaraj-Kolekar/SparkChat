@@ -75,6 +75,7 @@ import { handleClientScriptLoad } from "next/script";
 import { useThemeStore } from "@/store/themeStore";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
+import Link from "next/link";
 
 // Create form schema
 
@@ -642,7 +643,11 @@ export default function Settings() {
           <h2 className="text-sm md:text-lg font-normal text-center break-words">
             {user?.primaryEmailAddress?.emailAddress}
           </h2>
-
+          <Link target="_blank" href='https://sparkchat-demo.shivraj-kolekar.in/demo/cmghmn2j3853v2nombxt3n6iu' className="mt-4" about="sparkchat demo link">
+            <Button>
+              Check interactive demo
+            </Button>
+          </Link>
           <Card className="mt-6 shadow-lg w-full max-w-sm lg:max-w-none rounded-xl">
             <CardHeader>
               <CardTitle>
@@ -715,6 +720,8 @@ export default function Settings() {
               )}
             </CardContent>
           </Card>
+
+
         </div>
         <Tabs defaultValue="customization" className="w-full flex-1">
           <TabsList className="grid grid-cols-3 md:grid-cols-5 w-full h-auto gap-1 p-1">
