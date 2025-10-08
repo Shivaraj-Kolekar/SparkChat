@@ -100,7 +100,7 @@ export default function PublicChatPage() {
           </div>
           <div className="flex flex-row gap-2 items-center">
             <ModeToggle />
-            <Link href="/login">
+            <Link href="https://accounts.sparkchat.shivraj-kolekar.in/sign-up">
               <Button variant="outline">Sign Up</Button>
             </Link>
           </div>

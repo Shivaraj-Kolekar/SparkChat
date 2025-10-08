@@ -29,7 +29,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     setError("");
-    try {
+try {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/",

@@ -20,7 +20,7 @@ export default function UserMenu() {
 
   return (
     <div className="border-2 dark:border-accent border-accent-foreground p-1 flex items-center rounded-full">
-      <UserButton afterSignOutUrl="/login" />
+      <UserButton afterSignOutUrl="https://accounts.sparkchat.shivraj-kolekar.in/sign-up" />
       {/* <span>{user?.fullName || user?.username}</span> */}
     </div>
   );

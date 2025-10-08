@@ -238,7 +238,7 @@ export default function Settings() {
       await api.delete(`/api/account/${id}`);
 
       toast.success("Account Deleted");
-      router.push("/login");
+      router.push("https://accounts.sparkchat.shivraj-kolekar.in/sign-up");
     } catch (error) {
       //console.error("Error deleting account:", error);
       toast.error("Error deleting account");
@@ -443,7 +443,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (!user && !isLoaded) {
-      router.push("/login");
+      router.push("https://accounts.sparkchat.shivraj-kolekar.in/sign-up");
     }
     // Load saved settings here
     // loadSettings();

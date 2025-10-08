@@ -17,7 +17,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   // If user is not authenticated and trying to access protected route
   if (!userId) {
-    return NextResponse.redirect(new URL('/login', req.url))
+    return NextResponse.redirect(new URL('https://accounts.sparkchat.shivraj-kolekar.in/sign-up', req.url))
   }
 
   // User is authenticated, allow access
