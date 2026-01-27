@@ -217,7 +217,7 @@ function AIPage({
           setCurrentMessages(transformedMessages);
         }
       } catch (error) {
-       // console.error("Error fetching messages:", error);
+        // console.error("Error fetching messages:", error);
       }
     },
     [setCurrentMessages]
@@ -353,7 +353,7 @@ function AIPage({
   const [activeCategory, setActiveCategory] = useState("");
   const handleSend = () => {
     if (inputValue.trim()) {
-     // console.log("Sending:", inputValue);
+      // console.log("Sending:", inputValue);
       setInputValue("");
       setFiles([]); // Clear files after sending
       setActiveCategory("");
@@ -663,7 +663,7 @@ function AIPage({
           }
         }
       } catch (error) {
-       // console.error("Error polling messages:", error);
+        // console.error("Error polling messages:", error);
         attempts++;
         if (attempts >= maxAttempts) {
           if (interval) {
@@ -715,7 +715,7 @@ function AIPage({
           setPromptDisabled(false);
         }
       }
-    } catch {}
+    } catch { }
   };
 
   // Move isInputEmpty definition just before the return so it's in scope for render
@@ -897,7 +897,7 @@ function AIPage({
               {messages.length === 0 ? (
                 <div className="">
                   <div className="text-center text-muted-foreground mt-8">
-                    <LoadingSpinner/>
+                    <LoadingSpinner />
                     <p className="text-xl my-2">Loading Messages</p>
                   </div>
                 </div>
@@ -905,7 +905,7 @@ function AIPage({
                 messages.map((message, idx) => (
                   <MessageComponent
                     key={message.id}
-  className={
+                    className={
                       message.role === "user"
                         ? "flex justify-end"
                         : "flex justify-start"
@@ -1223,32 +1223,32 @@ function AIPage({
                     >
                       {selectedModel
                         ? WebSearchModels.includes(selectedModel) && (
-                            <Button
-                              onClick={() => {
-                                setSearchEnabled((prevSearchEnabled) => {
-                                  const newState = !prevSearchEnabled;
-                                  if (newState) {
-                                    const isGroqModel = selectedModel.startsWith("openai/gpt-oss");
-                                    toast.success(`Web ${isGroqModel ? "search (via tool calls)" : "search"} enabled`, {
-                                      description: isGroqModel ? "Search results will appear in a collapsible section" : undefined
-                                    });
-                                  } else {
-                                    toast.info("Web search disabled");
-                                  }
-                                  return newState;
-                                });
-                              }}
-                              variant={
-                                searchEnabled === true ? "default" : "outline"
-                              }
-                            >
-                              {/*<Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
+                          <Button
+                            onClick={() => {
+                              setSearchEnabled((prevSearchEnabled) => {
+                                const newState = !prevSearchEnabled;
+                                if (newState) {
+                                  const isGroqModel = selectedModel.startsWith("openai/gpt-oss");
+                                  toast.success(`Web ${isGroqModel ? "search (via tool calls)" : "search"} enabled`, {
+                                    description: isGroqModel ? "Search results will appear in a collapsible section" : undefined
+                                  });
+                                } else {
+                                  toast.info("Web search disabled");
+                                }
+                                return newState;
+                              });
+                            }}
+                            variant={
+                              searchEnabled === true ? "default" : "outline"
+                            }
+                          >
+                            {/*<Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
                               {selectedModel && ToolCallModels.includes(selectedModel) && searchEnabled && (
                                 <span className="ml-1 text-xs">Tool</span>
                               )}*/}
                             Web Search <Globe></Globe>
-                            </Button>
-                          )
+                          </Button>
+                        )
                         : ""}
                     </PromptInputAction>
                   </div>
@@ -1349,7 +1349,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
         setCurrentMessages([]);
       }
     } catch (error) {
-    //  console.error("Error loading chat messages:", error);
+      //  console.error("Error loading chat messages:", error);
       toast.error("Error loading chat messages");
       setCurrentMessages([]);
     }
@@ -1389,6 +1389,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <SidebarProvider>
+      {/* <AppSidebar variant="inset" /> */}
       <ChatSidebar />
       <ChatHeader />
       <SidebarInset>

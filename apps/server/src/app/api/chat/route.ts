@@ -32,7 +32,7 @@ export const POST = withCORS(async (req: NextRequest) => {
     // Generate AI title from the prompt
     let aiTitle = title;
     try {
-      const aiModel = google("gemini-2.0-flash");
+      const aiModel = google("gemini-3-flash-preview");
       const prompt = [
         {
           role: "user" as const,
