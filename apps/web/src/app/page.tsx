@@ -1,7 +1,5 @@
-
 "use client";
 import type { Metadata } from "next";
-
 
 import { useChat, type Message } from "@ai-sdk/react";
 import { useRouter } from "next/navigation";
@@ -139,14 +137,14 @@ function AIPage({
   router: any; // Use the router type from useRouter
 }) {
   const { refreshChats } = useChatContext();
-  //const [selectedModel, setSelectedModel] = useState("gemini-2.0-flash"); // default model
+  //const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash"); // default model
   const { user, isLoaded } = useUser();
   const selectedChatId = useChatStore((state) => state.selectedChatId);
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
   const selectedModel = useModelStore((state) => state.selectedModel);
   const setSelectedModel = useModelStore((state) => state.setSelectedModel);
   const clearSelectedChatId = useChatStore(
-    (state) => state.clearSelectedChatId
+    (state) => state.clearSelectedChatId,
   );
   // useEffect(()=>{
   //   if(selectedChatId!==null){
@@ -197,7 +195,7 @@ function AIPage({
   const setAiLoading = useAiLoadingStore((state) => state.setAiLoading);
   // Get suggestions based on active category
   const activeCategoryData = suggestionGroups.find(
-    (group) => group.label === activeCategory
+    (group) => group.label === activeCategory,
   );
 
   // Determine which suggestions to show
@@ -213,29 +211,21 @@ function AIPage({
     };
   }, []);
   const WebSearchModels = [
-    "gemini-2.0-flash",
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.0-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
     // "openai/gpt-oss-120b",
     // "openai/gpt-oss-20b",
   ];
 
   // Models that support research functionality
-  const ResearchModels = [
-    "gemini-2.0-flash",
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.0-flash-lite",
-  ];
+  const ResearchModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
-  const ToolCallModels = [
-    "openai/gpt-oss-120b",
-    "openai/gpt-oss-20b",
-  ];
+  const ToolCallModels = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"];
   const storeMessage = async (
     message: Message,
     chatId: string,
     model?: string,
-    retryCount = 0
+    retryCount = 0,
   ) => {
     try {
       if (!chatId) {
@@ -294,7 +284,7 @@ function AIPage({
   const actuallySendMessage = async (
     messageText: string,
     chatId: string,
-    e?: React.FormEvent
+    e?: React.FormEvent,
   ) => {
     const userMessage = {
       content: messageText,
@@ -334,10 +324,10 @@ function AIPage({
       const stored = await storeMessage(message, latestChatId as string);
       if (!stored) {
         toast.error(
-          "AI response was not saved. The chat history may be incomplete."
+          "AI response was not saved. The chat history may be incomplete.",
         );
       }
-// fetchRemaining(); // Re-added fetchRemaining here
+      // fetchRemaining(); // Re-added fetchRemaining here
     },
   });
   useEffect(() => {
@@ -367,7 +357,7 @@ function AIPage({
         if (data.remaining === 0) {
           setPromptDisabled(true);
           toast.error(
-            "No more messages are available. Please wait until your quota resets."
+            "No more messages are available. Please wait until your quota resets.",
           );
         } else {
           setPromptDisabled(false);
@@ -376,7 +366,7 @@ function AIPage({
         console.error(
           "Failed to fetch remaining messages:",
           res.status,
-          res.statusText
+          res.statusText,
         );
       }
     } catch (e) {
@@ -400,17 +390,27 @@ function AIPage({
 
       try {
         // Add transition class to trigger animation
-        const mainElement = document.querySelector('main');
-        const promptSection = document.querySelector('.prompt-section');
-        const helpSection = document.querySelector('.help-section');
+        const mainElement = document.querySelector("main");
+        const promptSection = document.querySelector(".prompt-section");
+        const helpSection = document.querySelector(".help-section");
         if (mainElement) {
-          mainElement.classList.add('page-transition-exit-active', 'creating-chat');
+          mainElement.classList.add(
+            "page-transition-exit-active",
+            "creating-chat",
+          );
         }
         if (promptSection) {
-          promptSection.classList.add('center-to-top');
+          promptSection.classList.add("center-to-top");
         }
         if (helpSection) {
-          helpSection.classList.add('opacity-30', 'transform', '-translate-y-5', 'transition-all', 'duration-300', 'ease-in');
+          helpSection.classList.add(
+            "opacity-30",
+            "transform",
+            "-translate-y-5",
+            "transition-all",
+            "duration-300",
+            "ease-in",
+          );
         }
 
         // 1. Create chat with prompt as title
@@ -442,7 +442,9 @@ function AIPage({
         // 3. Add slight delay for transition effect, then redirect
         setTimeout(() => {
           setAiLoading(true);
-          router.push(`/chat/${newChatId}?initialPrompt=${encodeURIComponent(input)}`);
+          router.push(
+            `/chat/${newChatId}?initialPrompt=${encodeURIComponent(input)}`,
+          );
           setPendingMessage(input); // Trigger AI message generation after redirect
           setCreatingChat(false);
         }, 250);
@@ -451,17 +453,27 @@ function AIPage({
         toast.error("Failed to create new chat.", { id: "creating-chat" });
         setCreatingChat(false);
         // Remove transition classes on error
-        const mainElement = document.querySelector('main');
-        const promptSection = document.querySelector('.prompt-section');
-        const helpSection = document.querySelector('.help-section');
+        const mainElement = document.querySelector("main");
+        const promptSection = document.querySelector(".prompt-section");
+        const helpSection = document.querySelector(".help-section");
         if (mainElement) {
-          mainElement.classList.remove('page-transition-exit-active', 'creating-chat');
+          mainElement.classList.remove(
+            "page-transition-exit-active",
+            "creating-chat",
+          );
         }
         if (promptSection) {
-          promptSection.classList.remove('center-to-top');
+          promptSection.classList.remove("center-to-top");
         }
         if (helpSection) {
-          helpSection.classList.remove('opacity-30', 'transform', '-translate-y-5', 'transition-all', 'duration-300', 'ease-in');
+          helpSection.classList.remove(
+            "opacity-30",
+            "transform",
+            "-translate-y-5",
+            "transition-all",
+            "duration-300",
+            "ease-in",
+          );
         }
         return;
       }
@@ -518,32 +530,7 @@ function AIPage({
       usecase: ["Text", "Multilingual"],
     },
     {
-      value: "gemini-2.0-flash",
-      label: "Gemini 2.0 Flash",
-      svg: {
-        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
-        title: "Gemini",
-        viewbox: "0 0 16 16",
-      },
-      description:
-        "Gemini 2.0 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
-      usecase: ["Text", "Vision", "PDFs", "Search"],
-    },
-
-    {
-      value: "gemini-2.0-flash-lite",
-      label: "Gemini 2.0 Flash Lite",
-      svg: {
-        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
-        title: "Gemini",
-        viewbox: "0 0 16 16",
-      },
-      description:
-        "Gemini 2.0 Flash Lite is a streamlined and faster version of Gemini 2.0 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
-      usecase: ["Fast", "Text", "Vision", "PDFs"],
-    },
-    {
-      value: "gemini-2.5-flash-preview-04-17",
+      value: "gemini-2.5-flash",
       label: "Gemini 2.5 Flash",
       svg: {
         path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
@@ -551,8 +538,21 @@ function AIPage({
         viewbox: "0 0 16 16",
       },
       description:
-        "Gemini 2.5 Flash, a cutting-edge model from Google, offers advanced multimodal capabilities, seamlessly handling text, vision, and PDF content. It features enhanced search integration for superior information access and is designed for complex, data-rich applications.",
+        "Gemini 2.5 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
       usecase: ["Text", "Vision", "PDFs", "Search"],
+    },
+
+    {
+      value: "gemini-2.5-flash-lite",
+      label: "Gemini 2.5 Flash Lite",
+      svg: {
+        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+        title: "Gemini",
+        viewbox: "0 0 16 16",
+      },
+      description:
+        "Gemini 2.5 Flash Lite is a streamlined and faster version of Gemini 2.5 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
+      usecase: ["Fast", "Text", "Vision", "PDFs"],
     },
     {
       value: "qwen-qwq-32b",
@@ -646,7 +646,12 @@ function AIPage({
   };
 
   return (
-    <main className={cn("flex flex-col min-h-screen bg-background pt-14 prompt-transition", creatingChat && "creating-chat")}>
+    <main
+      className={cn(
+        "flex flex-col min-h-screen bg-background pt-14 prompt-transition",
+        creatingChat && "creating-chat",
+      )}
+    >
       {/* Mobile warning header */}
       {/*{showMobileWarning && (
         <div className="w-full flex justify-center bg-yellow-400 text-yellow-900 py-2 px-4 text-sm font-medium items-center z-50" style={{ position: "sticky", top: 0 }}>
@@ -694,7 +699,7 @@ function AIPage({
       <div className="flex-1 flex flex-col items-center mx-2 justify-center min-h-[calc(100vh-200px)] main-content">
         {pendingMessage && selectedChatId ? (
           <div className="w-full flex flex-col items-center justify-center min-h-[300px]">
-            <LoadingSpinner/>
+            <LoadingSpinner />
             <div className="mt-4 text-muted-foreground text-sm">
               Redirecting to your new chat...
             </div>
@@ -708,7 +713,6 @@ function AIPage({
             </h1>
             <div className="w-full prompt-section prompt-center">
               <div className="p-[0.2rem] max-w-(--breakpoint-md) rounded-xl bg-accent focus-within:bg-accent mx-auto prompt-transition">
-
                 <PromptInput
                   value={input}
                   onSubmit={handleSubmit}
@@ -725,7 +729,8 @@ function AIPage({
                         tooltip={
                           !user
                             ? "Please login to use Search Web"
-                            : selectedModel && ToolCallModels.includes(selectedModel)
+                            : selectedModel &&
+                                ToolCallModels.includes(selectedModel)
                               ? "Search Web (via Tool Calls)"
                               : "Search Web"
                         }
@@ -756,17 +761,32 @@ function AIPage({
                     </div>
 
                     <PromptInputAction
-                      tooltip={creatingChat ? "Creating chat..." : isLoading ? "Processing..." : "Send message"}
+                      tooltip={
+                        creatingChat
+                          ? "Creating chat..."
+                          : isLoading
+                            ? "Processing..."
+                            : "Send message"
+                      }
                     >
                       <Button
                         variant="default"
                         size="icon"
                         onClick={() => {
-                          if (!promptDisabled && !creatingChat &&  input &&
-                          input.trim() !== "") handleSubmit();
+                          if (
+                            !promptDisabled &&
+                            !creatingChat &&
+                            input &&
+                            input.trim() !== ""
+                          )
+                            handleSubmit();
                         }}
-                        disabled={promptDisabled || creatingChat ||  !input ||
-                        input.trim() === ""}
+                        disabled={
+                          promptDisabled ||
+                          creatingChat ||
+                          !input ||
+                          input.trim() === ""
+                        }
                       >
                         {creatingChat || isLoading ? (
                           <Square className="size-5 fill-current animate-pulse" />
@@ -776,9 +796,11 @@ function AIPage({
                       </Button>
                     </PromptInputAction>
                   </PromptInputActions>
-                </PromptInput> {remaining <= 5 && remaining > 0 && (
+                </PromptInput>{" "}
+                {remaining <= 5 && remaining > 0 && (
                   <div className="text-yellow-600 text-center my-2">
-                    {remaining} messages left before your daily limit is reached.
+                    {remaining} messages left before your daily limit is
+                    reached.
                   </div>
                 )}
                 {remaining === 0 && (
@@ -793,8 +815,6 @@ function AIPage({
             {/* How can I help you section */}
             {messages.length === 0 && !creatingChat && (
               <div className="w-full flex flex-col items-center space-y-6 fade-in-up help-section">
-
-
                 {/* Category Buttons */}
                 <div className="w-full max-w-lg flex flex-row gap-2 px-2">
                   {categories.map((cat) => (
@@ -808,7 +828,7 @@ function AIPage({
                       style={{ minWidth: 0 }}
                       onClick={() =>
                         setSelectedCategory(
-                          cat === selectedCategory ? null : cat
+                          cat === selectedCategory ? null : cat,
                         )
                       }
                     >
@@ -852,7 +872,7 @@ function AIPage({
                             g.label ===
                             categoryMap[
                               selectedCategory as keyof typeof categoryMap
-                            ]
+                            ],
                         )
                         ?.items.slice(0, 6)
                         .map((prompt) => (
@@ -896,7 +916,6 @@ function AIPage({
           </div>
         )}
       </div>
-
     </main>
   );
 }
@@ -916,7 +935,7 @@ function FullChatApp() {
       await api.delete(`/api/chat/${id}`);
       toast.success("Chat Deleted");
     } catch (error) {
-     // console.error("Error loading chat messages:", error);
+      // console.error("Error loading chat messages:", error);
       toast.error("Error loading chat messages");
     }
   };

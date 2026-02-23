@@ -21,11 +21,11 @@ export const metadata: Metadata = {
     default: "SparkChat - Free AI Chat with Gemini, Llama, GPT-OSS | Multi-Model AI Platform",
     template: "%s | SparkChat - AI Chat Platform"
   },
-  description: "🚀 Free AI chat with 8+ models: Gemini 2.0 Flash, Llama 4 Scout, GPT-OSS 120B, Qwen 3-32B, DeepSeek R1. Real-time streaming, web search, PDF analysis, vision AI, multilingual support. No signup required - start chatting now!",
+  description: "🚀 Free AI chat with 8+ models: Gemini 2.5 Flash, Llama 4 Scout, GPT-OSS 120B, Qwen 3-32B, DeepSeek R1. Real-time streaming, web search, PDF analysis, vision AI, multilingual support. No signup required - start chatting now!",
   keywords: [
     "free AI chat",
     "AI chatbot online",
-    "Gemini 2.0 chat",
+    "Gemini 2.5 chat",
     "Llama 4 Scout chat",
     "GPT-OSS chat",
     "DeepSeek R1 chat",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://sparkchat.shivraj-kolekar.in",
     title: "SparkChat - Free AI Chat with Gemini, Llama, GPT-OSS | Multi-Model AI Platform",
-    description: "🚀 Free AI chat with 8+ models: Gemini 2.0, Llama 4 Scout, GPT-OSS, Qwen, DeepSeek. Real-time streaming, web search, PDF analysis, vision AI, multilingual support. No signup required!",
+    description: "🚀 Free AI chat with 8+ models: Gemini 2.5, Llama 4 Scout, GPT-OSS, Qwen, DeepSeek. Real-time streaming, web search, PDF analysis, vision AI, multilingual support. No signup required!",
     siteName: "SparkChat",
     images: [
       {
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "SparkChat - Free AI Chat Platform",
-    description: "🚀 Chat with 8+ AI models FREE! Gemini 2.0, Llama 4 Scout, GPT-OSS, DeepSeek & more. Real-time streaming, web search, PDF analysis. No signup needed!",
+    description: "🚀 Chat with 8+ AI models FREE! Gemini 2.5, Llama 4 Scout, GPT-OSS, DeepSeek & more. Real-time streaming, web search, PDF analysis. No signup needed!",
     images: ["/sparkchat-ui.png"],
     creator: "@Shivaraj_Kolekar",
     site: "@SparkChatAI",
@@ -149,7 +149,7 @@ export default function RootLayout({
                 "@type": "SoftwareApplication",
                 "name": "SparkChat",
                 "alternateName": "SparkChat AI",
-                "description": "Free multi-model AI chat platform with 8+ AI models including Gemini 2.0 Flash, Llama 4 Scout, GPT-OSS 120B, Qwen 3-32B, and DeepSeek R1. Features real-time streaming, web search, PDF analysis, vision AI, and multilingual support.",
+                "description": "Free multi-model AI chat platform with 8+ AI models including Gemini 2.5 Flash, Llama 4 Scout, GPT-OSS 120B, Qwen 3-32B, and DeepSeek R1. Features real-time streaming, web search, PDF analysis, vision AI, and multilingual support.",
                 "url": "https://sparkchat.shivraj-kolekar.in",
                 "applicationCategory": ["CommunicationApplication", "ProductivityApplication", "EducationalApplication"],
                 "operatingSystem": ["Windows", "macOS", "Linux", "iOS", "Android"],

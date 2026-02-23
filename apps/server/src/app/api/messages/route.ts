@@ -25,7 +25,7 @@ export const POST = withCORS(async (req: NextRequest) => {
     if (!message || !message.role || !message.content || !chatId) {
       return NextResponse.json(
         { error: "Invalid message data or missing chatId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -59,12 +59,13 @@ export const POST = withCORS(async (req: NextRequest) => {
     if (isNewChat) {
       (async () => {
         try {
-          const aiModel = google("gemini-2.0-flash");
+          const aiModel = google("gemini-2.5-flash");
           const prompt = [
             {
               role: "user" as const,
               content:
-                "Generate a short, descriptive chat title (max 6 words, no punctuation) for the following user message. Respond with only the title.\n\n" + message.content,
+                "Generate a short, descriptive chat title (max 6 words, no punctuation) for the following user message. Respond with only the title.\n\n" +
+                message.content,
             },
           ];
           const result = await generateText({
@@ -73,16 +74,20 @@ export const POST = withCORS(async (req: NextRequest) => {
             maxTokens: 12,
             temperature: 0.5,
           });
-          const title = (result.text || "New chat").replace(/[\n\r]+/g, " ").trim().slice(0, 60);
-          await db
-            .update(chatTable)
-            .set({ title })
-            .where(eq(chatTable.id, id));
+          const title = (result.text || "New chat")
+            .replace(/[\n\r]+/g, " ")
+            .trim()
+            .slice(0, 60);
+          await db.update(chatTable).set({ title }).where(eq(chatTable.id, id));
         } catch (err) {
           // fallback: use first 30 chars
           await db
             .update(chatTable)
-            .set({ title: message.content.slice(0, 30) + (message.content.length > 30 ? "..." : "") })
+            .set({
+              title:
+                message.content.slice(0, 30) +
+                (message.content.length > 30 ? "..." : ""),
+            })
             .where(eq(chatTable.id, id));
         }
       })();
@@ -93,7 +98,7 @@ export const POST = withCORS(async (req: NextRequest) => {
     console.error("Error storing message:", error);
     return NextResponse.json(
       { error: "Failed to store message" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });

@@ -16,9 +16,9 @@ export const maxDuration = 30;
 // Function to create personalized system prompt based on user preferences
 function createPersonalizedSystemPrompt(
   userPreferences: any,
-  userName: string
+  userName: string,
 ) {
-  let systemPrompt = `You are SparkChat, an AI assistant powered by multiple models, defaulting to Gemini 2.0 Flash unless the user selects another model (e.g., LLama, Qwen, Deepseek). Engage helpfully, respectfully, and engagingly with all users.
+  let systemPrompt = `You are SparkChat, an AI assistant powered by multiple models, defaulting to Gemini 2.5 Flash unless the user selects another model (e.g., LLama, Qwen, Deepseek). Engage helpfully, respectfully, and engagingly with all users.
 
   - **Core Behavior**:
     - Respond concisely, accurately, and clearly, prioritizing user intent.
@@ -28,9 +28,9 @@ function createPersonalizedSystemPrompt(
     - Respect user privacy; do not store or share personal data beyond session needs.
 
   - **Model Handling**:
-    - Default to Gemini 2.0 Flash unless the user specifies another model.
+    - Default to Gemini 2.5 Flash unless the user specifies another model.
     - Support seamless switching between available models (e.g., GPT, Grok) based on user preference.
-    - When asked about your model, state: "I’m SparkChat, powered by Gemini 2.0 Flash by default. You can choose other models like GPT or Grok if desired."
+    - When asked about your model, state: "I’m SparkChat, powered by Gemini 2.5 Flash by default. You can choose other models like GPT or Grok if desired."
 
   - **Formatting**:
     - Use Markdown for responses, including headings, bullet points, and code blocks.
@@ -128,16 +128,25 @@ export const POST = withCORS(async (req: NextRequest) => {
 
   // If the record exists and is for today, check the count
   const validModels = [
-    'meta-llama/llama-4-scout-17b-16e-instruct','gemini-2.0-flash-lite-001','gemini-2.5-flash-live-preview','meta-llama/llama-guard-4-12b', 'llama-3.1-8b-instant', 'llama-guard-4-12b', 'moonshotai/kimi-k2-instruct-0905', 'gemini-2.0-flash' ,'gemini-2.0-flash-lite', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3-32b', 'deepseek-r1-distill-llama-70b'
-
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+    "gemini-2.5-flash-lite",
+    "meta-llama/llama-guard-4-12b",
+    "llama-3.1-8b-instant",
+    "llama-guard-4-12b",
+    "moonshotai/kimi-k2-instruct-0905",
+    "gemini-2.5-flash",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3-32b",
+    "deepseek-r1-distill-llama-70b",
   ];
 
   // Validate model
   if (!validModels.includes(model)) {
-    return new Response(
-      JSON.stringify({ error: `Invalid model: ${model}` }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: `Invalid model: ${model}` }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   // If the record exists and is for today, check the count
@@ -154,31 +163,42 @@ export const POST = withCORS(async (req: NextRequest) => {
       // }
       // Check general limit
       if (limit.requestCount >= 10) {
-            return new Response(
-              JSON.stringify({
-                error: `Rate limit exceeded. You can send more messages after: ${windowEnd.toLocaleString()}`,
-              }),
-              { status: 429, headers: { 'Content-Type': 'application/json' } }
-            );
-          }
-          // Calculate credits based on model
-          const credits = model === 'openai/gpt-oss-120b' || model === 'openai/gpt-oss-20b' || model === 'qwen/qwen3-32b' || model=== 'deepseek-r1-distill-llama-70b' ? 2 : 1;
-          // Increment request count
+        return new Response(
+          JSON.stringify({
+            error: `Rate limit exceeded. You can send more messages after: ${windowEnd.toLocaleString()}`,
+          }),
+          { status: 429, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      // Calculate credits based on model
+      const credits =
+        model === "openai/gpt-oss-120b" ||
+        model === "openai/gpt-oss-20b" ||
+        model === "qwen/qwen3-32b" ||
+        model === "deepseek-r1-distill-llama-70b"
+          ? 2
+          : 1;
+      // Increment request count
       try {
         await db
           .update(rateLimit)
           .set({ requestCount: limit.requestCount + credits, updatedAt: now })
           .where(eq(rateLimit.id, limit.id));
       } catch (error) {
-        console.error('Rate limit update failed:', error);
+        console.error("Rate limit update failed:", error);
         return new Response(
-          JSON.stringify({ error: 'Internal server error' }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: "Internal server error" }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
         );
       }
     } else {
       // Window expired, reset
-      const credits = model === 'openai/gpt-oss-120b' || model === 'openai/gpt-oss-20b' || model === 'qwen/qwen3-32b' ? 2 : 1;
+      const credits =
+        model === "openai/gpt-oss-120b" ||
+        model === "openai/gpt-oss-20b" ||
+        model === "qwen/qwen3-32b"
+          ? 2
+          : 1;
       try {
         await db
           .update(rateLimit)
@@ -190,10 +210,10 @@ export const POST = withCORS(async (req: NextRequest) => {
           })
           .where(eq(rateLimit.id, limit.id));
       } catch (error) {
-        console.error('Rate limit reset failed:', error);
+        console.error("Rate limit reset failed:", error);
         return new Response(
-          JSON.stringify({ error: 'Internal server error' }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: "Internal server error" }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
         );
       }
     }
@@ -202,18 +222,23 @@ export const POST = withCORS(async (req: NextRequest) => {
     try {
       await db.insert(rateLimit).values({
         userId,
-        requestCount: model === 'openai/gpt-oss-120b' || model === 'openai/gpt-oss-20b' || model === 'qwen/qwen3-32b' ? 2 : 1,
+        requestCount:
+          model === "openai/gpt-oss-120b" ||
+          model === "openai/gpt-oss-20b" ||
+          model === "qwen/qwen3-32b"
+            ? 2
+            : 1,
         windowStart: today,
         windowEnd: tomorrow,
         createdAt: now,
         updatedAt: now,
       });
     } catch (error) {
-      console.error('Rate limit insertion failed:', error);
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      console.error("Rate limit insertion failed:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
   }
 
@@ -221,25 +246,20 @@ export const POST = withCORS(async (req: NextRequest) => {
   const userPreferences = await getUserPreferences(userId, db, userInfo, eq);
 
   let aiModel;
-  if (
-    model === "gemini-2.0-flash" ||
-    model === "gemini-2.5-flash-preview-04-17" ||
-    model === "gemini-2.0-flash-lite"
-  ) {
+  if (model === "gemini-2.5-flash" || model === "gemini-2.5-flash-lite") {
     aiModel = google(model, {
       useSearchGrounding: searchEnabled,
-
     });
-}else{
-    aiModel = groq(model,{
-      user: userId
+  } else {
+    aiModel = groq(model, {
+      user: userId,
     }); // Using Qwen model from Groq
   }
 
   // Create personalized system prompt
   const personalizedSystemPrompt = createPersonalizedSystemPrompt(
     userPreferences,
-    userName
+    userName,
   );
 
   const researchPrompt = `You are an advanced Gemini-powered research assistant tasked with conducting comprehensive research on the provided topic. Your goal is to produce a well-structured, detailed report with accurate information, clear organization, and actionable insights.
@@ -306,7 +326,7 @@ export const POST = withCORS(async (req: NextRequest) => {
   let result;
   if (ResearchEnabled) {
     // Always use Gemini models for research for better quality
-    const researchModel = google("gemini-2.0-flash", {
+    const researchModel = google("gemini-2.5-flash", {
       useSearchGrounding: true, // Always enable search for research
       // temperature: 0.2, // Lower temperature for more factual responses
       // topP: 0.7, // More focused sampling
@@ -318,7 +338,6 @@ export const POST = withCORS(async (req: NextRequest) => {
       model: researchModel,
       system: personalizedSystemPrompt + researchPrompt,
       messages,
-
     });
   } else {
     result = streamText({

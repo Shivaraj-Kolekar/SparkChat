@@ -6,7 +6,7 @@ import { Brain, Globe, Languages, Eye, FileText, Zap, MessageSquare, Users, Shie
 
 export default function SEOContent() {
   const models = [
-    { name: "Gemini 2.0 Flash", provider: "Google", features: ["Text", "Vision", "PDFs", "Web Search"] },
+    { name: "Gemini 2.5 Flash", provider: "Google", features: ["Text", "Vision", "PDFs", "Web Search"] },
     { name: "Llama 4 Scout", provider: "Meta", features: ["Vision", "Text", "Multilingual"] },
     { name: "GPT-OSS 120B", provider: "OpenAI", features: ["Text", "Advanced Reasoning"] },
     { name: "Qwen 3-32B", provider: "Qwen", features: ["Text", "Reasoning"] },
@@ -70,7 +70,7 @@ export default function SEOContent() {
             Chat with Multiple AI Models
           </h1>
           <h2 className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-            Access Gemini 2.0, Llama 4 Scout, GPT-OSS, Qwen, and DeepSeek in one powerful platform with real-time streaming, web search, and multilingual support.
+            Access Gemini 2.5, Llama 4 Scout, GPT-OSS, Qwen, and DeepSeek in one powerful platform with real-time streaming, web search, and multilingual support.
           </h2>
         </div>
         <div className="flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
@@ -237,13 +237,13 @@ export default function SEOContent() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-3">Which AI models are supported?</h3>
             <p className="text-muted-foreground">
-              We support 8+ AI models including Gemini 2.0 Flash, Llama 4 Scout, GPT-OSS 120B/20B, Qwen 3-32B, DeepSeek R1, and Kimi K2 Instruct.
+              We support 8+ AI models including Gemini 2.5 Flash, Llama 4 Scout, GPT-OSS 120B/20B, Qwen 3-32B, DeepSeek R1, and Kimi K2 Instruct.
             </p>
           </Card>
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-3">Can I analyze images and PDFs?</h3>
             <p className="text-muted-foreground">
-              Absolutely! Our vision-capable models like Gemini 2.0 Flash and Llama 4 Scout can analyze images, extract text from PDFs, and provide insights about visual content.
+              Absolutely! Our vision-capable models like Gemini 2.5 Flash and Llama 4 Scout can analyze images, extract text from PDFs, and provide insights about visual content.
             </p>
           </Card>
           <Card className="p-6">

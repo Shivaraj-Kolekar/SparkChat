@@ -26,7 +26,7 @@ import Link from "next/link";
 export default function LandingSEO() {
   const aiModels = [
     {
-      name: "Gemini 2.0 Flash",
+      name: "Gemini 2.5 Flash",
       provider: "Google",
       credits: 1,
       features: ["Text Generation", "Vision AI", "PDF Analysis", "Web Search"],
@@ -73,7 +73,7 @@ export default function LandingSEO() {
     {
       icon: <Brain className="h-8 w-8" />,
       title: "8+ Premium AI Models",
-      description: "Access Gemini 2.0 Flash, Llama 4 Scout, GPT-OSS 120B, Qwen 3-32B, DeepSeek R1, and Kimi K2 in one platform",
+      description: "Access Gemini 2.5 Flash, Llama 4 Scout, GPT-OSS 120B, Qwen 3-32B, DeepSeek R1, and Kimi K2 in one platform",
       benefits: ["Compare AI responses", "Choose best model for task", "Switch models instantly"]
     },
     {
@@ -177,7 +177,7 @@ export default function LandingSEO() {
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-              Access <strong>Gemini 2.0 Flash</strong>, <strong>Llama 4 Scout</strong>, <strong>GPT-OSS 120B</strong>,
+              Access <strong>Gemini 2.5 Flash</strong>, <strong>Llama 4 Scout</strong>, <strong>GPT-OSS 120B</strong>,
               <strong> Qwen 3-32B</strong>, <strong>DeepSeek R1</strong>, and <strong>Kimi K2</strong> in one platform.
               Real-time streaming, web search, PDF analysis, vision AI, and multilingual support.
             </p>

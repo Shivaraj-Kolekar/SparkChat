@@ -47,7 +47,7 @@ SparkChat supports a diverse range of AI models with different capabilities and 
 #### **Standard Models** (1 Credit per Request)
 
 **Google Gemini Models:**
-- **Gemini 2.0 Flash** - High-performance multimodal model from Google that excels in processing both text and visual information, including PDF insights, with robust search capabilities for comprehensive data retrieval and analysis.
+- **Gemini 2.5 Flash** - High-performance multimodal model from Google that excels in processing both text and visual information, including PDF insights, with robust search capabilities for comprehensive data retrieval and analysis.
   - *Use Cases:* Text, Vision, PDFs, Web Search
 
 **Meta Llama Models:**

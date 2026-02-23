@@ -6,9 +6,14 @@ type Model = {
   setSelectedModel: (model: string | null) => void;
 };
 
-export const useModelStore = create<Model>()(persist((set) => ({
-  selectedModel: "gemini-2.0-flash",
-  setSelectedModel: (model) => set({ selectedModel: model }),
-}),{
-  name: 'model-store',
-}));
+export const useModelStore = create<Model>()(
+  persist(
+    (set) => ({
+      selectedModel: "gemini-2.5-flash",
+      setSelectedModel: (model) => set({ selectedModel: model }),
+    }),
+    {
+      name: "model-store",
+    },
+  ),
+);

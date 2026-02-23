@@ -212,7 +212,7 @@ function AIPage({
               chatId: msg.chatId,
               timestamp: msg.created_at,
               model: msg.model,
-            })
+            }),
           );
           setCurrentMessages(transformedMessages);
         }
@@ -220,7 +220,7 @@ function AIPage({
         // console.error("Error fetching messages:", error);
       }
     },
-    [setCurrentMessages]
+    [setCurrentMessages],
   );
   const [searchEnabled, setSearchEnabled] = useState(false);
   const [ResearchEnabled, setReSearchEnabled] = useState(false);
@@ -267,7 +267,7 @@ function AIPage({
       const stored = await storeMessage(
         message,
         selectedModel as string,
-        latestChatId as string
+        latestChatId as string,
       );
       if (typeof window !== "undefined") {
         sessionStorage.removeItem("newChatLoading");
@@ -276,7 +276,7 @@ function AIPage({
       setPendingAssistantMessageId(null);
       if (!stored) {
         toast.error(
-          "AI response was not saved. The chat history may be incomplete."
+          "AI response was not saved. The chat history may be incomplete.",
         );
       }
       fetchMessages(latestChatId as string);
@@ -298,12 +298,12 @@ function AIPage({
       selectedModel
     ) {
       // Add entrance animation
-      const mainElement = document.querySelector('main');
+      const mainElement = document.querySelector("main");
       if (mainElement) {
-        mainElement.classList.remove('page-transition-enter-active');
-        mainElement.classList.add('page-transition-enter');
+        mainElement.classList.remove("page-transition-enter-active");
+        mainElement.classList.add("page-transition-enter");
         setTimeout(() => {
-          mainElement.classList.add('page-transition-enter-active');
+          mainElement.classList.add("page-transition-enter-active");
         }, 50);
       }
 
@@ -377,7 +377,7 @@ function AIPage({
 
   // Get suggestions based on active category
   const activeCategoryData = suggestionGroups.find(
-    (group) => group.label === activeCategory
+    (group) => group.label === activeCategory,
   );
 
   // Determine which suggestions to show
@@ -388,7 +388,7 @@ function AIPage({
     message: Message,
     currentChatId: string,
     model: string,
-    retryCount = 0
+    retryCount = 0,
   ) => {
     try {
       if (!selectedChatId) {
@@ -439,7 +439,7 @@ function AIPage({
             message,
             selectedChatId,
             selectedModel as string,
-            retryCount + 1
+            retryCount + 1,
           ); // Pass the correct chatId
         } else {
           toast.error("No chat id found for message storage.");
@@ -461,7 +461,7 @@ function AIPage({
     ) {
       // Only show loader if no assistant message yet
       const hasAssistant = currentMessages.some(
-        (msg) => msg.role === "assistant"
+        (msg) => msg.role === "assistant",
       );
       if (!hasAssistant) {
         setAiLoading(true);
@@ -484,17 +484,13 @@ function AIPage({
     tooltip: string; // tooltip content as strings
   }
   const WebSearchModels = [
-    "gemini-2.0-flash",
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.0-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
   ];
 
-  const ToolCallModels = [
-    "openai/gpt-oss-120b",
-    "openai/gpt-oss-20b",
-  ];
+  const ToolCallModels = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"];
   const models = [
     {
       label: "Llama 4 Scout",
@@ -534,32 +530,7 @@ function AIPage({
       usecase: ["Text", "Multilingual"],
     },
     {
-      value: "gemini-2.0-flash",
-      label: "Gemini 2.0 Flash",
-      svg: {
-        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
-        title: "Gemini",
-        viewbox: "0 0 16 16",
-      },
-      description:
-        "Gemini 2.0 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
-      usecase: ["Text", "Vision", "PDFs", "Search"],
-    },
-
-    {
-      value: "gemini-2.0-flash-lite",
-      label: "Gemini 2.0 Flash Lite",
-      svg: {
-        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
-        title: "Gemini",
-        viewbox: "0 0 16 16",
-      },
-      description:
-        "Gemini 2.0 Flash Lite is a streamlined and faster version of Gemini 2.0 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
-      usecase: ["Fast", "Text", "Vision", "PDFs"],
-    },
-    {
-      value: "gemini-2.5-flash-preview-04-17",
+      value: "gemini-2.5-flash",
       label: "Gemini 2.5 Flash",
       svg: {
         path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
@@ -567,8 +538,21 @@ function AIPage({
         viewbox: "0 0 16 16",
       },
       description:
-        "Gemini 2.5 Flash, a cutting-edge model from Google, offers advanced multimodal capabilities, seamlessly handling text, vision, and PDF content. It features enhanced search integration for superior information access and is designed for complex, data-rich applications.",
+        "Gemini 2.5 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
       usecase: ["Text", "Vision", "PDFs", "Search"],
+    },
+
+    {
+      value: "gemini-2.5-flash-lite",
+      label: "Gemini 2.5 Flash Lite",
+      svg: {
+        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+        title: "Gemini",
+        viewbox: "0 0 16 16",
+      },
+      description:
+        "Gemini 2.5 Flash Lite is a streamlined and faster version of Gemini 2.5 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
+      usecase: ["Fast", "Text", "Vision", "PDFs"],
     },
     {
       value: "qwen-qwq-32b",
@@ -709,13 +693,13 @@ function AIPage({
         if (data.remaining === 0) {
           setPromptDisabled(true);
           toast.error(
-            "No more messages are available. Please wait until your quota resets."
+            "No more messages are available. Please wait until your quota resets.",
           );
         } else {
           setPromptDisabled(false);
         }
       }
-    } catch { }
+    } catch {}
   };
 
   // Move isInputEmpty definition just before the return so it's in scope for render
@@ -744,7 +728,7 @@ function AIPage({
         // Sort chats by created_at descending to get the latest chat
         const sortedChats = [...chatsResponse.data.result].sort(
           (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
         const newChat = sortedChats[0];
         setSelectedChatId(newChat.id);
@@ -806,7 +790,7 @@ function AIPage({
     messageText: string,
     chatId: string,
     e?: React.FormEvent,
-    model?: string
+    model?: string,
   ) => {
     if (!chatId || !(model || selectedModel)) return;
     const userMessage = {
@@ -922,10 +906,10 @@ function AIPage({
                         <div className="bg-transparent min-w-[95%] text-foreground prose rounded-lg p-2">
                           {(() => {
                             const thinkMatch = message.content.match(
-                              /<think>([\s\S]*?)<\/think>/
+                              /<think>([\s\S]*?)<\/think>/,
                             );
                             const toolCallMatch = message.content.match(
-                              /<tool-call>([\s\S]*?)<\/tool-call>/
+                              /<tool-call>([\s\S]*?)<\/tool-call>/,
                             );
                             const thinkingContent = thinkMatch
                               ? thinkMatch[1].trim()
@@ -937,10 +921,14 @@ function AIPage({
                             // Remove both think and tool-call tags from display content
                             let displayContent = message.content;
                             if (thinkingContent) {
-                              displayContent = displayContent.replace(/<think>[\s\S]*?<\/think>/, "").trim();
+                              displayContent = displayContent
+                                .replace(/<think>[\s\S]*?<\/think>/, "")
+                                .trim();
                             }
                             if (toolCallContent) {
-                              displayContent = displayContent.replace(/<tool-call>[\s\S]*?<\/tool-call>/, "").trim();
+                              displayContent = displayContent
+                                .replace(/<tool-call>[\s\S]*?<\/tool-call>/, "")
+                                .trim();
                             }
 
                             return (
@@ -950,7 +938,10 @@ function AIPage({
                                     <ReasoningTrigger>
                                       Thinking Process
                                     </ReasoningTrigger>
-                                    <ReasoningContent markdown={true} className="max-w-full overflow-x-auto">
+                                    <ReasoningContent
+                                      markdown={true}
+                                      className="max-w-full overflow-x-auto"
+                                    >
                                       {thinkingContent}
                                     </ReasoningContent>
                                   </Reasoning>
@@ -959,9 +950,13 @@ function AIPage({
                                 {toolCallContent && (
                                   <Reasoning isStreaming={false}>
                                     <ReasoningTrigger>
-                                      <Globe className="h-4 w-4 mr-1" /> Web Search
+                                      <Globe className="h-4 w-4 mr-1" /> Web
+                                      Search
                                     </ReasoningTrigger>
-                                    <ReasoningContent markdown={true} className="max-w-full overflow-x-auto">
+                                    <ReasoningContent
+                                      markdown={true}
+                                      className="max-w-full overflow-x-auto"
+                                    >
                                       {toolCallContent}
                                     </ReasoningContent>
                                   </Reasoning>
@@ -984,7 +979,7 @@ function AIPage({
                                 size="icon"
                                 onClick={() => {
                                   navigator.clipboard.writeText(
-                                    message.content
+                                    message.content,
                                   );
                                   toast.success("Copied to clipboard");
                                 }}
@@ -1036,7 +1031,7 @@ function AIPage({
         {/* promtp window */}
         <div
           className={cn(
-            "sticky bottom-0 left-0 w-full z-50 bg-none prompt-transition"
+            "sticky bottom-0 left-0 w-full z-50 bg-none prompt-transition",
           )}
         >
           <div className="w-full mb-2 max-w-[800px] mx-auto">
@@ -1216,39 +1211,48 @@ function AIPage({
                       tooltip={
                         !user
                           ? "Please login to use Search Web"
-                          : selectedModel && ToolCallModels.includes(selectedModel)
+                          : selectedModel &&
+                              ToolCallModels.includes(selectedModel)
                             ? "Search Web (via Tool Calls)"
                             : "Search Web"
                       }
                     >
                       {selectedModel
                         ? WebSearchModels.includes(selectedModel) && (
-                          <Button
-                            onClick={() => {
-                              setSearchEnabled((prevSearchEnabled) => {
-                                const newState = !prevSearchEnabled;
-                                if (newState) {
-                                  const isGroqModel = selectedModel.startsWith("openai/gpt-oss");
-                                  toast.success(`Web ${isGroqModel ? "search (via tool calls)" : "search"} enabled`, {
-                                    description: isGroqModel ? "Search results will appear in a collapsible section" : undefined
-                                  });
-                                } else {
-                                  toast.info("Web search disabled");
-                                }
-                                return newState;
-                              });
-                            }}
-                            variant={
-                              searchEnabled === true ? "default" : "outline"
-                            }
-                          >
-                            {/*<Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
+                            <Button
+                              onClick={() => {
+                                setSearchEnabled((prevSearchEnabled) => {
+                                  const newState = !prevSearchEnabled;
+                                  if (newState) {
+                                    const isGroqModel =
+                                      selectedModel.startsWith(
+                                        "openai/gpt-oss",
+                                      );
+                                    toast.success(
+                                      `Web ${isGroqModel ? "search (via tool calls)" : "search"} enabled`,
+                                      {
+                                        description: isGroqModel
+                                          ? "Search results will appear in a collapsible section"
+                                          : undefined,
+                                      },
+                                    );
+                                  } else {
+                                    toast.info("Web search disabled");
+                                  }
+                                  return newState;
+                                });
+                              }}
+                              variant={
+                                searchEnabled === true ? "default" : "outline"
+                              }
+                            >
+                              {/*<Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
                               {selectedModel && ToolCallModels.includes(selectedModel) && searchEnabled && (
                                 <span className="ml-1 text-xs">Tool</span>
                               )}*/}
-                            Web Search <Globe></Globe>
-                          </Button>
-                        )
+                              Web Search <Globe></Globe>
+                            </Button>
+                          )
                         : ""}
                     </PromptInputAction>
                   </div>
@@ -1327,7 +1331,7 @@ function FullChatApp({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const setSelectedChatId = useChatStore((state) => state.setSelectedChatId);
   const clearSelectedChatId = useChatStore(
-    (state) => state.clearSelectedChatId
+    (state) => state.clearSelectedChatId,
   );
   // Load messages for the current chat ID
   const loadChatMessages = async (id: string) => {
