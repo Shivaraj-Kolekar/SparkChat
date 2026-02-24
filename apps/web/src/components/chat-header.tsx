@@ -52,7 +52,11 @@ export default function ChatHeader() {
   const selectedChatId = useChatStore((state) => state.selectedChatId);
 
   // Models that support research functionality
-  const ResearchModels = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+  const ResearchModels: string[] = [
+    // "gemini-2.5-flash",
+    // "gemini-2.5-flash",
+    // "gemini-2.5-flash-lite",
+  ];
 
   const [value, setValue] = useState(selectedModel || "");
   useEffect(() => {
@@ -147,20 +151,20 @@ export default function ChatHeader() {
         "A powerful language model excelling in reasoning and code generation, ideal for complex problem-solving and development tasks.",
       usecase: ["Text", "Reasoning"],
     },
-    {
-      value: "gemini-2.5-flash",
-      label: "Gemini 2.5 Flash",
-      svg: {
-        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
-        title: "Gemini",
-        viewbox: "0 0 16 16",
-      },
-      credit: 1,
+    // {
+    //   value: "gemini-2.5-flash",
+    //   label: "Gemini 2.5 Flash",
+    //   svg: {
+    //     path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+    //     title: "Gemini",
+    //     viewbox: "0 0 16 16",
+    //   },
+    //   credit: 1,
 
-      description:
-        "Gemini 2.5 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
-      usecase: ["Text", "Vision", "PDFs", "Search"],
-    },
+    //   description:
+    //     "Gemini 2.5 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
+    //   usecase: ["Text", "Vision", "PDFs", "Search"],
+    // },
 
     // {
     //   value: "gemini-2.5-flash-lite-001",

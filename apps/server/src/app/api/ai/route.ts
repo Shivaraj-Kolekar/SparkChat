@@ -18,7 +18,7 @@ function createPersonalizedSystemPrompt(
   userPreferences: any,
   userName: string,
 ) {
-  let systemPrompt = `You are SparkChat, an AI assistant powered by multiple models, defaulting to Gemini 2.5 Flash unless the user selects another model (e.g., LLama, Qwen, Deepseek). Engage helpfully, respectfully, and engagingly with all users.
+  let systemPrompt = `You are SparkChat, an AI assistant powered by multiple models, defaulting to Llama 3 unless the user selects another model (e.g., Qwen, Deepseek). Engage helpfully, respectfully, and engagingly with all users.
 
   - **Core Behavior**:
     - Respond concisely, accurately, and clearly, prioritizing user intent.
@@ -28,9 +28,9 @@ function createPersonalizedSystemPrompt(
     - Respect user privacy; do not store or share personal data beyond session needs.
 
   - **Model Handling**:
-    - Default to Gemini 2.5 Flash unless the user specifies another model.
+    - Default to Llama 3 unless the user specifies another model.
     - Support seamless switching between available models (e.g., GPT, Grok) based on user preference.
-    - When asked about your model, state: "I’m SparkChat, powered by Gemini 2.5 Flash by default. You can choose other models like GPT or Grok if desired."
+    - When asked about your model, state: "I’m SparkChat, powered by Llama 3 by default. You can choose other models like Qwen or Deepseek if desired."
 
   - **Formatting**:
     - Use Markdown for responses, including headings, bullet points, and code blocks.
@@ -129,12 +129,14 @@ export const POST = withCORS(async (req: NextRequest) => {
   // If the record exists and is for today, check the count
   const validModels = [
     "meta-llama/llama-4-scout-17b-16e-instruct",
-    "gemini-2.5-flash-lite",
+    // "gemini-2.0-flash-lite-001",
+    // "gemini-2.5-flash-live-preview",
     "meta-llama/llama-guard-4-12b",
     "llama-3.1-8b-instant",
     "llama-guard-4-12b",
     "moonshotai/kimi-k2-instruct-0905",
-    "gemini-2.5-flash",
+    // "gemini-2.0-flash",
+    // "gemini-2.0-flash-lite",
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
     "qwen/qwen3-32b",
@@ -246,15 +248,19 @@ export const POST = withCORS(async (req: NextRequest) => {
   const userPreferences = await getUserPreferences(userId, db, userInfo, eq);
 
   let aiModel;
-  if (model === "gemini-2.5-flash" || model === "gemini-2.5-flash-lite") {
-    aiModel = google(model, {
-      useSearchGrounding: searchEnabled,
-    });
-  } else {
-    aiModel = groq(model, {
-      user: userId,
-    }); // Using Qwen model from Groq
-  }
+  // if (
+  //   model === "gemini-2.0-flash" ||
+  //   model === "gemini-2.5-flash-preview-04-17" ||
+  //   model === "gemini-2.0-flash-lite"
+  // ) {
+  //   aiModel = google(model, {
+  //     useSearchGrounding: searchEnabled,
+  //   });
+  // } else {
+  aiModel = groq(model, {
+    user: userId,
+  }); // Using selected model from Groq
+  // }
 
   // Create personalized system prompt
   const personalizedSystemPrompt = createPersonalizedSystemPrompt(
@@ -325,14 +331,15 @@ export const POST = withCORS(async (req: NextRequest) => {
   If clarification is needed on the topic, ask specific questions to narrow the scope: "Could you specify which aspect of [topic] you're most interested in?"`;
   let result;
   if (ResearchEnabled) {
-    // Always use Gemini models for research for better quality
-    const researchModel = google("gemini-2.5-flash", {
-      useSearchGrounding: true, // Always enable search for research
-      // temperature: 0.2, // Lower temperature for more factual responses
-      // topP: 0.7, // More focused sampling
-      // topK: 40, // Broader token consideration
-      // maxOutputTokens: 4096, // Allow longer outputs for comprehensive research
-    });
+    // // Always use Gemini models for research for better quality
+    // const researchModel = google("gemini-2.0-flash", {
+    //   useSearchGrounding: true, // Always enable search for research
+    //   // temperature: 0.2, // Lower temperature for more factual responses
+    //   // topP: 0.7, // More focused sampling
+    //   // topK: 40, // Broader token consideration
+    //   // maxOutputTokens: 4096, // Allow longer outputs for comprehensive research
+    // });
+    const researchModel = groq("llama-3.1-8b-instant");
 
     result = streamText({
       model: researchModel,

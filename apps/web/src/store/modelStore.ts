@@ -9,7 +9,7 @@ type Model = {
 export const useModelStore = create<Model>()(
   persist(
     (set) => ({
-      selectedModel: "gemini-2.5-flash",
+      selectedModel: "llama-3.1-8b-instant",
       setSelectedModel: (model) => set({ selectedModel: model }),
     }),
     {

@@ -8,7 +8,8 @@ import { v4 as uuidv4 } from "uuid";
 import { eq } from "drizzle-orm";
 import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { withCORS } from "@/lib/cors";
-import { google } from "@ai-sdk/google";
+// import { google } from "@ai-sdk/google";
+import { groq } from "@ai-sdk/groq";
 import { generateText } from "ai";
 
 export const POST = withCORS(async (req: NextRequest) => {
@@ -59,7 +60,8 @@ export const POST = withCORS(async (req: NextRequest) => {
     if (isNewChat) {
       (async () => {
         try {
-          const aiModel = google("gemini-2.5-flash");
+          // const aiModel = google("gemini-2.0-flash");
+          const aiModel = groq("llama-3.1-8b-instant");
           const prompt = [
             {
               role: "user" as const,

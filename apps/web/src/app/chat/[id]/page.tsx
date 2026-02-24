@@ -483,9 +483,10 @@ function AIPage({
     color: string; // Tailwind CSS classes will be strings
     tooltip: string; // tooltip content as strings
   }
-  const WebSearchModels = [
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
+  const WebSearchModels: string[] = [
+    // "gemini-2.5-flash",
+    // "gemini-2.5-flash",
+    // "gemini-2.5-flash-lite",
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
   ];
@@ -529,31 +530,43 @@ function AIPage({
         "Llama 3.1 is an advanced iteration of Meta's Llama series, primarily focused on refined text generation and improved multilingual support. It offers enhanced conversational abilities and is optimized for complex language tasks, providing more nuanced and contextually aware responses.",
       usecase: ["Text", "Multilingual"],
     },
-    {
-      value: "gemini-2.5-flash",
-      label: "Gemini 2.5 Flash",
-      svg: {
-        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
-        title: "Gemini",
-        viewbox: "0 0 16 16",
-      },
-      description:
-        "Gemini 2.5 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
-      usecase: ["Text", "Vision", "PDFs", "Search"],
-    },
+    // {
+    //   value: "gemini-2.5-flash",
+    //   label: "Gemini 2.5 Flash",
+    //   svg: {
+    //     path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+    //     title: "Gemini",
+    //     viewbox: "0 0 16 16",
+    //   },
+    //   description:
+    //     "Gemini 2.5 Flash is a high-performance multimodal model from Google. It excels in processing and understanding both text and visual information, including insights from PDFs, and integrates robust search capabilities for comprehensive data retrieval and analysis.",
+    //   usecase: ["Text", "Vision", "PDFs", "Search"],
+    // },
 
-    {
-      value: "gemini-2.5-flash-lite",
-      label: "Gemini 2.5 Flash Lite",
-      svg: {
-        path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
-        title: "Gemini",
-        viewbox: "0 0 16 16",
-      },
-      description:
-        "Gemini 2.5 Flash Lite is a streamlined and faster version of Gemini 2.5 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
-      usecase: ["Fast", "Text", "Vision", "PDFs"],
-    },
+    // {
+    //   value: "gemini-2.5-flash-lite",
+    //   label: "Gemini 2.5 Flash Lite",
+    //   svg: {
+    //     path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+    //     title: "Gemini",
+    //     viewbox: "0 0 16 16",
+    //   },
+    //   description:
+    //     "Gemini 2.5 Flash Lite is a streamlined and faster version of Gemini 2.5 Flash. It's optimized for quick responses and efficient processing of text, images, and PDFs, making it perfect for applications where speed and responsiveness are critical.",
+    //   usecase: ["Fast", "Text", "Vision", "PDFs"],
+    // },
+    // {
+    //   value: "gemini-2.5-flash",
+    //   label: "Gemini 2.5 Flash",
+    //   svg: {
+    //     path: "M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z",
+    //     title: "Gemini",
+    //     viewbox: "0 0 16 16",
+    //   },
+    //   description:
+    //     "Gemini 2.5 Flash, a cutting-edge model from Google, offers advanced multimodal capabilities, seamlessly handling text, vision, and PDF content. It features enhanced search integration for superior information access and is designed for complex, data-rich applications.",
+    //   usecase: ["Text", "Vision", "PDFs", "Search"],
+    // },
     {
       value: "qwen-qwq-32b",
       label: "Qwen QwQ",

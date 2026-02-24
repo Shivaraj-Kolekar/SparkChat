@@ -8,11 +8,12 @@ import { withCORS } from "@/lib/cors";
 import { user as userTable } from "@/db/schema/db";
 import { ensureUserInDb } from "@/lib/ensureUserInDb";
 import { generateText } from "ai";
-import { google } from "@ai-sdk/google";
+// import { google } from "@ai-sdk/google";
+import { groq } from "@ai-sdk/groq";
 
 export const POST = withCORS(async (req: NextRequest) => {
   try {
-    const { title,created_at } = await req.json(); // 'title' is actually the user's prompt
+    const { title, created_at } = await req.json(); // 'title' is actually the user's prompt
     const session = getClerkSession(req);
     const user = await getClerkUser(req);
     if (!user) {
@@ -32,12 +33,14 @@ export const POST = withCORS(async (req: NextRequest) => {
     // Generate AI title from the prompt
     let aiTitle = title;
     try {
-      const aiModel = google("gemini-3-flash-preview");
+      // const aiModel = google("gemini-3-flash-preview");
+      const aiModel = groq("llama-3.1-8b-instant");
       const prompt = [
         {
           role: "user" as const,
           content:
-            "Generate a short, descriptive chat title (max 6 words, no punctuation) for the following user message. Respond with only the title.\n\n" + title,
+            "Generate a short, descriptive chat title (max 6 words, no punctuation) for the following user message. Respond with only the title.\n\n" +
+            title,
         },
       ];
       const result = await generateText({
@@ -46,19 +49,28 @@ export const POST = withCORS(async (req: NextRequest) => {
         maxTokens: 12,
         temperature: 0.5,
       });
-      aiTitle = (result.text || title).replace(/[\n\r]+/g, " ").trim().slice(0, 60);
+      aiTitle = (result.text || title)
+        .replace(/[\n\r]+/g, " ")
+        .trim()
+        .slice(0, 60);
     } catch (err) {
       // fallback: use first 30 chars
       aiTitle = title.slice(0, 30) + (title.length > 30 ? "..." : "");
     }
     // Update chat title in DB
-    await db.update(chatTable).set({ title: aiTitle }).where(eq(chatTable.id, newChatId));
-    return NextResponse.json({ success: true, result: { id: newChatId, title: aiTitle } });
+    await db
+      .update(chatTable)
+      .set({ title: aiTitle })
+      .where(eq(chatTable.id, newChatId));
+    return NextResponse.json({
+      success: true,
+      result: { id: newChatId, title: aiTitle },
+    });
   } catch (error) {
     console.log(error);
     return NextResponse.json(
       { error: "Failed to store chat" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });
@@ -82,7 +94,7 @@ export const GET = withCORS(async (req: NextRequest) => {
     console.error("Error in GET /api/chat:", error);
     return NextResponse.json(
       { error: "Failed to retrieve chats" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });

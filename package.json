@@ -18,6 +18,9 @@
     "db:migrate": "turbo -F server db:migrate"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.30",
+    "@ai-sdk/groq": "^3.0.24",
+    "ai": "^6.0.97",
     "dexie": "^4.0.11",
     "dexie-react-hooks": "^1.1.7",
     "ollama-ai-provider": "^1.2.0"
