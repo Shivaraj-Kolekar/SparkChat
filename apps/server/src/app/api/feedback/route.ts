@@ -3,6 +3,7 @@ import { feedback } from "@/db/schema/db";
 import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { ensureUserInDb } from "@/lib/ensureUserInDb";
+import posthog from "@/lib/posthog";
 
 // Allow requests from web client
 const ALLOWED_ORIGIN = process.env.CORS_ORIGIN || process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:3001";
@@ -89,6 +90,14 @@ export const POST = async (req: NextRequest) => {
 
     console.log("Feedback inserted successfully");
 
+    posthog.capture({
+      distinctId: user.id,
+      event: "feedback_submitted",
+      properties: {
+        feedback_length: content.length,
+      },
+    });
+
     // Return success response
     return NextResponse.json(
       {
@@ -100,6 +109,7 @@ export const POST = async (req: NextRequest) => {
   } catch (error) {
     // Log the error for debugging
     console.error("Error submitting feedback:", error);
+    posthog.captureException(error);
 
     let errorMessage = "Failed to submit feedback";
     if (error instanceof Error) {

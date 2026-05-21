@@ -64,12 +64,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     },
-    {
-      url: `${baseUrl}/models/kimi-k2`,
-      lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    }
+    // {
+    //   url: `${baseUrl}/models/kimi-k2`,
+    //   lastModified: currentDate,
+    //   changeFrequency: 'weekly' as const,
+    //   priority: 0.8,
+    // }
   ]
 
   // Feature pages for SEO

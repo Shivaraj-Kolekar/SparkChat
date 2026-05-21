@@ -1,41 +1,44 @@
 "use client";
 
-import { useUser, useClerk } from '@clerk/nextjs'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useUser, useClerk } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface UseAuthOptions {
-  redirectTo?: string
-  requireAuth?: boolean
+  redirectTo?: string;
+  requireAuth?: boolean;
 }
 
 export function useAuth(options: UseAuthOptions = {}) {
-  const { redirectTo = 'https://accounts.sparkchat.shivraj-kolekar.in/sign-up', requireAuth = false } = options
-  const { user, isLoaded } = useUser()
-  const clerk = useClerk()
-  const router = useRouter()
+  const {
+    redirectTo = "https://assured-herring-21.accounts.dev/sign-in",
+    requireAuth = false,
+  } = options;
+  const { user, isLoaded } = useUser();
+  const clerk = useClerk();
+  const router = useRouter();
 
   useEffect(() => {
     if (requireAuth && isLoaded && !user) {
-      router.push(redirectTo)
+      router.push(redirectTo);
     }
-  }, [requireAuth, isLoaded, user, redirectTo, router])
+  }, [requireAuth, isLoaded, user, redirectTo, router]);
 
   const signOut = async () => {
     try {
-      await clerk.signOut()
-      router.push('https://accounts.sparkchat.shivraj-kolekar.in/sign-up')
+      await clerk.signOut();
+      router.push("https://assured-herring-21.accounts.dev/sign-in");
     } catch (error) {
-      console.error('Sign out error:', error)
+      console.error("Sign out error:", error);
     }
-  }
+  };
 
   return {
     user,
     isLoaded,
     isSignedIn: !!user,
     signOut,
-  }
+  };
 }
 
-export default useAuth
+export default useAuth;

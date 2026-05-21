@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import { getUserPreferences } from "@/lib/cache";
 import { withCORS } from "@/lib/cors";
 import { getClerkUser } from "@/lib/auth";
+import posthog from "@/lib/posthog";
 
 export const maxDuration = 30;
 
@@ -134,7 +135,7 @@ export const POST = withCORS(async (req: NextRequest) => {
     "meta-llama/llama-guard-4-12b",
     "llama-3.1-8b-instant",
     "llama-guard-4-12b",
-    "moonshotai/kimi-k2-instruct-0905",
+    // "moonshotai/kimi-k2-instruct-0905",
     // "gemini-2.0-flash",
     // "gemini-2.0-flash-lite",
     "openai/gpt-oss-120b",
@@ -165,6 +166,15 @@ export const POST = withCORS(async (req: NextRequest) => {
       // }
       // Check general limit
       if (limit.requestCount >= 10) {
+        posthog.capture({
+          distinctId: userId,
+          event: "ai_rate_limit_exceeded",
+          properties: {
+            model,
+            request_count: limit.requestCount,
+            reset_at: windowEnd.toISOString(),
+          },
+        });
         return new Response(
           JSON.stringify({
             error: `Rate limit exceeded. You can send more messages after: ${windowEnd.toLocaleString()}`,
@@ -188,6 +198,7 @@ export const POST = withCORS(async (req: NextRequest) => {
           .where(eq(rateLimit.id, limit.id));
       } catch (error) {
         console.error("Rate limit update failed:", error);
+        posthog.captureException(error, userId);
         return new Response(
           JSON.stringify({ error: "Internal server error" }),
           { status: 500, headers: { "Content-Type": "application/json" } },
@@ -329,6 +340,16 @@ export const POST = withCORS(async (req: NextRequest) => {
   - CRITICAL: DO NOT wrap your response in code blocks or triple backticks. Format directly as plain text with Markdown.
 
   If clarification is needed on the topic, ask specific questions to narrow the scope: "Could you specify which aspect of [topic] you're most interested in?"`;
+  posthog.capture({
+    distinctId: userId,
+    event: "ai_message_generated",
+    properties: {
+      model,
+      search_enabled: searchEnabled,
+      research_enabled: ResearchEnabled,
+    },
+  });
+
   let result;
   if (ResearchEnabled) {
     // // Always use Gemini models for research for better quality
@@ -362,6 +383,7 @@ export const GET = withCORS(async (req: NextRequest) => {
   if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
+
   const now = new Date();
 
   // Try to find an existing rate limit record for today

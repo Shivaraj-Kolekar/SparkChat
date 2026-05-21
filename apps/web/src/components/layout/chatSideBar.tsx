@@ -80,7 +80,7 @@ export function ChatSidebar() {
   // Fetch chats using React Query
 
   const clearSelectedChatId = useChatStore(
-    (state) => state.clearSelectedChatId
+    (state) => state.clearSelectedChatId,
   );
 
   const getchats = async () => {
@@ -360,7 +360,7 @@ export function ChatSidebar() {
               ) : chatList.length === 0 && isLoading ? (
                 <SidebarMenu>
                   <div className="h-40 flex flex-col items-center justify-center">
-                    <LoadingSpinner/>
+                    <LoadingSpinner />
                     <span className="ml-2 my-2">Loading chats...</span>
                   </div>
                 </SidebarMenu>
@@ -389,13 +389,13 @@ export function ChatSidebar() {
                     const startOfToday = new Date(
                       now.getFullYear(),
                       now.getMonth(),
-                      now.getDate()
+                      now.getDate(),
                     );
                     // 30 days ago from now
                     const startOf30DaysAgo = new Date(
                       now.getFullYear(),
                       now.getMonth(),
-                      now.getDate() - 29
+                      now.getDate() - 29,
                     );
 
                     // console.log("Time boundaries:", {
@@ -681,7 +681,7 @@ export function ChatSidebar() {
               </Link>
             ) : (
               <a
-                href="https://accounts.sparkchat.shivraj-kolekar.in/sign-up"
+                href="https://assured-herring-21.accounts.dev/sign-in"
                 className="flex items-center space-x-2"
               >
                 <LogInIcon size={20} />

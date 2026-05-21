@@ -5,7 +5,10 @@ import { useParams } from "next/navigation";
 import { api } from "@/lib/api-client";
 import Loader from "@/components/loader";
 import { Message, MessageContent } from "@/components/ui/message";
-import { ChatContainerRoot, ChatContainerContent } from "@/components/ui/chat-container";
+import {
+  ChatContainerRoot,
+  ChatContainerContent,
+} from "@/components/ui/chat-container";
 import { toast } from "sonner";
 import Sparkchat from "@/components/sparkchat";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -69,16 +72,26 @@ export default function PublicChatPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <LoadingSpinner/>
-        <div className="my-4 text-muted-foreground text-lg">Loading public chat...</div>
+        <LoadingSpinner />
+        <div className="my-4 text-muted-foreground text-lg">
+          Loading public chat...
+        </div>
       </div>
     );
   }
   if (notFound) {
-    return <div className="flex flex-col items-center justify-center min-h-screen text-xl">Chat not found.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-xl">
+        Chat not found.
+      </div>
+    );
   }
   if (notPublic) {
-    return <div className="flex flex-col items-center justify-center min-h-screen text-xl">This chat is not public.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-xl">
+        This chat is not public.
+      </div>
+    );
   }
   return (
     <main className="flex h-screen flex-col bg-background ">
@@ -100,7 +113,7 @@ export default function PublicChatPage() {
           </div>
           <div className="flex flex-row gap-2 items-center">
             <ModeToggle />
-            <Link href="https://accounts.sparkchat.shivraj-kolekar.in/sign-up">
+            <Link href="https://assured-herring-21.accounts.dev/sign-in">
               <Button variant="outline">Sign Up</Button>
             </Link>
           </div>
@@ -113,7 +126,7 @@ export default function PublicChatPage() {
             <ChatContainerContent className="space-y-4 py-4">
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground mt-8">
-                  <LoadingSpinner/>
+                  <LoadingSpinner />
                   <p className="text-xl">No messages yet.</p>
                 </div>
               ) : (

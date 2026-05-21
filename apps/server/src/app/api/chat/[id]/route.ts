@@ -7,6 +7,7 @@ import {
 } from "@/db/schema/db";
 import { eq, and, asc } from "drizzle-orm";
 import { getAuth } from "@clerk/nextjs/server";
+import posthog from "@/lib/posthog";
 
 export const GET = withCORS(
   async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
@@ -89,6 +90,14 @@ export const PUT = withCORS(
         .update(chatTable)
         .set({ public: !!body.public })
         .where(eq(chatTable.id, chatId));
+      posthog.capture({
+        distinctId: userId,
+        event: "chat_visibility_changed",
+        properties: {
+          chat_id: chatId,
+          public: !!body.public,
+        },
+      });
       return NextResponse.json({
         success: true,
         chat: { id: chatId, public: !!body.public },
@@ -121,6 +130,13 @@ export const DELETE = withCORS(
         .delete(chatTable)
         .where(and(eq(chatTable.id, chatId), eq(chatTable.userId, userId)));
 
+      posthog.capture({
+        distinctId: userId,
+        event: "chat_deleted",
+        properties: {
+          chat_id: chatId,
+        },
+      });
       return NextResponse.json({
         success: true,
       });

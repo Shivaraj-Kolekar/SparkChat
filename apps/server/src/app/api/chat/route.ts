@@ -8,6 +8,7 @@ import { withCORS } from "@/lib/cors";
 import { user as userTable } from "@/db/schema/db";
 import { ensureUserInDb } from "@/lib/ensureUserInDb";
 import { generateText } from "ai";
+import posthog from "@/lib/posthog";
 // import { google } from "@ai-sdk/google";
 import { groq } from "@ai-sdk/groq";
 
@@ -62,6 +63,14 @@ export const POST = withCORS(async (req: NextRequest) => {
       .update(chatTable)
       .set({ title: aiTitle })
       .where(eq(chatTable.id, newChatId));
+    posthog.capture({
+      distinctId: user.id,
+      event: "chat_created",
+      properties: {
+        chat_id: newChatId,
+        title: aiTitle,
+      },
+    });
     return NextResponse.json({
       success: true,
       result: { id: newChatId, title: aiTitle },

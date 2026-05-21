@@ -53,6 +53,12 @@ import {
 } from "@/components/ui/sidebar";
 import { api, getClerkToken } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { Streamdown, type BundledTheme } from "streamdown";
+import "streamdown/styles.css";
+import { code } from "@streamdown/code";
+import { mermaid } from "@streamdown/mermaid";
+import { math } from "@streamdown/math";
+import { cjk } from "@streamdown/cjk";
 import {
   ArrowUp,
   Brain,
@@ -78,6 +84,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
+
 import { useAiLoadingStore } from "@/store/aiLoadingStore";
 
 import { suggestionGroups } from "@/components/suggestions";
@@ -123,6 +130,70 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { TextShimmer } from "../../../../components/motion-primitives/text-shimmer";
 import ChatHeader from "@/components/chat-header";
 import LoadingSpinner from "@/components/ui/loading-spinner";
+
+function useCharReveal(fullText: string, isStreaming: boolean): string {
+  const [displayed, setDisplayed] = useState("");
+  const idxRef = useRef(0);
+  const fullTextRef = useRef(fullText);
+
+  fullTextRef.current = fullText;
+
+  useEffect(() => {
+    if (!isStreaming) {
+      idxRef.current = fullText.length;
+      setDisplayed(fullText);
+    }
+  }, [isStreaming, fullText]);
+
+  useEffect(() => {
+    let running = true;
+
+    const animate = () => {
+      if (!running) return;
+
+      const current = idxRef.current;
+      const target = fullTextRef.current.length;
+
+      if (current < target) {
+        const remaining = target - current;
+        const step = Math.max(1, Math.ceil(remaining / 60));
+        const next = Math.min(current + step, target);
+        idxRef.current = next;
+        setDisplayed(fullTextRef.current.slice(0, next));
+      }
+
+      requestAnimationFrame(animate);
+    };
+
+    const rafId = requestAnimationFrame(animate);
+    return () => {
+      running = false;
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  return displayed;
+}
+
+function SmoothStreamdown({ content, isStreaming, className, shikiTheme, plugins }: {
+  content: string;
+  isStreaming: boolean;
+  className?: string;
+  shikiTheme?: [BundledTheme, BundledTheme];
+  plugins?: Record<string, unknown>;
+}) {
+  const revealed = useCharReveal(content, isStreaming);
+
+  return (
+    <Streamdown
+      className={className}
+      shikiTheme={shikiTheme}
+      plugins={plugins}
+    >
+      {revealed}
+    </Streamdown>
+  );
+}
 
 function AIPage({
   // currentChatId,
@@ -506,18 +577,18 @@ function AIPage({
       usecase: ["Vision", "Text", "Multilingual"],
     },
 
-    {
-      value: "moonshotai/kimi-k2-instruct",
-      label: "Kimi K2",
-      svg: {
-        path: "M27.651112.136c0 9.7752.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808 -1.79 26.52 -19.372 10.185 -14.092 22.186 -22.186 33.874 -30.26 -46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651 .988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.993 .597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.496.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.7752.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
-        title: "Meta",
-        viewbox: "0 0 256 171",
-      },
-      description:
-        "Llama 3 is a powerful text-based large language model by Meta. It is designed for generating high-quality text, engaging in natural conversations, and performing various language understanding tasks. Its multilingual capabilities make it suitable for global applications requiring sophisticated text processing.",
-      usecase: ["Text", "Multilingual"],
-    },
+    // {
+    //   value: "moonshotai/kimi-k2-instruct",
+    //   label: "Kimi K2",
+    //   svg: {
+    //     path: "M27.651112.136c0 9.7752.146 17.28 4.95 21.82 3.677 5.947 9.16 8.466 14.751 8.466 7.211 0 13.808 -1.79 26.52 -19.372 10.185 -14.092 22.186 -22.186 33.874 -30.26 -46.275l13.675-21.01c9.499-14.591 20.493-30.811 33.1-41.806C161.196 4.985 172.298 0 183.47 0c18.758 0 36.625 10.87 50.3 31.257C248.735 53.584 256 81.707 256 110.729c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363v-27.616c15.695 0 19.612-14.422 19.612-30.927 0-23.52-5.484-49.623-17.564-68.273-8.574-13.23-19.684-21.313-31.907-21.313-13.22 0-23.859 9.97-35.815 27.75-6.356 9.445-12.882 20.956-20.208 33.944l-8.066 14.289c-16.203 28.728-20.307 35.271-28.408 46.07-14.2 18.91-26.324 26.076-42.287 26.076-18.935 0-30.91-8.2-38.325-20.556C2.973 139.413 0 126.202 0 111.148l27.651 .988Z M21.802 33.206C34.48 13.666 52.774 0 73.757 0 85.91 0 97.993 .597 110.605 13.897c13.798 11.261 28.505 29.805 46.853 60.368l6.58 10.967c15.881 26.459 24.917 40.07 30.205 46.496.802 8.243 11.565 10.7 17.752 10.7 15.695 0 19.612-14.422 19.612-30.927l24.393-.766c0 17.253-3.4 29.93-9.187 39.946-5.591 9.686-16.488 19.363-34.818 19.363-11.395 0-21.49-2.475-32.654-13.007-8.582-8.083-18.615-22.443-26.334-35.352l-22.96-38.352C118.528 64.08 107.96 49.73 101.845 43.23c-6.578-6.988-15.036-15.428-28.532-15.428-10.923 0-20.2 7.666-27.963 19.39L21.802 33.206Z M73.312 27.802c-10.923 0-20.2 7.666-27.963 19.39-10.976 16.568-17.698 41.245-17.698 64.944 0 9.7752.146 17.28 4.95 21.82L9.027 149.482C2.973 139.413 0 126.202 0 111.148 0 83.772 7.514 55.24 21.802 33.206 34.48 13.666 52.774 0 73.757 0l-.445 27.802Z",
+    //     title: "Meta",
+    //     viewbox: "0 0 256 171",
+    //   },
+    //   description:
+    //     "Llama 3 is a powerful text-based large language model by Meta. It is designed for generating high-quality text, engaging in natural conversations, and performing various language understanding tasks. Its multilingual capabilities make it suitable for global applications requiring sophisticated text processing.",
+    //   usecase: ["Text", "Multilingual"],
+    // },
     {
       value: "llama-3.1-8b-instant",
       label: "Llama 3.1",
@@ -900,7 +971,7 @@ function AIPage({
                 </div>
               ) : (
                 messages.map((message, idx) => (
-                  <MessageComponent
+                  <div
                     key={message.id}
                     className={
                       message.role === "user"
@@ -975,13 +1046,19 @@ function AIPage({
                                   </Reasoning>
                                 )}
 
-                                <MessageContent
-                                  aiMessage={true}
-                                  className="prose p-0 dark:prose-invert max-w-full sm:max-w-none overflow-hidden"
-                                  markdown={true}
-                                >
-                                  {displayContent}
-                                </MessageContent>
+                                <SmoothStreamdown
+                                  content={displayContent}
+                                  isStreaming={status === "streaming"}
+                                  className="prose p-0 dark:prose-invert
+                                  max-w-full sm:max-w-none overflow-hidden"
+                                  shikiTheme={["dracula", "dracula"]}
+                                  plugins={{
+                                    code: code,
+                                    mermaid: mermaid,
+                                    math: math,
+                                    cjk: cjk,
+                                  }}
+                                />
                               </>
                             );
                           })()}
@@ -1024,7 +1101,7 @@ function AIPage({
                         </MessageContent>
                       )}
                     </div>
-                  </MessageComponent>
+                  </div>
                 ))
               )}
               {/* Show loader as a pending assistant message if aiLoading is true and last message is not assistant */}
@@ -1047,7 +1124,7 @@ function AIPage({
             "sticky bottom-0 left-0 w-full z-50 bg-none prompt-transition",
           )}
         >
-          <div className="w-full mb-2 max-w-[800px] mx-auto">
+          <div className="w-full mb-2 max-w-(--breakpoint-md) mx-auto">
             <div className="p-0.5 max-w-(--breakpoint-md) rounded-xl bg-accent prompt-transition">
               {remaining <= 5 && remaining > 0 && (
                 <div className="text-yellow-600 text-center mb-2">
@@ -1220,7 +1297,7 @@ function AIPage({
                         <Telescope></Telescope>
                       </Button>
                     </PromptInputAction>*/}
-                    <PromptInputAction
+                    {/*<PromptInputAction
                       tooltip={
                         !user
                           ? "Please login to use Search Web"
@@ -1259,15 +1336,12 @@ function AIPage({
                                 searchEnabled === true ? "default" : "outline"
                               }
                             >
-                              {/*<Globe className={selectedModel && ToolCallModels.includes(selectedModel) ? "text-blue-500" : ""} />
-                              {selectedModel && ToolCallModels.includes(selectedModel) && searchEnabled && (
-                                <span className="ml-1 text-xs">Tool</span>
-                              )}*/}
+
                               Web Search <Globe></Globe>
                             </Button>
                           )
                         : ""}
-                    </PromptInputAction>
+                    </PromptInputAction>*/}
                   </div>
 
                   <PromptInputAction

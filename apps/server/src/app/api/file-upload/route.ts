@@ -4,6 +4,7 @@ import { chatFiles } from "@/db/schema/db";
 import { eq, and, desc } from "drizzle-orm";
 import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { withCORS } from "@/lib/cors";
+import posthog from "@/lib/posthog";
 
 // POST /api/file-upload
 // Body: { chatId, fileName, fileUrl, fileType }
@@ -67,6 +68,15 @@ export const POST = withCORS(async (req: NextRequest) => {
       })
       .returning();
 
+    posthog.capture({
+      distinctId: user.id,
+      event: "file_uploaded",
+      properties: {
+        chat_id: chatId,
+        file_type: fileType,
+        file_name: fileName,
+      },
+    });
     return NextResponse.json({
       success: true,
       data: result[0],

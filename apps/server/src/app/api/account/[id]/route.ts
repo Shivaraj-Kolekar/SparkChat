@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { invalidateUserPreferencesCache } from "@/lib/cache";
 import { users } from "@clerk/clerk-sdk-node";
+import posthog from "@/lib/posthog";
 
 export const DELETE = withCORS(
   async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
@@ -63,6 +64,13 @@ export const DELETE = withCORS(
         );
       }
 
+      posthog.capture({
+        distinctId: userId,
+        event: "account_deleted",
+        properties: {
+          user_id: userId,
+        },
+      });
       return NextResponse.json(
         {
           success: true,
@@ -72,6 +80,7 @@ export const DELETE = withCORS(
       );
     } catch (error) {
       console.error("Error deleting account:", error);
+      posthog.captureException(error);
       return NextResponse.json(
         {
           success: false,

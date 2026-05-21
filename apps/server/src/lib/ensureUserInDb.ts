@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { user as userTable } from "@/db/schema/db";
 import { eq } from "drizzle-orm";
+import posthog from "@/lib/posthog";
 
 export async function ensureUserInDb(clerkUser: any) {
   try {
@@ -13,20 +14,40 @@ export async function ensureUserInDb(clerkUser: any) {
       .from(userTable)
       .where(eq(userTable.id, clerkUser.id));
     if (exists.length === 0) {
+      const email = clerkUser.emailAddresses?.[0]?.emailAddress || "";
+      const name =
+        clerkUser.firstName && clerkUser.lastName
+          ? `${clerkUser.firstName} ${clerkUser.lastName}`
+          : clerkUser.username || email || "Unknown";
       await db.insert(userTable).values({
         id: clerkUser.id,
-        name:
-          clerkUser.firstName && clerkUser.lastName
-            ? `${clerkUser.firstName} ${clerkUser.lastName}`
-            : clerkUser.username ||
-              clerkUser.emailAddresses?.[0]?.emailAddress ||
-              "Unknown",
-        email: clerkUser.emailAddresses?.[0]?.emailAddress || "",
+        name,
+        email,
         emailVerified:
           clerkUser.emailAddresses?.[0]?.verification?.status === "verified",
         image: clerkUser.imageUrl || "",
         createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt) : new Date(),
         updatedAt: new Date(),
+      });
+      posthog.identify({
+        distinctId: clerkUser.id,
+        properties: {
+          $set: {
+            name,
+            email,
+          },
+          $set_once: {
+            first_seen: new Date().toISOString(),
+          },
+        },
+      });
+      posthog.capture({
+        distinctId: clerkUser.id,
+        event: "user_created",
+        properties: {
+          name,
+          email,
+        },
       });
       //console.log("User inserted into DB:", clerkUser.id);
     }

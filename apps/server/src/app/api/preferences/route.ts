@@ -6,6 +6,7 @@ import { getClerkSession, getClerkUser } from "@/lib/auth";
 import { invalidateUserPreferencesCache } from "@/lib/cache";
 import { withCORS } from "@/lib/cors";
 import { ensureUserInDb } from "@/lib/ensureUserInDb";
+import posthog from "@/lib/posthog";
 
 // GET - Fetch user preferences
 export const GET = withCORS(async (req: NextRequest) => {
@@ -93,6 +94,18 @@ export const POST = withCORS(async (req: NextRequest) => {
 
     // Invalidate cache to ensure AI API uses updated preferences
     invalidateUserPreferencesCache(user.id);
+
+    posthog.capture({
+      distinctId: user.id,
+      event: "preferences_updated",
+      properties: {
+        has_name: !!name,
+        has_profession: !!profession,
+        has_traits: !!traits,
+        has_description: !!description,
+        is_update: existingPreferences.length > 0,
+      },
+    });
 
     return NextResponse.json({
       success: true,
