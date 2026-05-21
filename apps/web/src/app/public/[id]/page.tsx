@@ -113,7 +113,7 @@ export default function PublicChatPage() {
           </div>
           <div className="flex flex-row gap-2 items-center">
             <ModeToggle />
-            <Link href="https://assured-herring-21.accounts.dev/sign-in">
+            <Link href="https://accounts.sparkchat.shivraj-kolekar.in/sign-in">
               <Button variant="outline">Sign Up</Button>
             </Link>
           </div>

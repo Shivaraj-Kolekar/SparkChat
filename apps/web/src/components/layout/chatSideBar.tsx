@@ -681,7 +681,7 @@ export function ChatSidebar() {
               </Link>
             ) : (
               <a
-                href="https://assured-herring-21.accounts.dev/sign-in"
+                href="https://accounts.sparkchat.shivraj-kolekar.in/sign-in"
                 className="flex items-center space-x-2"
               >
                 <LogInIcon size={20} />

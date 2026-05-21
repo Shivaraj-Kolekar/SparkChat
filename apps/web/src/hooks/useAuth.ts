@@ -11,7 +11,7 @@ interface UseAuthOptions {
 
 export function useAuth(options: UseAuthOptions = {}) {
   const {
-    redirectTo = "https://assured-herring-21.accounts.dev/sign-in",
+    redirectTo = "https://accounts.sparkchat.shivraj-kolekar.in/sign-in",
     requireAuth = false,
   } = options;
   const { user, isLoaded } = useUser();
@@ -27,7 +27,7 @@ export function useAuth(options: UseAuthOptions = {}) {
   const signOut = async () => {
     try {
       await clerk.signOut();
-      router.push("https://assured-herring-21.accounts.dev/sign-in");
+      router.push("https://accounts.sparkchat.shivraj-kolekar.in/sign-in");
     } catch (error) {
       console.error("Sign out error:", error);
     }
